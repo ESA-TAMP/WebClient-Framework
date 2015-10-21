@@ -219,48 +219,6 @@
             "outlines": false,
             "satellite": "Swarm"
         },{
-            "name": "MAGC LR 1B",
-            "visible": false,
-            "timeSlider": true,
-            "timeSliderProtocol": "WPS",
-            "views": [{
-                "id": "SW_OPER_MAGC_LR_1B",
-                "protocol": "CZML",
-                "urls": [
-                    "http://localhost:9000/vires00/ows"
-                ],
-                "style": "default",
-                "format": "image/png"
-            }],
-            "download": {
-                "id": "SW_OPER_MAGC_LR_1B",
-                "protocol": "EOWCS",
-                "url": "http://localhost:9000/vires00/ows"
-            },
-            "processes" : [
-                {
-                    "id": "retrieve_data",
-                    "layer_id": "SW_OPER_MAGC_LR_1B"
-                }
-            ],
-            "parameters": {
-                "B_NEC": {
-                    "range": [30000, 60000],
-                    "uom":"nT",
-                    "colorscale": "jet",
-                    "name": "Magnetic field vector, NEC frame"
-                },
-                "F": {
-                    "range": [30000, 60000],
-                    "uom":"nT",
-                    "colorscale": "jet",
-                    "selected": true,
-                    "name": "Magnetic field intensity"
-                }
-            },
-            "outlines": false,
-            "satellite": "Swarm"
-        },{
             "name": "SIFM",
             "visible": false,
             "timeSlider": true,
@@ -356,297 +314,6 @@
             "coefficients_range": [-1,-1]
 
         },{
-            "name": "IGRF12",
-            "visible": false,
-            "timeSlider": true,
-            "timeSliderProtocol": "WPS",
-            "opacity": 0.7,
-            "views": [{
-                "id": "IGRF12",
-                "protocol": "WMS",
-                "urls": [
-                    "http://localhost:9000/vires00/ows"
-                ],
-                "style": "default",
-                "format": "image/png"
-            }],
-            "download": {
-                "id": "IGRF12",
-                "protocol": "EOWCS",
-                "url": "http://localhost:9000/vires00/ows"
-            },
-            "parameters": {
-                "F": {
-                    "range": [30000, 60000],
-                    "uom":"nT",
-                    "name": "Total field intensity",
-                    "colorscale": "jet",
-                    "selected": true
-                },
-                "H": {
-                    "range": [10000, 23000],
-                    "uom":"nT",
-                    "name": "Horizontal intensity",
-                    "colorscale": "jet"
-                },
-                "X": {
-                    "range": [10000, 23000],
-                    "uom":"nT",
-                    "name": "North component",
-                    "colorscale": "jet"
-                },
-                "Y": {
-                    "range": [-7000, 7000],
-                    "uom":"nT",
-                    "name": "East component",
-                    "colorscale": "custom1"
-                },
-                "Z": {
-                    "range": [-45000, 45000],
-                    "uom":"nT",
-                    "name": "Down component",
-                    "colorscale": "custom1"
-                },
-                "I": {
-                    "range": [-80, 80],
-                    "uom":"degree",
-                    "name": "Inclination",
-                    "colorscale": "custom1"
-                },
-                "D": {
-                    "range": [-80, 80],
-                    "uom":"degree",
-                    "name": "Declination",
-                    "colorscale": "custom1"
-                },
-                "Fieldlines":{
-                    "range": [0.9, 40000],
-                    "uom":"nT",
-                    "name": "Fieldlines",
-                    "description": "In order to visualize fieldlines please select an area with the bounding box tool.",
-                    "colorscale": "jet",
-                    "logarithmic": true
-                },
-                "X_EW": {
-                    "range": [-5, 5],
-                    "uom":"nT/km",
-                    "name": "North component (East-West Gradient)",
-                    "colorscale": "custom1"
-                },
-                "Y_EW": {
-                    "range": [-5, 5],
-                    "uom":"nT/km",
-                    "name": "East component (East-West Gradient)",
-                    "colorscale": "custom1"
-                },
-                "Z_EW": {
-                    "range": [-5, 5],
-                    "uom":"nT/km",
-                    "name": "Down component (East-West Gradient)",
-                    "colorscale": "custom1"
-                }
-            },
-            "height": 450,
-            "model": true,
-            "coefficients_range": [-1,-1]
-
-        },{
-            "name": "CHAOS-5",
-            "visible": false,
-            "timeSlider": true,
-            "timeSliderProtocol": "WPS",
-            "opacity": 0.7,
-            "views": [{
-                "id": "CHAOS-5-Combined",
-                "protocol": "WMS",
-                "urls": [
-                    "http://localhost:9000/vires00/ows"
-                ],
-                "style": "default",
-                "format": "image/png"
-            }],
-            "download": {
-                "id": "CHAOS-5-Combined",
-                "protocol": "EOWCS",
-                "url": "http://localhost:9000/vires00/ows"
-            },
-            "parameters": {
-                "F": {
-                    "range": [30000, 60000],
-                    "uom":"nT",
-                    "name": "Total field intensity",
-                    "colorscale": "jet",
-                    "selected": true
-                },
-                "H": {
-                    "range": [10000, 23000],
-                    "uom":"nT",
-                    "name": "Horizontal intensity",
-                    "colorscale": "jet"
-                },
-                "X": {
-                    "range": [10000, 23000],
-                    "uom":"nT",
-                    "name": "North component",
-                    "colorscale": "jet"
-                },
-                "Y": {
-                    "range": [-7000, 7000],
-                    "uom":"nT",
-                    "name": "East component",
-                    "colorscale": "custom1"
-                },
-                "Z": {
-                    "range": [-45000, 45000],
-                    "uom":"nT",
-                    "name": "Down component",
-                    "colorscale": "custom1"
-                },
-                "I": {
-                    "range": [-80, 80],
-                    "uom":"degree",
-                    "name": "Inclination",
-                    "colorscale": "custom1"
-                },
-                "D": {
-                    "range": [-80, 80],
-                    "uom":"degree",
-                    "name": "Declination",
-                    "colorscale": "custom1"
-                },
-                "Fieldlines":{
-                    "range": [0.9, 40000],
-                    "uom":"nT",
-                    "name": "Fieldlines",
-                    "description": "In order to visualize fieldlines please select an area with the bounding box tool.",
-                    "colorscale": "jet",
-                    "logarithmic": true
-                },
-                "X_EW": {
-                    "range": [-5, 5],
-                    "uom":"nT/km",
-                    "name": "North component (East-West Gradient)",
-                    "colorscale": "custom1"
-                },
-                "Y_EW": {
-                    "range": [-5, 5],
-                    "uom":"nT/km",
-                    "name": "East component (East-West Gradient)",
-                    "colorscale": "custom1"
-                },
-                "Z_EW": {
-                    "range": [-5, 5],
-                    "uom":"nT/km",
-                    "name": "Down component (East-West Gradient)",
-                    "colorscale": "custom1"
-                }
-            },
-            "height": 450,
-            "model": true,
-            "coefficients_range": [-1,-1]
-
-        },{
-            "name": "Custom Model",
-            "visible": false,
-            "timeSlider": false,
-            "views": [{
-                "id": "shc",
-                "protocol": "WPS",
-                "urls": [
-                    "http://localhost:9000/vires00/ows"
-                ]
-            }],
-            "download": {
-                "id": "shc",
-                "protocol": "EOWCS",
-                "url": "http://localhost:9000/vires00/ows"
-            },
-            "parameters": {
-                "F": {
-                    "range": [30000, 60000],
-                    "uom":"nT",
-                    "name": "Total field intensity",
-                    "colorscale": "jet"
-                },
-                "H": {
-                    "range": [10000, 23000],
-                    "uom":"nT",
-                    "name": "Horizontal intensity",
-                    "colorscale": "jet"
-                },
-                "X": {
-                    "range": [10000, 23000],
-                    "uom":"nT",
-                    "name": "North component",
-                    "colorscale": "jet"
-                },
-                "Y": {
-                    "range": [-7000, 7000],
-                    "uom":"nT",
-                    "name": "East component",
-                    "colorscale": "custom1"
-                },
-                "Z": {
-                    "range": [-200, 200],
-                    "uom":"nT",
-                    "name": "Down component",
-                    "colorscale": "custom1",
-                    "selected": true
-                },
-                "I": {
-                    "range": [-80, 80],
-                    "uom":"degree",
-                    "name": "Inclination",
-                    "colorscale": "custom1"
-                },
-                "D": {
-                    "range": [-80, 80],
-                    "uom":"degree",
-                    "name": "Declination",
-                    "colorscale": "custom1"
-                },
-                "X_EW": {
-                    "range": [-5, 5],
-                    "uom":"nT/km",
-                    "name": "North component (East-West Gradient)",
-                    "colorscale": "custom1"
-                },
-                "Y_EW": {
-                    "range": [-5, 5],
-                    "uom":"nT/km",
-                    "name": "East component (East-West Gradient)",
-                    "colorscale": "custom1"
-                },
-                "Z_EW": {
-                    "range": [-5, 5],
-                    "uom":"nT/km",
-                    "name": "Down component (East-West Gradient)",
-                    "colorscale": "custom1"
-                }
-            },
-            "height": 0,
-            "model": true,
-            "coefficients_range": [13,65]
-
-        },{
-            "name": "Dst Index",
-            "visible": false,
-            "timeSlider": true,
-            "timeSliderProtocol": "INDEX",
-            "views": [{
-                "id": "dst",
-                "protocol": "INDEX",
-                "urls": [
-                    "http://localhost:9000/vires00/ows"
-                ]
-            }],
-            "download": {
-                "id": "dst",
-                "protocol": "INDEX",
-                "url": "http://localhost:9000/vires00/ows"
-            },
-            "index": true
-        },{
             "name": "Kp Index",
             "visible": false,
             "timeSlider": true,
@@ -664,22 +331,8 @@
                 "url": "http://localhost:9000/vires00/ows"
             },
             "index": true
-        },{
-            "name": "Digital Elevation Model",
-            "visible": false,
-            "timeSlider": false,
-            "color": "lightgray",
-            "views": [{
-                "id": "Wireframe",
-                "protocol": "DEM",
-                "urls": [
-                    "http://data.eox.at/elevation?"
-                ],
-                "style": "default",
-                "format": "image/png"
-            }],
-            "download": {}
-        }],
+        }
+        ],
         "overlays": [{
             "name": "Coastline",
             "id": "coastline",
@@ -764,8 +417,8 @@
     }],
 
     "navBarConfig": {
-        "title": "VirES",
-        "url": "http://vires2.eox.at",
+        "title": "TAMP",
+        "url": "http://www.sistema.at/wp/?page_id=496",
         "items": [{
             "name": "Layers",
             "icon": "fa-globe",
@@ -780,13 +433,13 @@
             "name": "Tutorials",
             "icon": "fa-book",
             "subitems": [{
-                "name": "Swarm Analytics",
+                "name": "Placeholder 1",
                 "eventToRaise": "ui:open:storybanner",
-                "template": "UseCase_SwarmAnalytics"
+                "template": "UseCase_Placeholder"
             }, {
-                "name": "Geomagnetic Field Models",
+                "name": "Placeholder 2",
                 "eventToRaise": "ui:open:storybanner",
-                "template": "UseCase_MagneticModels"
+                "template": "UseCase_Placeholder"
             }]
         }, {
             "name": "About",

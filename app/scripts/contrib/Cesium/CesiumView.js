@@ -107,7 +107,7 @@ define(['backbone.marionette',
 						animation: false,
 						imageryProvider: layer,
 						terrainProvider : new Cesium.CesiumTerrainProvider({
-					        url : 'http://cesiumjs.org/stk-terrain/tilesets/world/tiles'
+					        url : 'https://tiles.maps.eox.at/dem'
 					    }),
 						creditContainer: "cesium_attribution",
 						contextOptions: {webgl: {preserveDrawingBuffer: true}},
@@ -367,7 +367,8 @@ define(['backbone.marionette',
                     default:
                     	// No supported view available
                     	// Return dummy Image provider to help with with sorting of layers 
-                    	return  new Cesium.WebMapServiceImageryProvider();
+                    	//return  new Cesium.WebMapServiceImageryProvider();
+                    	return false;
                     break;
 
                 };
