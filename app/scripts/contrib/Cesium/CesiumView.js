@@ -7,23 +7,52 @@ define(['backbone.marionette',
 		'app',
 		'models/MapModel',
 		'globals',
+		'papaparse',
 		'hbs!tmpl/wps_load_shc',
 		'hbs!tmpl/wps_calc_diff',
 		'hbs!tmpl/wps_get_field_lines',
 		'hbs!tmpl/wps_retrieve_swarm_features',
+		'hbs!tmpl/wps_get_time_data',
+		'hbs!tmpl/wcs_get_coverage',
 		'openlayers',
 		'cesium/Cesium',
 		'drawhelper',
 		'filesaver',
-		'papaparse'
+		'geotiff',
+		'plotty'
 	],
-	function(Marionette, Communicator, App, MapModel, globals, Tmpl_load_shc, Tmpl_calc_diff, Tmpl_get_field_lines, Tmpl_retrive_swarm_features) {
+	function(Marionette, Communicator, App, MapModel, globals, Papa, Tmpl_load_shc, Tmpl_calc_diff, Tmpl_get_field_lines, Tmpl_retrive_swarm_features, Tmpl_get_time_data, Tmpl_wcs_get_coverage) {
 
 		var CesiumView = Marionette.View.extend({
 
 			model: new MapModel.MapModel(),
 
 			initialize: function(options) {
+
+				    Cesium.Texture.prototype.copyFromCanvas = function(canvas) {
+				        var gl = this._context._gl;
+				        /*var textureTarget = gl.TEXTURE_2D;
+				        //var texture = gl.createTexture();
+				        gl.activeTexture(gl.TEXTURE0);
+				        gl.bindTexture(textureTarget, texture);
+				        //gl.bindTexture(textureTarget, null);*/
+				        //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.FLOAT, canvas);
+				        gl.createTexture();
+				        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+				        //textureTarget, 0, pixelFormat, width, height, 0, pixelFormat, pixelDatatype, source.arrayBufferView
+
+				    };
+
+				    Cesium.Texture.prototype.copyFromContext = function(ctx, width, height) {    
+				        var gl = this._context._gl;
+				        var newTex = gl.createTexture();
+						gl.bindTexture(gl.TEXTURE_2D, newTex);
+						gl.copyTexImage2D(ctx.TEXTURE_2D, 0, gl.RGBA, 0, 0, width, height, 0);
+						gl.generateMipmap(gl.TEXTURE_2D);
+						gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+				    };
+
+
 				this.map = undefined;
 				this.isClosed = true;
 				this.tileManager = options.tileManager;
@@ -38,6 +67,7 @@ define(['backbone.marionette',
 				this.billboards = null;
 				this.activeFL = [];
 				this.features_collection = {};
+				this.coverages_collections = {};
 				this.FL_collection = {};
 				this.bboxsel = null;
 				this.extentPrimitive = null;
@@ -46,6 +76,10 @@ define(['backbone.marionette',
 
 				this.begin_time = null;
 				this.end_time = null;
+
+				Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(-5.0, -40.0, 40.0, 90.0);
+
+				this.wcscanvas = $('<canvas></canvas>');
 
 				$(window).resize(function() {
 					if (this.map) {
@@ -131,6 +165,11 @@ define(['backbone.marionette',
 
 				//this.map.scene.fxaaOrderIndependentTranslucency = false;
 
+				// Workarounf for low framerate when showing rectangles with trasnparency
+				this.map.scene._oit.isSupported = function() {
+					return false;
+				};
+
 
 				this.billboards = this.map.scene.primitives.add(new Cesium.BillboardCollection());
 
@@ -145,19 +184,6 @@ define(['backbone.marionette',
 
 				this.map.scene.camera.frustum.far = this.map.scene.camera.frustum.far * 15
 
-				/*var maxRadii = this.map.scene.globe.ellipsoid.maximumRadius;
-
-				var frustum = new Cesium.OrthographicFrustum();
-				frustum.right = maxRadii * Cesium.Math.PI/2;
-				frustum.left = -frustum.right;
-				frustum.top = frustum.right * (this.map.scene.canvas.clientHeight / this.map.scene.canvas.clientWidth);
-				frustum.bottom = -frustum.top;
-
-				frustum.near = 0.01 * maxRadii;
-				frustum.far = 50.0 * maxRadii;
-
-				this.map.scene.camera.frustum = frustum;*/
-
 				this.map.clock.onTick.addEventListener(this.handleTick.bind(this));
 				
 				globals.baseLayers.each(function(baselayer) {
@@ -167,31 +193,6 @@ define(['backbone.marionette',
 				 		baselayer.set("ces_layer", ces_layer);
 					}
 				}, this);
-
-				/*
-				this.colors = globals.objects.get("color");
-
-				this.map.events.register("move", this.map, function(data) {
-					//console.log(data.object.getCenter());
-					var center = data.object.getCenter();
-					this.model.set({
-						'center': [center.lon, center.lat],
-						'zoom': data.object.zoom
-					});
-
-					// We set a flag here so that other views have the possibility to check if there is a
-					// map panning going on at the moment. This is important e.g. for the VGV to prevent
-					// sending a 'pan' event in some cases which would lead to a infinite recursion.
-					App.isMapPanning = true;
-				}.bind(this));
-
-				
-				this.map.events.register("moveend", this.map, function(data) {
-					// See lines above for an explanation of that flag:
-					App.isMapPanning = false;
-					Communicator.mediator.trigger("map:position:change", this.map.getExtent());				
-				}.bind(this));
-				*/
 				
 				//Go through all defined baselayer and add them to the map
 				globals.baseLayers.each(function(baselayer) {
@@ -513,19 +514,9 @@ define(['backbone.marionette',
                     		if(product.get("views")[0].protocol == "CZML"){
                     			this.checkLayerFeatures(product, options.visible);
 
-			        		}else if (product.get("views")[0].protocol == "FL_CZML"){
-			        			/*if(options.visible){
-			        				//product.set("visible", true);
-	                    			this.activeFL.push(product.get("name"));
-	                    		}else{
-	                    			if (this.activeFL.indexOf(product.get('name'))!=-1){
-	                    				//TODO: Remove possibly loaded entity
-                						this.activeFL.splice(this.activeFL.indexOf(product.get('name')), 1);
-                					}
-
-	                    		}
-	                    		this.checkFieldLines();*/
-							
+			        		}else if (product.get("views")[0].protocol == "WCS"){
+			        			this.checkCoverages(product, options.visible);
+			        										
                     		}else if (product.get("views")[0].protocol == "WPS"){
                     			this.checkShc(product, options.visible);
 								
@@ -789,6 +780,145 @@ define(['backbone.marionette',
     			}
             },
 
+            checkCoverages: function(product,visible){
+
+            	if(!_.has(this.coverages_collections, product.get("views")[0].id)){
+            		this.coverages_collections[product.get("views")[0].id] = new Cesium.PrimitiveCollection();
+            		this.map.scene.primitives.add(this.coverages_collections[product.get("views")[0].id]);
+            	}
+
+            	var cur_coll = this.coverages_collections[product.get("views")[0].id];
+            	
+            	if(visible){
+
+            		cur_coll.show = true;
+
+            		//this.map.scene.primitives.add(cur_coll);
+
+    				var color = product.get("color");
+					color = color.substring(1, color.length);
+	    			var parameters = product.get("parameters");
+	    			var keys = _.keys(parameters);
+	    			var band;
+					_.each(keys, function(key){
+						if(parameters[key].selected)
+							band = key;
+					});
+	    			var colorscale = parameters[band].colorscale;
+	    			var outlines = product.get("outlines");
+	    			var range = parameters[band].range;
+	    			var alpha = product.get("opacity");
+	    			var url = product.get("views")[0].urls[0];
+	    			var collection = product.get("views")[0].id;
+	    			var self = this;
+
+        			$.post( url, Tmpl_get_time_data({
+						"collection": collection,
+						"begin_time": getISODateTimeString(this.begin_time),
+						"end_time": getISODateTimeString(this.end_time),
+					}), "xml")
+
+
+					.done(function( data ) {
+						
+						var coverages = Papa.parse(data, {
+							header: true,
+							skipEmptyLines: true
+						});
+
+						var prim_to_remove = [];
+						// Remove coverages from collection that are no longer in the list
+						for (var p=0; p<cur_coll._primitives.length; p++){
+							if( 
+								!_.find(coverages.data, function(c){
+									return c.identifier == cur_coll._primitives[p].cov_id;
+								})
+							){
+								prim_to_remove.push(cur_coll._primitives[p])
+							}
+						};
+
+						for (var i = prim_to_remove.length - 1; i >= 0; i--) {
+							$(prim_to_remove[i].cov_plot.canvas).remove();
+							cur_coll.remove(prim_to_remove[i]);
+						};
+
+						for (var i = coverages.data.length - 1; i >= 0; i--) {
+							
+							var bbox = coverages.data[i].bbox;
+							bbox = bbox.substring(1, bbox.length - 1).split(",").map(parseFloat); 
+							var request = url + "?service=WCS&request=GetCoverage&version=2.0.1&coverageid="+coverages.data[i].identifier;
+
+							// Check if coverage is already in collection, if not add them
+							if( 
+								!_.find(cur_coll._primitives, function(p){
+									return p.cov_id == coverages.data[i].identifier;
+								})
+							){
+
+								var xhr = new XMLHttpRequest();
+								xhr.open('GET', request, true);
+								xhr.responseType = 'arraybuffer';
+								xhr.bbox = bbox;
+								xhr.wcscanvas = self.wcscanvas;
+								xhr.cov_id = coverages.data[i].identifier;
+								
+								xhr.onload = function(e) {
+									var bbox = this.bbox;
+									var gt = GeoTIFF.parse(this.response);
+									var i = gt.getImage(0);
+									var rasdata = i.readRasters()[0];
+
+									var canv = $('<canvas></canvas>')[0];
+									
+									var plot = new plotty.plot(canv, rasdata, i.getWidth(), i.getHeight(), range, colorscale );
+									plot.setNoDataValue(-9999);
+									plot.render();
+
+									var newmat = new Cesium.Material.fromType('Image');
+									//newmat.uniforms.image = this.wcscanvas[0];
+									newmat.uniforms.image = canv;
+
+									var instance = new Cesium.GeometryInstance({
+									  geometry : new Cesium.RectangleGeometry({
+									    rectangle : Cesium.Rectangle.fromDegrees(bbox[0],bbox[1],bbox[2],bbox[3]),
+									    vertexFormat : Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT
+									  })
+									});
+
+									var prim = new Cesium.Primitive({
+									  geometryInstances : [instance],
+									  appearance : new Cesium.MaterialAppearance({
+									  	translucent : true,
+									  	flat: true,
+									    material : newmat
+									  })
+									});
+
+									prim["cov_data"] = rasdata;
+									prim["cov_id"] = this.cov_id;
+									prim["cov_height"] = i.getHeight();
+									prim["cov_width"] = i.getWidth();
+									prim["cov_plot"] = plot;
+
+									cur_coll.add(prim);
+
+
+								};
+
+								xhr.send();
+							}
+
+						};
+
+					});
+				}else{
+					//this.map.scene.primitives.remove(this.coverages_collections[product.get("views")[0].id]);
+					cur_coll.show = false;
+				}
+
+            },
+
 
             checkLayerFeatures: function (product, visible) {
 
@@ -944,6 +1074,49 @@ define(['backbone.marionette',
         		
             },
 
+
+            onLayerRangeChanged: function(layer, range, colorscale){
+            	var that = this;
+            	globals.products.each(function(product) {
+
+            		if(product.get("name")==layer){
+            			if(product.get("views")[0].protocol == "WCS"){
+            				var cur_coll = that.coverages_collections[product.get("views")[0].id];
+            				if(cur_coll){
+								for (var p=0; p<cur_coll._primitives.length; p++){
+
+									var prim = cur_coll._primitives[p];
+									var plot = prim.cov_plot;
+									plot.setDomain(range);
+									plot.render();
+									prim.appearance.material._textures.image.copyFrom(plot.canvas);
+
+
+									/*var prim = cur_coll._primitives[p];
+		            				var plot = new plotty.plot(that.wcscanvas[0], prim.cov_data, prim.cov_width, prim.cov_height, range, colorscale );
+									plot.setNoDataValue(-9999);
+									plot.render();
+
+									//setTimeout(function() { prim.appearance.material._textures.image.copyFrom(that.wcscanvas[0]); }, 0);
+									//prim.appearance.material._textures.image.copyFrom(that.wcscanvas[0]);
+
+									setTimeout(function(prim, ) { prim.appearance.material._textures.image.copyFrom(that.wcscanvas[0]); }, 0);*/
+
+
+									//prim.appearance.material.uniforms.image = that.wcscanvas[0].toDataURL();
+									//prim.appearance.material._textures.image._texture = plot.getTexture();
+									//prim.appearance.material._textures.image._texture = new Cesium.Texture(plot.getCtx(),{source: that.wcscanvas[0]});
+									//prim.appearance.material._textures.image.copyFromTexture(plot.getTexture());
+									//prim.appearance.material._textures.image.copyFrom(that.wcscanvas[0]);
+									//prim.appearance.material._textures.image.copyFromContext(plot.getCtx(),  prim.cov_width, prim.cov_height);
+									//prim.appearance.material._textures.image.copyFromCanvas(that.wcscanvas[0]);
+								}
+							}
+            			}
+            		}
+            	});
+            },
+
             OnLayerParametersChanged: function(layer){
             	globals.products.each(function(product) {
 
@@ -967,6 +1140,24 @@ define(['backbone.marionette',
 
 						if(product.get("views")[0].protocol == "CZML"){
 							this.checkLayerFeatures(product, product.get("visible"));
+
+	                	}else if(product.get("views")[0].protocol == "WCS"){
+
+	                		var cur_coll = this.coverages_collections[product.get("views")[0].id];
+
+	                		if(cur_coll){
+								for (var p=0; p<cur_coll._primitives.length; p++){
+									
+									var prim = cur_coll._primitives[p];
+									var plot = prim.cov_plot;
+									plot.setDomain(range);
+									plot.setColorScale(style);
+									plot.render();
+									prim.appearance.material._textures.image.copyFrom(plot.canvas);
+
+								};
+							}
+
 
 	                	}else if(product.get("views")[0].protocol == "WMS"){
 
@@ -1457,7 +1648,10 @@ define(['backbone.marionette',
 	                    if(product.get("views")[0].protocol == "CZML"){
 	                    	this.checkLayerFeatures(product, product.get("visible"));
                 			
-		        		}else if (product.get("views")[0].protocol == "WPS"){
+		        		}else if (product.get("views")[0].protocol == "WCS"){
+			        		this.checkCoverages(product, product.get("visible"));
+			        										
+                		}else if (product.get("views")[0].protocol == "WPS"){
 
                 			if(product.get("visible")){
 

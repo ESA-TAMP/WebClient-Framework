@@ -56,6 +56,7 @@ define([
 			this.cesiumView.listenTo(Communicator.mediator, "cesium:highlight:removeAll", _.bind(this.cesiumView.onRemoveHighlights, this.cesiumView));
 
 			this.cesiumView.listenTo(Communicator.mediator, "layer:parameters:changed", _.bind(this.cesiumView.OnLayerParametersChanged, this.cesiumView));
+			this.cesiumView.listenTo(Communicator.mediator, "layer:range:changed", _.bind(this.cesiumView.onLayerRangeChanged, this.cesiumView));
 			
 			//this.cesiumView.listenTo(Communicator.mediator, "layer:outlines:changed", _.bind(this.cesiumView.onLayerOutlinesChanged, this.cesiumView));
 			//this.cesiumView.listenTo(Communicator.mediator, "layer:fieldlines:changed", _.bind(this.cesiumView.onFieldlinesChanged, this.cesiumView));

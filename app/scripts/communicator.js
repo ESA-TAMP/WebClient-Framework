@@ -18,7 +18,7 @@
 				// Allow of logging all events when debug activated
 				this.mediator.on("all", function(event){
 					if( !(event == "map:center" || event == "router:setUrl" ||
-					      event == "progress:change"))
+					      event == "progress:change" || event == "map:position:change"))
 						console.log(event);
 				});
 

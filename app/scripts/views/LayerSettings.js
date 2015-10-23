@@ -16,7 +16,11 @@
 
 			template: {type: 'handlebars', template: LayerSettingsTmpl},
 			className: "panel panel-default optionscontrol not-selectable",
-			colorscaletypes : ["coolwarm", "rainbow", "jet", "custom1", "custom2", "blackwhite"],
+			//colorscaletypes : ["coolwarm", "rainbow", "jet", "custom1", "custom2", "blackwhite"],
+			colorscaletypes : ["viridis","inferno","rainbow","jet","hsv","hot","cool","spring",
+							   "summer","autumn","winter","bone","copper","greys","yignbu","greens",
+							   "yiorrd","bluered","rdbu","picnic","portland","blackbody","earth",
+							   "electric","magma","plasma"],
 
 			initialize: function(options) {
 				this.selected = null;
@@ -77,6 +81,30 @@
 				// Set values for color scale ranges
 				this.$("#range_min").val(options[this.selected].range[0]);
 				this.$("#range_max").val(options[this.selected].range[1]);
+
+				// Set the range sliders
+				this.$("#range_min_slider").attr("max", options[this.selected].range[1]);
+				this.$("#range_min_slider").attr("min", options[this.selected].range[0]);
+				this.$("#range_min_slider").attr("value", options[this.selected].range[0]);
+				//max_label.innerHTML = max_range;
+
+				this.$("#range_max_slider").attr("max", options[this.selected].range[1]);
+				this.$("#range_max_slider").attr("min", options[this.selected].range[0]);
+				this.$("#range_max_slider").attr("value", options[this.selected].range[1]);
+				//max_label.innerHTML = max_range;
+
+				this.$("#range_min_slider").on("input change", function(){
+					var newrange = [parseFloat(this.value), options[that.selected].range[1]];
+					options[that.selected].range = newrange;
+					Communicator.mediator.trigger("layer:range:changed", that.model.get("name"), newrange, options[that.selected].colorscale);
+				});
+
+				this.$("#range_max_slider").on("input change", function(){
+					var newrange = [options[that.selected].range[0], parseFloat(this.value)];
+					options[that.selected].range = newrange;
+					Communicator.mediator.trigger("layer:range:changed", that.model.get("name"), newrange, options[that.selected].colorscale);
+				});
+
 				
 				// Register necessary key events
 				this.registerKeyEvents(this.$("#range_min"));

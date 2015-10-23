@@ -1,6 +1,6 @@
 {
 
-    "debug": true,
+    "debug": false,
 
     "modules": [
         "contrib/AnalyticsViewer/AnalyticsViewModule",
@@ -134,90 +134,57 @@
             }]
         }],
         "products": [{
-            "name": "MAGA LR 1B",
+            "name": "ALARO Temperature Surface",
             "visible": false,
             "timeSlider": true,
             "timeSliderProtocol": "WPS",
             "views": [{
-                "id": "SW_OPER_MAGA_LR_1B",
-                "protocol": "CZML",
+                "id": "ALARO_Temperature_surface_201305150000_data",
+                "protocol": "WCS",
                 "urls": [
-                    "http://localhost:9000/vires00/ows"
-                ],
-                "style": "default",
-                "format": "image/png"
+                    "http://demo.v-manip.eox.at/browse/ows"
+                ]
             }],
             "download": {
-                "id": "SW_OPER_MAGA_LR_1B",
+                "id": "ALARO_Temperature_surface_201305150000_data",
                 "protocol": "EOWCS",
-                "url": "http://localhost:9000/vires00/ows"
+                "url": "http://demo.v-manip.eox.at/browse/ows"
             },
-            "processes" : [
-                {
-                    "id": "retrieve_data",
-                    "layer_id": "SW_OPER_MAGA_LR_1B"
-                }
-            ],
             "parameters": {
-                "B_NEC": {
-                    "range": [30000, 60000],
-                    "uom":"nT",
-                    "colorscale": "jet",
-                    "name": "Magnetic field vector, NEC frame"
-                },
-                "F": {
-                    "range": [30000, 60000],
-                    "uom":"nT",
-                    "colorscale": "jet",
-                    "selected": true,
-                    "name": "Magnetic field intensity"
+                "Surface Temperature": {
+                    "range": [265, 295],
+                    "uom":"K",
+                    "colorscale": "viridis",
+                    "name": "Surface Temperature",
+                    "selected": true
                 }
-            },
-            "outlines": true,
-            "satellite": "Swarm"
-
+            }
         },{
-            "name": "MAGB LR 1B",
+            "name": "MOD07 Temperature Surface",
             "visible": false,
             "timeSlider": true,
             "timeSliderProtocol": "WPS",
             "views": [{
-                "id": "SW_OPER_MAGB_LR_1B",
-                "protocol": "CZML",
+                "id": "MOD07_Surface_temperature_data",
+                "protocol": "WCS",
                 "urls": [
-                    "http://localhost:9000/vires00/ows"
-                ],
-                "style": "default",
-                "format": "image/png"
+                    "http://demo.v-manip.eox.at/browse/ows"
+                ]
             }],
             "download": {
-                "id": "SW_OPER_MAGB_LR_1B",
+                "id": "MOD07_Surface_temperature_data",
                 "protocol": "EOWCS",
-                "url": "http://localhost:9000/vires00/ows"
+                "url": "http://demo.v-manip.eox.at/browse/ows"
             },
-            "processes" : [
-                {
-                    "id": "retrieve_data",
-                    "layer_id": "SW_OPER_MAGB_LR_1B"
-                }
-            ],
             "parameters": {
-                "B_NEC": {
-                    "range": [30000, 60000],
-                    "uom":"nT",
-                    "colorscale": "jet",
-                    "name": "Magnetic field vector, NEC frame"
-                },
-                "F": {
-                    "range": [30000, 60000],
-                    "uom":"nT",
-                    "colorscale": "jet",
-                    "selected": true,
-                    "name": "Magnetic field intensity"
+                "Surface Temperature": {
+                    "range": [265, 295],
+                    "uom":"K",
+                    "colorscale": "viridis",
+                    "name": "Surface Temperature",
+                    "selected": true
                 }
-            },
-            "outlines": false,
-            "satellite": "Swarm"
+            }
         },{
             "name": "SIFM",
             "visible": false,
@@ -450,16 +417,16 @@
 
     "timeSlider": {
         "domain": {
-            "start": "2013-10-17T10:15:00Z",
-            "end": "2014-10-17T11:45:00Z"
+            "start": "2012-10-17T10:15:00Z",
+            "end": "2013-10-17T11:45:00Z"
         },
         "brush": {
-            "start": "2014-09-30T01:00:00Z",
-            "end": "2014-09-30T05:00:00Z"
+            "start": "2013-05-15T00:00:01Z",
+            "end": "2013-05-15T01:30:00Z"
         },
         "display": {
-            "start": "2014-09-12T01:00:00Z",
-            "end": "2014-10-22T01:00:00Z"
+            "start": "2013-05-13T01:00:00Z",
+            "end": "2013-05-20T01:00:00Z"
         }
     },
 

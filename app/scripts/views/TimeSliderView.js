@@ -168,7 +168,6 @@
               this.slider.removeDataset(product.get('download').id);
               if (this.activeWPSproducts.indexOf(product.get('download').id)!=-1)
                 this.activeWPSproducts.splice(this.activeWPSproducts.indexOf(product.get('download').id), 1);
-              console.log(this.activeWPSproducts);
             }
           }
         }
@@ -181,7 +180,6 @@
       updateExtent: function(extent){
         
         for (var i=0; i<this.activeWPSproducts.length; i++){
-          console.log(this.activeWPSproducts[i]);
           this.slider.updateBBox([extent.left, extent.bottom, extent.right, extent.top], this.activeWPSproducts[i]);
         }
       },
