@@ -7,7 +7,8 @@
 		'backbone',
 		'communicator',
 		'hbs!tmpl/LayerSettings',
-		'underscore'
+		'underscore',
+		'plotty'
 	],
 
 	function( Backbone, Communicator, LayerSettingsTmpl ) {
@@ -16,19 +17,12 @@
 
 			template: {type: 'handlebars', template: LayerSettingsTmpl},
 			className: "panel panel-default optionscontrol not-selectable",
-			//colorscaletypes : ["coolwarm", "rainbow", "jet", "custom1", "custom2", "blackwhite"],
-			colorscaletypes : ["viridis","inferno","rainbow","jet","hsv","hot","cool","spring",
-							   "summer","autumn","winter","bone","copper","greys","yignbu","greens",
-							   "yiorrd","bluered","rdbu","picnic","portland","blackbody","earth",
-							   "electric","magma","plasma"],
+			colorscaletypes : _.keys(plotty.colorscales),
 
 			initialize: function(options) {
 				this.selected = null;
+				this.plot = new plotty.plot($('<canvas></canvas>')[0], new Uint16Array([1]), 1, 1,[0,1],"viridis");
 			},
-
-			/*events: {
-		        "change #upload-selection": "onUploadSelectionChanged"
-	      	},*/
 
 			onShow: function(view){
 
@@ -50,7 +44,6 @@
 		    	var protocol = this.model.get("views")[0].protocol;
 		    	var keys = _.keys(options);
 				var option = '';
-				//var 
 
 				var that = this;
 
@@ -97,12 +90,14 @@
 					var newrange = [parseFloat(this.value), options[that.selected].range[1]];
 					options[that.selected].range = newrange;
 					Communicator.mediator.trigger("layer:range:changed", that.model.get("name"), newrange, options[that.selected].colorscale);
+					that.updateRange(options);
 				});
 
 				this.$("#range_max_slider").on("input change", function(){
 					var newrange = [options[that.selected].range[0], parseFloat(this.value)];
 					options[that.selected].range = newrange;
 					Communicator.mediator.trigger("layer:range:changed", that.model.get("name"), newrange, options[that.selected].colorscale);
+					that.updateRange(options);
 				});
 
 				
@@ -124,43 +119,18 @@
 
 				this.$("#style").empty();
 				this.$("#style").append(colorscale_options);
-				this.$("#gradient").attr("class", selected_colorscale);
+				
 
 				this.$("#style").change(function(evt){
 					var selected = $(evt.target).find("option:selected").text();
 					selected_colorscale = selected;
 					that.$("#gradient").attr("class", selected_colorscale);
 					options[that.selected].colorscale = selected;
-					that.model.set("parameters", options);
 
-					if(options[that.selected].hasOwnProperty("logarithmic"))
-						that.createScale(options[that.selected].logarithmic);
-					else
-						that.createScale();
+					that.updateRange(options);
 
 					Communicator.mediator.trigger("layer:parameters:changed", that.model.get("name"));
 				});
-
-				
-
-				/*if(!(typeof outlines === 'undefined')){
-					var checked = "";
-					if (outlines)
-						checked = "checked";
-
-					this.$("#outlines").append(
-						'<form style="vertical-align: middle;">'+
-						'<label for="outlines" style="width: 70px;">Outlines: </label>'+
-						'<input type="checkbox" name="outlines" value="outlines" ' + checked + '></input>'+
-						'</form>'
-					);
-
-					this.$("#outlines input").change(function(evt){
-						var outlines = !that.model.get("outlines");
-						that.model.set("outlines", outlines);
-						Communicator.mediator.trigger("layer:outlines:changed", that.model.get("name"), outlines);
-					});
-				}*/
 
 
 				if(!(typeof this.model.get("coefficients_range") === 'undefined')){
@@ -205,10 +175,7 @@
 					
 				}
 
-				if(options[this.selected].hasOwnProperty("logarithmic"))
-					this.createScale(options[that.selected].logarithmic);
-				else
-					this.createScale();
+				that.updateRange(options);
 
 				this.createHeightTextbox(this.model.get("height"));
 
@@ -217,6 +184,15 @@
 			onClose: function() {
 				this.close();
 			}, 
+
+			updateRange: function(options){
+				this.model.set("parameters", options);
+
+				if(options[this.selected].hasOwnProperty("logarithmic"))
+					this.createScale(options[this.selected].logarithmic);
+				else
+					this.createScale();
+			},
 
 			onParameterChange: function(){
 				this.onShow();
@@ -259,14 +235,9 @@
 					this.$("#description").text(options[this.selected].description);
 				}
 
-				if(options[this.selected].hasOwnProperty("logarithmic"))
-					this.createScale(options[this.selected].logarithmic);
-				else
-					this.createScale();
-
 				this.createHeightTextbox(this.model.get("height"));
 
-				this.model.set("parameters", options);
+				that.updateRange(options);
 
 				Communicator.mediator.trigger("layer:parameters:changed", this.model.get("name"));
 			},
@@ -451,9 +422,17 @@
 				var uom = this.model.get("parameters")[this.selected].uom;
 				var style = this.model.get("parameters")[this.selected].colorscale;
 
+				this.plot.setColorScale(style);
+
 				$("#setting_colorscale").append(
-					'<div class="'+style+'" style="width:'+scalewidth+'px; height:20px; margin-left:'+margin+'px"></div>'
-				);
+					'<div id="scaleimagecontainer" style="width:'+scalewidth+'px; height:20px; margin-left:'+margin+'px"></div>'
+				)
+				
+				var image = this.plot.getScaleImage();
+				image.className = "scaleimage"
+				$("#scaleimagecontainer").append(image);
+
+
 
 				var svgContainer = d3.select("#setting_colorscale").append("svg")
 					.attr("width", width)

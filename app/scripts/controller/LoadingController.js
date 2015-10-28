@@ -31,10 +31,12 @@
 
 	    	if (this.progress_count > 0) {
 	    		$("body").addClass("wait");
+	    		$("#loading-display").show();
 	    		//$(document.body).css({ 'cursor': 'wait' })
 	    		//$(document.body).css('cssText', 'cursor: wait !important');
 	    	}else{
 	    		$("body").removeClass("wait");
+	    		$("#loading-display").hide();
 	    		//$(document.body).css({ 'cursor': 'default' })
 	    		//$(document.body).css('cssText', 'cursor: default !important');
 	    	}

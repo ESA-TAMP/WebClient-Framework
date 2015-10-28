@@ -29,30 +29,6 @@ define(['backbone.marionette',
 
 			initialize: function(options) {
 
-				    Cesium.Texture.prototype.copyFromCanvas = function(canvas) {
-				        var gl = this._context._gl;
-				        /*var textureTarget = gl.TEXTURE_2D;
-				        //var texture = gl.createTexture();
-				        gl.activeTexture(gl.TEXTURE0);
-				        gl.bindTexture(textureTarget, texture);
-				        //gl.bindTexture(textureTarget, null);*/
-				        //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.FLOAT, canvas);
-				        gl.createTexture();
-				        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
-				        //textureTarget, 0, pixelFormat, width, height, 0, pixelFormat, pixelDatatype, source.arrayBufferView
-
-				    };
-
-				    Cesium.Texture.prototype.copyFromContext = function(ctx, width, height) {    
-				        var gl = this._context._gl;
-				        var newTex = gl.createTexture();
-						gl.bindTexture(gl.TEXTURE_2D, newTex);
-						gl.copyTexImage2D(ctx.TEXTURE_2D, 0, gl.RGBA, 0, 0, width, height, 0);
-						gl.generateMipmap(gl.TEXTURE_2D);
-						gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-				    };
-
-
 				this.map = undefined;
 				this.isClosed = true;
 				this.tileManager = options.tileManager;
@@ -793,8 +769,6 @@ define(['backbone.marionette',
 
             		cur_coll.show = true;
 
-            		//this.map.scene.primitives.add(cur_coll);
-
     				var color = product.get("color");
 					color = color.substring(1, color.length);
 	    			var parameters = product.get("parameters");
@@ -827,6 +801,7 @@ define(['backbone.marionette',
 						});
 
 						var prim_to_remove = [];
+						var free_plottys = [];
 						// Remove coverages from collection that are no longer in the list
 						for (var p=0; p<cur_coll._primitives.length; p++){
 							if( 
@@ -834,7 +809,8 @@ define(['backbone.marionette',
 									return c.identifier == cur_coll._primitives[p].cov_id;
 								})
 							){
-								prim_to_remove.push(cur_coll._primitives[p])
+								prim_to_remove.push(cur_coll._primitives[p]);
+								free_plottys.push(cur_coll._primitives[p].cov_plot);
 							}
 						};
 
@@ -855,8 +831,74 @@ define(['backbone.marionette',
 									return p.cov_id == coverages.data[i].identifier;
 								})
 							){
+								var free_plot = false;
+								if(free_plottys.length>0){
+									free_plot = free_plottys.pop();
+								}
 
-								var xhr = new XMLHttpRequest();
+								var bbox = bbox;
+								var cov_id = coverages.data[i].identifier;
+
+								function loadcov(bbox, cov_id, free_plot){
+
+									$.ajax({
+									   dataType:'arraybuffer',
+									   type:'GET',
+									   url: request
+									})
+									.done(function( data ) {
+										//var bbox = this.bbox;
+										var gt = GeoTIFF.parse(data);
+										var i = gt.getImage(0);
+										var rasdata = i.readRasters()[0];
+
+										var plot;
+
+										if(!free_plot){
+											var canv = $('<canvas></canvas>')[0];
+											plot = new plotty.plot(canv, rasdata, i.getWidth(), i.getHeight(), range, colorscale );
+											plot.setNoDataValue(-9999);
+										}else{
+											plot = free_plot;
+											plot.setData(rasdata, i.getWidth(), i.getHeight());
+											plot.setDomain(range);
+										}
+
+										plot.render();
+
+										var newmat = new Cesium.Material.fromType('Image');
+										newmat.uniforms.image = plot.canvas;
+
+										var instance = new Cesium.GeometryInstance({
+										  geometry : new Cesium.RectangleGeometry({
+										    rectangle : Cesium.Rectangle.fromDegrees(bbox[0],bbox[1],bbox[2],bbox[3]),
+										    vertexFormat : Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT
+										  })
+										});
+
+										var prim = new Cesium.Primitive({
+										  geometryInstances : [instance],
+										  appearance : new Cesium.MaterialAppearance({
+										  	translucent : true,
+										  	flat: true,
+										    material : newmat
+										  })
+										});
+
+										prim["cov_data"] = rasdata;
+										prim["cov_id"] = cov_id;
+										prim["cov_height"] = i.getHeight();
+										prim["cov_width"] = i.getWidth();
+										prim["cov_plot"] = plot;
+
+										cur_coll.add(prim);
+									});
+								}
+
+								loadcov(bbox, cov_id, free_plot);
+
+
+								/*var xhr = new XMLHttpRequest();
 								xhr.open('GET', request, true);
 								xhr.responseType = 'arraybuffer';
 								xhr.bbox = bbox;
@@ -906,7 +948,7 @@ define(['backbone.marionette',
 
 								};
 
-								xhr.send();
+								xhr.send();*/
 							}
 
 						};
@@ -1091,25 +1133,6 @@ define(['backbone.marionette',
 									plot.render();
 									prim.appearance.material._textures.image.copyFrom(plot.canvas);
 
-
-									/*var prim = cur_coll._primitives[p];
-		            				var plot = new plotty.plot(that.wcscanvas[0], prim.cov_data, prim.cov_width, prim.cov_height, range, colorscale );
-									plot.setNoDataValue(-9999);
-									plot.render();
-
-									//setTimeout(function() { prim.appearance.material._textures.image.copyFrom(that.wcscanvas[0]); }, 0);
-									//prim.appearance.material._textures.image.copyFrom(that.wcscanvas[0]);
-
-									setTimeout(function(prim, ) { prim.appearance.material._textures.image.copyFrom(that.wcscanvas[0]); }, 0);*/
-
-
-									//prim.appearance.material.uniforms.image = that.wcscanvas[0].toDataURL();
-									//prim.appearance.material._textures.image._texture = plot.getTexture();
-									//prim.appearance.material._textures.image._texture = new Cesium.Texture(plot.getCtx(),{source: that.wcscanvas[0]});
-									//prim.appearance.material._textures.image.copyFromTexture(plot.getTexture());
-									//prim.appearance.material._textures.image.copyFrom(that.wcscanvas[0]);
-									//prim.appearance.material._textures.image.copyFromContext(plot.getCtx(),  prim.cov_width, prim.cov_height);
-									//prim.appearance.material._textures.image.copyFromCanvas(that.wcscanvas[0]);
 								}
 							}
             			}
@@ -1809,7 +1832,7 @@ define(['backbone.marionette',
 
             onSetExtent: function(bbox) {
             	//this.map.zoomToExtent(bbox);
-            	this.map.scene.camera.flyToRectangle({
+            	this.map.scene.camera.flyTo({
             		destination: Cesium.Rectangle.fromDegrees(bbox[0], bbox[1], bbox[2], bbox[3])
             	});
 

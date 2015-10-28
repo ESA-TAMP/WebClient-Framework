@@ -166,6 +166,28 @@ div#preload {
 }
 
 
+/* Loading info in corner */
+#loading-display{
+  left: 20px;
+  top:10px;
+  height: 40px;
+  z-index: 1100;
+  position: absolute;
+  display: none;
+}
+
+#loading-display .sk-folding-cube{
+  margin: 0;
+  width: 30px;
+  height: 30px;
+}
+
+#loading-display .sk-folding-cube .sk-cube:before{
+  background-color: white;
+}
+
+
+
 /*
  * Panels & Modals
  */
