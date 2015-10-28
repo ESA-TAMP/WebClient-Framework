@@ -29,6 +29,9 @@ define(['backbone.marionette',
 
 			initialize: function(options) {
 
+				var canv = $('<canvas></canvas>')[0];
+				this.p_plot = new plotty.plot(canv, new Uint16Array([0]), 1, 1);
+
 				this.map = undefined;
 				this.isClosed = true;
 				this.tileManager = options.tileManager;
@@ -823,7 +826,7 @@ define(['backbone.marionette',
 						});
 
 						var prim_to_remove = [];
-						var free_plottys = [];
+
 						// Remove coverages from collection that are no longer in the list
 						for (var p=0; p<cur_coll._primitives.length; p++){
 							if( 
@@ -832,7 +835,6 @@ define(['backbone.marionette',
 								})
 							){
 								prim_to_remove.push(cur_coll._primitives[p]);
-								free_plottys.push(cur_coll._primitives[p].cov_plot);
 							}
 						};
 
@@ -853,15 +855,12 @@ define(['backbone.marionette',
 									return p.cov_id == coverages.data[i].identifier;
 								})
 							){
-								var free_plot = false;
-								if(free_plottys.length>0){
-									free_plot = free_plottys.pop();
-								}
 
 								var bbox = bbox;
 								var cov_id = coverages.data[i].identifier;
+								var plot = self.p_plot;
 
-								function loadcov(bbox, cov_id, free_plot){
+								function loadcov(bbox, cov_id){
 
 									$.ajax({
 									   dataType:'arraybuffer',
@@ -874,17 +873,9 @@ define(['backbone.marionette',
 										var i = gt.getImage(0);
 										var rasdata = i.readRasters()[0];
 
-										var plot;
-
-										if(!free_plot){
-											var canv = $('<canvas></canvas>')[0];
-											plot = new plotty.plot(canv, rasdata, i.getWidth(), i.getHeight(), range, colorscale );
-											plot.setNoDataValue(-9999);
-										}else{
-											plot = free_plot;
-											plot.setData(rasdata, i.getWidth(), i.getHeight());
-											plot.setDomain(range);
-										}
+										plot.setData(rasdata, i.getWidth(), i.getHeight());
+										plot.setDomain(range);
+										plot.setNoDataValue(-9999);
 
 										plot.render();
 
@@ -917,7 +908,7 @@ define(['backbone.marionette',
 									});
 								}
 
-								loadcov(bbox, cov_id, free_plot);
+								loadcov(bbox, cov_id);
 
 
 								/*var xhr = new XMLHttpRequest();
@@ -1149,8 +1140,15 @@ define(['backbone.marionette',
             				if(cur_coll){
 								for (var p=0; p<cur_coll._primitives.length; p++){
 
-									var prim = cur_coll._primitives[p];
+									/*var prim = cur_coll._primitives[p];
 									var plot = prim.cov_plot;
+									plot.setDomain(range);
+									plot.render();
+									prim.appearance.material._textures.image.copyFrom(plot.canvas);*/
+
+									var prim = cur_coll._primitives[p];
+									var plot = that.p_plot;
+									plot.setData(prim.cov_data, prim.cov_width, prim.cov_height);
 									plot.setDomain(range);
 									plot.render();
 									prim.appearance.material._textures.image.copyFrom(plot.canvas);
@@ -1193,10 +1191,17 @@ define(['backbone.marionette',
 	                		if(cur_coll){
 								for (var p=0; p<cur_coll._primitives.length; p++){
 									
-									var prim = cur_coll._primitives[p];
+									/*var prim = cur_coll._primitives[p];
 									var plot = prim.cov_plot;
 									plot.setDomain(range);
 									plot.setColorScale(style);
+									plot.render();
+									prim.appearance.material._textures.image.copyFrom(plot.canvas);*/
+
+									var prim = cur_coll._primitives[p];
+									var plot = that.p_plot;
+									plot.setData(prim.cov_data, prim.cov_width, prim.cov_height);
+									plot.setDomain(range);
 									plot.render();
 									prim.appearance.material._textures.image.copyFrom(plot.canvas);
 
