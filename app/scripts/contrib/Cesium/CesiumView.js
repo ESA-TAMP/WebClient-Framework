@@ -55,6 +55,20 @@ define(['backbone.marionette',
 
 				Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(-5.0, -40.0, 40.0, 90.0);
 
+
+				Cesium.WebMapServiceImageryProvider.prototype.updateProperties = function(property, value) {
+
+			        property = "&"+property+"=";
+			        value = ""+value;
+			        var i = _.indexOf(this._tileProvider._urlParts, property);
+			        if (i>=0){
+			        	this._tileProvider._urlParts[i+1] = value;
+			        }else{
+			        	this._tileProvider._urlParts.push(property);
+			        	this._tileProvider._urlParts.push(encodeURIComponent(value));
+			        }
+			    };
+
 				this.wcscanvas = $('<canvas></canvas>');
 
 				$(window).resize(function() {
@@ -335,11 +349,19 @@ define(['backbone.marionette',
                     	params.format = 'image/png';
                     	return_layer = new Cesium.WebMapServiceImageryProvider({
 						    url: view.urls[0],
-						    layers : view.id,
-						    parameters: params
+						    layers : view.id/*,
+						    parameters: params*/
 						});
 
                     break;
+
+                    /*case "WCS":
+                    	return_layer = new Cesium.SingleTileImageryProvider({
+						    url : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+						});
+                    break;*/
+                    // TODO: For WCS it would be ideal to have a type of multi tile imagery provider that handles
+                    // all of them as a kind of layer. I am not sure how we could achieve this.
 
                     default:
                     	// No supported view available
@@ -523,13 +545,13 @@ define(['backbone.marionette',
 									}else{
 										var ces_layer = product.get("ces_layer");
 										if(band)
-					                		ces_layer.imageryProvider._parameters["dim_bands"] = band;
+					                		ces_layer.imageryProvider.updateProperties("dim_bands", band);
 					                	if(range)
-					                		ces_layer.imageryProvider._parameters["dim_range"] = range[0]+","+range[1];
+					                		ces_layer.imageryProvider.updateProperties("dim_range", (range[0]+","+range[1]));
 					                	if(style)
-					                		ces_layer.imageryProvider._parameters["styles"] = style;
+					                		ces_layer.imageryProvider.updateProperties("styles", style);
 					                	if(coeff_range)
-					                		ces_layer.imageryProvider._parameters["dim_coeff"] = coeff_range[0]+","+coeff_range[1];
+					                		ces_layer.imageryProvider.updateProperties("dim_coeff", (coeff_range[0]+","+coeff_range[1]));
 
 										ces_layer.show = options.visible;
 									}
@@ -1208,14 +1230,17 @@ define(['backbone.marionette',
             					this.checkFieldLines();
 								if(product.get("name")==layer){
 				                	var ces_layer = product.get("ces_layer");
-				                	ces_layer.imageryProvider._parameters["dim_bands"] = band;
-				                	ces_layer.imageryProvider._parameters["dim_range"] = range[0]+","+range[1];
-				                	ces_layer.imageryProvider._parameters["elevation"] = height;
-				                	var ces_layer = product.get("ces_layer");
+				                	
+				                	ces_layer.imageryProvider.updateProperties("dim_bands", band);
+				                	
+				                	ces_layer.imageryProvider.updateProperties("dim_range", (range[0]+","+range[1]));
+				                	
+				                	ces_layer.imageryProvider.updateProperties("elevation", height);
+
 				                	if(style)
-				                		ces_layer.imageryProvider._parameters["styles"] = style;
+				                		ces_layer.imageryProvider.updateProperties("styles", style);
 				                	if(coeff_range)
-					        			ces_layer.imageryProvider._parameters["dim_coeff"] = coeff_range[0]+","+coeff_range[1];
+					        			ces_layer.imageryProvider.updateProperties("dim_coeff", (coeff_range[0]+","+coeff_range[1]));
 
 				                	if (ces_layer.show){
 					            		var index = this.map.scene.imageryLayers.indexOf(ces_layer);
@@ -1660,7 +1685,7 @@ define(['backbone.marionette',
                     	var ces_layer = product.get("ces_layer");
 
                     	if(ces_layer){
-	                    	ces_layer.imageryProvider._parameters["time"] = string;
+	                    	ces_layer.imageryProvider.updateProperties("time", string);
 	                    	if (ces_layer.show){
 	                    		var index = this.map.scene.imageryLayers.indexOf(ces_layer);
 	                    		this.map.scene.imageryLayers.remove(ces_layer, false);
