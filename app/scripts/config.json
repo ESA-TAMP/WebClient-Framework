@@ -1,6 +1,6 @@
 {
 
-    "debug": false,
+    "debug": true,
 
     "modules": [
         "contrib/AnalyticsViewer/AnalyticsViewModule",
@@ -28,7 +28,7 @@
                 "id": "terrain-light",
                 "protocol": "WMTS",
                 "urls": [
-                    "http://a.tiles.maps.eox.at/wmts/",
+                    "https://{s}.tiles.maps.eox.at/wmts/?service=WMTS&version=1.0.0&request=GetTile&tilematrix={TileMatrix}&layer=terrain-light&style={style}&tilerow={TileRow}&tilecol={TileCol}&tilematrixset={TileMatrixSet}&format=image%2Fpng",
                     "http://b.tiles.maps.eox.at/wmts/",
                     "http://c.tiles.maps.eox.at/wmts/",
                     "http://d.tiles.maps.eox.at/wmts/",
@@ -152,11 +152,12 @@
             },
             "parameters": {
                 "Surface Temperature": {
-                    "range": [265, 295],
+                    "range": [265, 315],
                     "uom":"K",
                     "colorscale": "viridis",
                     "name": "Surface Temperature",
-                    "selected": true
+                    "selected": true,
+                    "stacked": true
                 }
             }
         },{
@@ -178,7 +179,7 @@
             },
             "parameters": {
                 "Surface Temperature": {
-                    "range": [265, 295],
+                    "range": [270, 310],
                     "uom":"K",
                     "colorscale": "viridis",
                     "name": "Surface Temperature",
