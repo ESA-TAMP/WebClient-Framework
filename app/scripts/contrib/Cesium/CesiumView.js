@@ -841,104 +841,9 @@ define(['backbone.marionette',
 						};
 
 						for (var i = prim_to_remove.length - 1; i >= 0; i--) {
-							$(prim_to_remove[i].cov_plot.canvas).remove();
 							cur_coll.remove(prim_to_remove[i]);
 						};
 
-						// The master deferred.
-						/*var dfd = $.Deferred(),  // Master deferred
-						    dfdNext = dfd; // Next deferred in the chain
-						    x = 0, // Loop index
-						    values = []; // Saves loop values because functions are called after loop finishes
-						    var ctr = 0;
-
-						dfd.resolve();
-
-						for (var i = coverages.data.length - 1; i >= 0; i--) {
-							
-							// Check if coverage is already in collection, if not add them
-							if( 
-								!_.find(cur_coll._primitives, function(p){
-									return p.cov_id == coverages.data[i].identifier;
-								})
-							){
-								ctr++;
-								var bbox = coverages.data[i].bbox;
-								bbox = bbox.substring(1, bbox.length - 1).split(",").map(parseFloat); 
-								var request = url + "?service=WCS&request=GetCoverage&version=2.0.1&coverageid="+coverages.data[i].identifier;
-								var cov_id = coverages.data[i].identifier;
-
-							    values.push({bbox:bbox, cov_id:cov_id, request:request, ctr:ctr});
-
-							    loadcov = function (request, bbox, cov_id){
-									return $.ajax({
-									   dataType:'arraybuffer',
-									   type:'GET',
-									   url: request
-									});
-								};
-
-															    
-							    dfdNext = dfdNext.pipe(function () {
-							        var value = values.shift();
-							        console.log('Piping with value ' + value.ctr);
-							        var bbox = value.bbox;
-							        var cov_id = value.cov_id;
-							        var request = value.request;
-							        return loadcov(request, bbox, cov_id).
-							            done(function(data) {
-							                renderResult(data, bbox, cov_id);
-							            });
-							                
-							    });
-
-								function renderResult(data, bbox, cov_id){
-									var gt = GeoTIFF.parse(data);
-									var i = gt.getImage(0);
-									var rasdata = i.readRasters()[0];
-
-									var plot = self.p_plot;
-
-									//plot.setData(rasdata, i.getWidth(), i.getHeight());
-									plot.addDataset(cov_id, rasdata, i.getWidth(), i.getHeight());
-									plot.setDomain(range);
-									plot.setNoDataValue(-9999);
-									plot.renderDataset(cov_id);
-
-									var newmat = new Cesium.Material.fromType('Image');
-									newmat.uniforms.image = plot.canvas.toDataURL();
-									//newmat.uniforms.image = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
-
-									var instance = new Cesium.GeometryInstance({
-									  geometry : new Cesium.RectangleGeometry({
-									    rectangle : Cesium.Rectangle.fromDegrees(bbox[0],bbox[1],bbox[2],bbox[3]),
-									    vertexFormat : Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT
-									  })
-									});
-
-									var prim = new Cesium.Primitive({
-									  geometryInstances : [instance],
-									  appearance : new Cesium.MaterialAppearance({
-									  	translucent : true,
-									  	flat: true,
-									    material : newmat
-									  })
-									});
-
-									//prim.appearance.material._textures.image.copyFrom(plot.canvas);
-
-									prim["cov_data"] = rasdata;
-									prim["cov_id"] = cov_id;
-									prim["cov_height"] = i.getHeight();
-									prim["cov_width"] = i.getWidth();
-									prim["cov_plot"] = plot;
-
-									cur_coll.add(prim);
-								};
-
-							}
-
-						};*/
 						var deferreds = [];
 						for (var i = coverages.data.length - 1; i >= 0; i--) {
 							
@@ -957,6 +862,10 @@ define(['backbone.marionette',
 								var cov_id = coverages.data[i].identifier;
 								var plot = self.p_plot;
 
+								if (stacked){
+
+								}
+
 								function loadcov(bbox, cov_id, stacked){
 
 									return $.ajax({
@@ -973,7 +882,7 @@ define(['backbone.marionette',
 										plot.addDataset(cov_id, rasdata, i.getWidth(), i.getHeight());
 										plot.setDomain(range);
 										plot.setNoDataValue(-9999);
-										plot.setClamp(false);
+										//plot.setClamp(false);
 									
 										var instance = new Cesium.GeometryInstance({
 										  geometry : new Cesium.RectangleGeometry({
@@ -1007,13 +916,33 @@ define(['backbone.marionette',
 							}
 
 						};
-						$.when.apply($, deferreds).then(function(){
-						   console.log("ALL DONE!!!!");
-						}).fail(function(){
-						    // Probably want to catch failure
-						}).always(function(){
-						    // Or use always if you want to do the same thing
-						    // whether the call succeeds or fails
+						//var self = this;
+						$.when.apply($, deferreds)
+							.then(function(){
+
+								//console.log("ALL DONE!!!!");
+
+								/*var l = cur_coll._primitives.length;
+								var lp = cur_coll._primitives[l-1];
+
+								for (var p=0; p<cur_coll._primitives.length*20; p++){
+
+									(function(p,lp,l){
+								        setTimeout(function(){
+								        	var p_m = p%l;
+								            self.p_plot.renderDataset(cur_coll._primitives[p_m].cov_id);
+											lp.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+								        }, 300 * (p+5));
+								    }(p,lp,l));
+									
+									
+								};*/
+
+							}).fail(function(){
+							    // Probably want to catch failure
+							}).always(function(){
+							    // Or use always if you want to do the same thing
+							    // whether the call succeeds or fails
 						});
 
 					});
