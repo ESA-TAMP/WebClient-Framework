@@ -844,7 +844,6 @@ define(['backbone.marionette',
 							cur_coll.remove(prim_to_remove[i]);
 						};
 
-
 						var deferreds = [];
 						for (var i = coverages.data.length - 1; i >= 0; i--) {
 							
@@ -862,6 +861,10 @@ define(['backbone.marionette',
 								var bbox = bbox;
 								var cov_id = coverages.data[i].identifier;
 								var plot = self.p_plot;
+
+								if (stacked){
+
+								}
 
 								function loadcov(bbox, cov_id, stacked){
 
@@ -913,13 +916,33 @@ define(['backbone.marionette',
 							}
 
 						};
-						$.when.apply($, deferreds).then(function(){
-						   console.log("ALL DONE!!!!");
-						}).fail(function(){
-						    // Probably want to catch failure
-						}).always(function(){
-						    // Or use always if you want to do the same thing
-						    // whether the call succeeds or fails
+						//var self = this;
+						$.when.apply($, deferreds)
+							.then(function(){
+
+								//console.log("ALL DONE!!!!");
+
+								/*var l = cur_coll._primitives.length;
+								var lp = cur_coll._primitives[l-1];
+
+								for (var p=0; p<cur_coll._primitives.length*20; p++){
+
+									(function(p,lp,l){
+								        setTimeout(function(){
+								        	var p_m = p%l;
+								            self.p_plot.renderDataset(cur_coll._primitives[p_m].cov_id);
+											lp.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+								        }, 300 * (p+5));
+								    }(p,lp,l));
+									
+									
+								};*/
+
+							}).fail(function(){
+							    // Probably want to catch failure
+							}).always(function(){
+							    // Or use always if you want to do the same thing
+							    // whether the call succeeds or fails
 						});
 
 					});
