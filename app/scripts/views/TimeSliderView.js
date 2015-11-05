@@ -29,6 +29,7 @@
         this.listenTo(Communicator.mediator, "map:layer:change", this.changeLayer);
         this.listenTo(Communicator.mediator, "map:position:change", this.updateExtent);
         this.listenTo(Communicator.mediator, "date:selection:change", this.onDateSelectionChange);
+        this.listenTo(Communicator.mediator, "date:tick:select", this.onTickSelected);
 
         Communicator.reqres.setHandler('get:time', this.returnTime);
 
@@ -61,6 +62,12 @@
 
         this.slider = new TimeSlider(this.el, initopt);
 
+        this.slider.setBrushTooltip(true);
+        this.slider.setBrushTooltipOffset([
+          -30,
+          (this.el.parentElement.parentElement.offsetHeight - this.el.parentElement.offsetHeight*2 - 50)
+        ]);
+
         Communicator.mediator.trigger('time:change', {start:selectionstart, end:selectionend});
 
         // For viewers that are loaded after the TimeSlider announces its initial timespan there
@@ -83,6 +90,10 @@
 
       onDateSelectionChange: function(opt) {
         this.slider.select(opt.start, opt.end);
+      },
+
+      onTickSelected: function(date){
+        this.slider.setTimetick(date);
       },
 
       changeLayer: function (options) {

@@ -18,7 +18,7 @@
     "d3": "~3.5.3",
     "filesaver": "https://github.com/eligrey/FileSaver.js.git",
     "virtualglobeviewer": "https://github.com/v-manip/VirtualGlobeViewer.git",
-    "d3.TimeSlider": "https://github.com/EOX-A/d3.TimeSlider/releases/download/v0.0.14/d3.TimeSlider.zip",
+    "d3.TimeSlider": "https://github.com/EOX-A/d3.TimeSlider/releases/download/v0.0.16/d3.TimeSlider.zip",
     "lm.js": "madhums/lm.js#~0.1.0",
     "bootstrap": "~3.0.1",
     "font-awesome": "~4.0.3",
@@ -26,7 +26,7 @@
     "cesium": "http://cesiumjs.org/releases/Cesium-1.14.zip",
     "papaparse": "~4.1.0",
     "geotiffjs": "constantinius/geotiff.js",
-    "plotty": "santilland/plotty#~0.0.2"
+    "plotty": "santilland/plotty"
   },
   "devDependencies": {
     "Keypress": "~2.0.0"

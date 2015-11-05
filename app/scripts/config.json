@@ -1,6 +1,6 @@
 {
 
-    "debug": true,
+    "debug": false,
 
     "modules": [
         "contrib/AnalyticsViewer/AnalyticsViewModule",
@@ -156,8 +156,33 @@
                     "uom":"K",
                     "colorscale": "viridis",
                     "name": "Surface Temperature",
-                    "selected": true,
-                    "stacked": true
+                    "selected": true
+                }
+            }
+        },{
+            "name": "ALARO Surface Pressure",
+            "visible": false,
+            "timeSlider": true,
+            "timeSliderProtocol": "WPS",
+            "views": [{
+                "id": "ALARO_Surface_Pressure_201305150000_data",
+                "protocol": "WCS",
+                "urls": [
+                    "http://demo.v-manip.eox.at/browse/ows"
+                ]
+            }],
+            "download": {
+                "id": "ALARO_Surface_Pressure_201305150000_data",
+                "protocol": "EOWCS",
+                "url": "http://demo.v-manip.eox.at/browse/ows"
+            },
+            "parameters": {
+                "Surface Pressure": {
+                    "range": [800, 1100],
+                    "uom":"PA",
+                    "colorscale": "viridis",
+                    "name": "Surface Pressure",
+                    "selected": true
                 }
             }
         },{
@@ -187,118 +212,31 @@
                 }
             }
         },{
-            "name": "SIFM",
+            "name": "ALARO Specific Humidity",
             "visible": false,
             "timeSlider": true,
             "timeSliderProtocol": "WPS",
-            "opacity": 0.7,
             "views": [{
-                "id": "SIFM",
-                "protocol": "WMS",
+                "id": "ALARO_Specific_Humidity_201305150000",
+                "protocol": "WCS",
                 "urls": [
-                    "http://localhost:9000/vires00/ows"
-                ],
-                "style": "default",
-                "format": "image/png"
-            }],
-            "download": {
-                "id": "SIFM",
-                "protocol": "EOWCS",
-                "url": "http://localhost:9000/vires00/ows"
-            },
-            "parameters": {
-                "F": {
-                    "range": [30000, 60000],
-                    "uom":"nT",
-                    "name": "Total field intensity",
-                    "colorscale": "jet",
-                    "selected": true
-                },
-                "H": {
-                    "range": [10000, 23000],
-                    "uom":"nT",
-                    "name": "Horizontal intensity",
-                    "colorscale": "jet"
-                },
-                "X": {
-                    "range": [10000, 23000],
-                    "uom":"nT",
-                    "name": "North component",
-                    "colorscale": "jet"
-                },
-                "Y": {
-                    "range": [-7000, 7000],
-                    "uom":"nT",
-                    "name": "East component",
-                    "colorscale": "custom1"
-                },
-                "Z": {
-                    "range": [-45000, 45000],
-                    "uom":"nT",
-                    "name": "Down component",
-                    "colorscale": "custom1"
-                },
-                "I": {
-                    "range": [-80, 80],
-                    "uom":"degree",
-                    "name": "Inclination",
-                    "colorscale": "custom1"
-                },
-                "D": {
-                    "range": [-80, 80],
-                    "uom":"degree",
-                    "name": "Declination",
-                    "colorscale": "custom1"
-                },
-                "Fieldlines":{
-                    "range": [0.9, 40000],
-                    "uom":"nT",
-                    "name": "Fieldlines",
-                    "description": "In order to visualize fieldlines please select an area with the bounding box tool.",
-                    "colorscale": "jet",
-                    "logarithmic": true
-                },
-                "X_EW": {
-                    "range": [-5, 5],
-                    "uom":"nT/km",
-                    "name": "North component (East-West Gradient)",
-                    "colorscale": "custom1"
-                },
-                "Y_EW": {
-                    "range": [-5, 5],
-                    "uom":"nT/km",
-                    "name": "East component (East-West Gradient)",
-                    "colorscale": "custom1"
-                },
-                "Z_EW": {
-                    "range": [-5, 5],
-                    "uom":"nT/km",
-                    "name": "Down component (East-West Gradient)",
-                    "colorscale": "custom1"
-                }
-            },
-            "height": 450,
-            "model": true,
-            "coefficients_range": [-1,-1]
-
-        },{
-            "name": "Kp Index",
-            "visible": false,
-            "timeSlider": true,
-            "timeSliderProtocol": "INDEX",
-            "views": [{
-                "id": "kp",
-                "protocol": "INDEX",
-                "urls": [
-                    "http://localhost:9000/vires00/ows"
+                    "http://demo.v-manip.eox.at/browse/ows"
                 ]
             }],
             "download": {
-                "id": "kp",
-                "protocol": "INDEX",
-                "url": "http://localhost:9000/vires00/ows"
+                "id": "ALARO_Specific_Humidity_201305150000",
+                "protocol": "EOWCS",
+                "url": "http://demo.v-manip.eox.at/browse/ows"
             },
-            "index": true
+            "parameters": {
+                "Surface Temperature": {
+                    "range": [0, 0.12],
+                    "uom":"?",
+                    "colorscale": "viridis",
+                    "name": "Humidity",
+                    "selected": true
+                }
+            }
         }
         ],
         "overlays": [{

@@ -56,6 +56,10 @@ define(['backbone.marionette',
 				this.begin_time = null;
 				this.end_time = null;
 
+				this.stackedDataset = [];
+				this.playback = false;
+				// TODO: Need to change this into an object which contais arrays for all different layers/collections
+
 				Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(-5.0, -40.0, 40.0, 90.0);
 
 
@@ -782,7 +786,86 @@ define(['backbone.marionette',
     			}
             },
 
+            createPrimitive: function(image, bbox, cov_id, cur_coll){
+				var instance = new Cesium.GeometryInstance({
+				  geometry : new Cesium.RectangleGeometry({
+				    rectangle : Cesium.Rectangle.fromDegrees(bbox[0],bbox[1],bbox[2],bbox[3]),
+				    vertexFormat : Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT
+				  })
+				});
+
+				var newmat = new Cesium.Material.fromType('Image');
+				newmat.uniforms.image = image;
+
+				var prim = new Cesium.Primitive({
+				  geometryInstances : [instance],
+				  appearance : new Cesium.MaterialAppearance({
+				  	translucent : true,
+				  	flat: true,
+				    material : newmat
+				  })
+				});
+
+				prim["cov_id"] = cov_id;
+
+				cur_coll.add(prim);
+			},
+
+			loadCoverage: function(request, bbox, cov_id, range, cur_coll, prim){
+				
+				var self = this;
+
+				return $.ajax({
+				   dataType:'arraybuffer',
+				   type:'GET',
+				   url: request
+				})
+				.done(function( data ) {
+
+					var gt = GeoTIFF.parse(data);
+					var i = gt.getImage(0);
+					var rasdata = i.readRasters()[0];
+
+					self.p_plot.addDataset(cov_id, rasdata, i.getWidth(), i.getHeight());
+					self.p_plot.setDomain(range);
+					self.p_plot.setNoDataValue(-9999);
+					self.p_plot.renderDataset(cov_id);
+					if (prim){
+						prim["cov_id"] = cov_id;
+						prim.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+					}else{
+						self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, cov_id, cur_coll);
+					}
+					
+				});
+			},
+
+			addCoverage: function(request, cov_id){
+				
+				var self = this;
+
+				return $.ajax({
+				   dataType:'arraybuffer',
+				   type:'GET',
+				   url: request
+				})
+				.done(function( data ) {
+
+					var gt = GeoTIFF.parse(data);
+					var i = gt.getImage(0);
+					var rasdata = i.readRasters()[0];
+
+					self.p_plot.addDataset(cov_id, rasdata, i.getWidth(), i.getHeight());
+					self.stackedDataset.push(cov_id);
+				});
+			},
+
             checkCoverages: function(product,visible){
+
+            	// Remove possible timetick and play button
+            	Communicator.mediator.trigger("date:tick:select", false);
+            	$('#playercontrols').hide();
+
 
             	if(!_.has(this.coverages_collections, product.get("views")[0].id)){
             		this.coverages_collections[product.get("views")[0].id] = new Cesium.PrimitiveCollection();
@@ -811,7 +894,8 @@ define(['backbone.marionette',
 	    			var url = product.get("views")[0].urls[0];
 	    			var collection = product.get("views")[0].id;
 	    			var self = this;
-	    			var stacked = parameters[band].stacked;
+
+	    			this.p_plot.setColorScale(colorscale);
 
         			$.post( url, Tmpl_get_time_data({
 						"collection": collection,
@@ -827,24 +911,80 @@ define(['backbone.marionette',
 							skipEmptyLines: true
 						});
 
-						var prim_to_remove = [];
+						function identicalBbox(array) {
+							if (array.length == 1 || array.length == 0)
+								return false;
 
-						// Remove coverages from collection self are no longer in the list
-						for (var p=0; p<cur_coll._primitives.length; p++){
-							if( 
-								!_.find(coverages.data, function(c){
-									return c.identifier == cur_coll._primitives[p].cov_id;
-								})
-							){
-								prim_to_remove.push(cur_coll._primitives[p]);
-							}
-						};
+						    for(var i = 0; i < array.length - 1; i++) {
+						        if(array[i].bbox != array[i+1].bbox) {
+						            return false;
+						        }
+						    }
+						    return true;
+						}
 
-						for (var i = prim_to_remove.length - 1; i >= 0; i--) {
-							cur_coll.remove(prim_to_remove[i]);
-						};
+						// Now we have a list of all currently selected coverages
+						// We check if the coverages are stacked (one over the other)
+						// i.e. same bounding box
+						var stacked = identicalBbox(coverages.data);
+						var stacked_prim = null;
 
+
+						if(!stacked){
+							// If not stacked there is a primitive per coverage, so we can
+							// remove coverage primitives from collection which are no longer in the list
+							var prim_to_remove = [];
+
+							for (var p=0; p<cur_coll._primitives.length; p++){
+								if( 
+									!_.find(coverages.data, function(c){
+										return c.identifier == cur_coll._primitives[p].cov_id;
+									})
+								){
+									prim_to_remove.push(cur_coll._primitives[p]);
+								}
+							};
+
+							for (var i = prim_to_remove.length - 1; i >= 0; i--) {
+								cur_coll.remove(prim_to_remove[i]);
+							};
+
+						}else{
+							// If stacked coverages there is only one primitive per collection
+							// and the texture data saved in the plot library so we check there for availability
+							// to see if we have to free the texture
+							for (var i = self.stackedDataset.length - 1; i >= 0; i--) {
+								if( 
+									!_.find(coverages.data, function(c){
+										return c.identifier == self.stackedDataset[i];
+									})
+								){
+									if(self.p_plot.datasetAvailable(self.stackedDataset[i])) {
+										self.p_plot.removeDataset(self.stackedDataset[i]);
+										self.stackedDataset.splice(i,1);
+									}
+								}
+							
+							};
+
+							for (var p=0; p<cur_coll._primitives.length; p++){
+								// We also check to see if there is an already created primitive for
+								// the stack animation
+								if( 
+									!_.find(self.stackedDataset, function(c){
+										return c == self.stackedDataset[i];
+									})
+								){
+									stacked_prim = cur_coll._primitives[p];
+								}
+							};
+						}
+						
 						var deferreds = [];
+
+						// Let us sort them by start date
+						coverages.data = _.sortBy(coverages.data, function(c){ return Date.parse(c.starttime); });
+
 						for (var i = coverages.data.length - 1; i >= 0; i--) {
 							
 							var bbox = coverages.data[i].bbox;
@@ -862,82 +1002,101 @@ define(['backbone.marionette',
 								var cov_id = coverages.data[i].identifier;
 								var plot = self.p_plot;
 
-								if (stacked){
-
+								if(!stacked){
+									// If not stacked just request and create primitves for all coverages
+									deferreds.push(self.loadCoverage(request, bbox, cov_id, range, cur_coll, null));
+								}else if(stacked && i == coverages.data.length-1){
+									// If the collection is stacked and this is the last element (in time)
+									// of the list it means the primitive is not available already and needs to be created
+									// or we have found an already created primite and saved it to stacked primitive
+									deferreds.push(self.loadCoverage(request, bbox, cov_id, range, cur_coll, stacked_prim));
+									Communicator.mediator.trigger("date:tick:select", new Date(coverages.data[i].starttime));
+								}else{
+									// We only request the data if it is not already avaialble
+									if(!self.p_plot.datasetAvailable(cov_id)) {
+										// It is stacked but this is any other coverage where for now we only need the data
+										// but do not actually visualize it, so we do not need to create a primitive
+										deferreds.push(self.addCoverage(request, cov_id));
+									}
 								}
-
-								function loadcov(bbox, cov_id, stacked){
-
-									return $.ajax({
-									   dataType:'arraybuffer',
-									   type:'GET',
-									   url: request
-									})
-									.done(function( data ) {
-
-										var gt = GeoTIFF.parse(data);
-										var i = gt.getImage(0);
-										var rasdata = i.readRasters()[0];
-
-										plot.addDataset(cov_id, rasdata, i.getWidth(), i.getHeight());
-										plot.setDomain(range);
-										plot.setNoDataValue(-9999);
-										//plot.setClamp(false);
-									
-										var instance = new Cesium.GeometryInstance({
-										  geometry : new Cesium.RectangleGeometry({
-										    rectangle : Cesium.Rectangle.fromDegrees(bbox[0],bbox[1],bbox[2],bbox[3]),
-										    vertexFormat : Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT
-										  })
-										});
-
-										var newmat = new Cesium.Material.fromType('Image');
-
-										plot.renderDataset(cov_id);
-										newmat.uniforms.image = plot.canvas.toDataURL();
-
-										var prim = new Cesium.Primitive({
-										  geometryInstances : [instance],
-										  appearance : new Cesium.MaterialAppearance({
-										  	translucent : true,
-										  	flat: true,
-										    material : newmat
-										  })
-										});
-
-										prim["cov_id"] = cov_id;
-
-										cur_coll.add(prim);
-									});
-								}
-
-								deferreds.push(loadcov(bbox, cov_id, stacked));
 
 							}
 
 						};
-						//var self = this;
+
 						$.when.apply($, deferreds)
 							.then(function(){
 
-								//console.log("ALL DONE!!!!");
+								if (stacked){
+									var to_play = coverages.data;
+									var prim_to_render = cur_coll._primitives[0];
+									var play_length = to_play.length;
+									var play_index = play_length-1;
+									var fps = 15;
 
-								/*var l = cur_coll._primitives.length;
-								var lp = cur_coll._primitives[l-1];
+									$('#playercontrols').show();
 
-								for (var p=0; p<cur_coll._primitives.length*20; p++){
+									// Remove handlers
+									$("#play-button").off();
 
-									(function(p,lp,l){
-								        setTimeout(function(){
-								        	var p_m = p%l;
-								            self.p_plot.renderDataset(cur_coll._primitives[p_m].cov_id);
-											lp.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
-								        }, 300 * (p+5));
-								    }(p,lp,l));
+									$("#play-button").on('click', function () { 
+
+											$("#play-button").html('<i class="fa fa-pause"></i>');
+								        	// Create a draw loop using requestAnimationFrame. The
+											// tick callback function is called for every animation frame.
+											function tick() {
+												setTimeout(function() {
+											        if(self.playback){
+											        	Cesium.requestAnimationFrame(tick);
+												        play_index = (play_index+1) % play_length;
+													  	self.p_plot.renderDataset(to_play[play_index].identifier);
+														prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+														prim_to_render.cov_id = to_play[play_index].identifier;
+														Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
+											        }
+											        
+											    }, 1000 / fps);
+											  	
+											}
+
+											if (!self.playback){
+												self.playback = true;
+												tick();
+								        	}else{
+								        		self.playback = false;
+								        		$("#play-button").html('<i class="fa fa-play"></i>');
+								        	}
+								       
+								    	}
+								    );
+
+									// Setup back button
+									$("#step-back-button").off();
+
+									$("#step-back-button").on('click', function () { 
+								        play_index = (play_index-1);
+								        if(play_index<0)
+								        	play_index = play_length-1;
+								        play_index = play_index % play_length;
+									  	self.p_plot.renderDataset(to_play[play_index].identifier);
+										prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+										prim_to_render.cov_id = to_play[play_index].identifier;
+										Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
+								    });
+
+								    // Setup forward button
+									$("#step-forward-button").off();
+
+									$("#step-forward-button").on('click', function () {				        
+								        play_index = (play_index+1) % play_length;
+									  	self.p_plot.renderDataset(to_play[play_index].identifier);
+										prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+										prim_to_render.cov_id = to_play[play_index].identifier;
+										Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
+								    });
 									
-									
-								};*/
-
+								}
+								
 							}).fail(function(){
 							    // Probably want to catch failure
 							}).always(function(){
