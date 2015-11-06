@@ -991,6 +991,23 @@ define(['backbone.marionette',
 							bbox = bbox.substring(1, bbox.length - 1).split(",").map(parseFloat); 
 							var request = url + "?service=WCS&request=GetCoverage&version=2.0.1&coverageid="+coverages.data[i].identifier;
 
+
+							///////////////////////////////////////////////////////////////////////////////////////////////////////////
+							// TODO: Remove
+							// Testing overwrite
+
+
+							if (collection == "ALARO_Specific_Humidity_201305150000"){
+								request = "http://demo.v-manip.eox.at/ALARO_humidity.tif";
+								//request = "http://demo.v-manip.eox.at/GOME2_test.tif"
+							}
+							
+							
+
+							///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 							// Check if coverage is already in collection, if not add them
 							if( 
 								!_.find(cur_coll._primitives, function(p){
