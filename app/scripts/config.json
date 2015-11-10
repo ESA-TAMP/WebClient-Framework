@@ -1,6 +1,6 @@
 {
 
-    "debug": true,
+    "debug": false,
 
     "modules": [
         "contrib/AnalyticsViewer/AnalyticsViewModule",
@@ -230,8 +230,34 @@
             },
             "parameters": {
                 "Surface Temperature": {
-                    "range": [0, 0.12],
+                    "range": [0.001, 0.01],
                     "uom":"?",
+                    "colorscale": "viridis",
+                    "name": "Humidity",
+                    "selected": true
+                }
+            }
+        },{
+            "name": "ALARO Temperature Isobaric",
+            "visible": false,
+            "timeSlider": true,
+            "timeSliderProtocol": "WPS",
+            "views": [{
+                "id": "ALARO_Temperature_isobaric_201305181200",
+                "protocol": "WCS",
+                "urls": [
+                    "http://demo.v-manip.eox.at/browse/ows"
+                ]
+            }],
+            "download": {
+                "id": "ALARO_Temperature_isobaric_201305181200",
+                "protocol": "EOWCS",
+                "url": "http://demo.v-manip.eox.at/browse/ows"
+            },
+            "parameters": {
+                "Temperature Isobaric": {
+                    "range": [220, 310],
+                    "uom":"K",
                     "colorscale": "viridis",
                     "name": "Humidity",
                     "selected": true

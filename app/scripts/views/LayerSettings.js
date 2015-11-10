@@ -33,7 +33,7 @@
 				this.$(".panel-title").html('<h3 class="panel-title"><i class="fa fa-fw fa-gears"></i> ' + this.model.get("name") + ' Settings</h3>');
 
 		    	this.$('.close').on("click", _.bind(this.onClose, this));
-		    	this.$el.draggable({ 
+		    	this.$el.draggable({
 		    		containment: "#main",
 		    		scroll: false,
 		    		handle: '.panel-heading'
@@ -86,6 +86,14 @@
 				this.$("#range_max_slider").attr("value", options[this.selected].range[1]);
 				//max_label.innerHTML = max_range;
 
+				
+				// Set the step size
+				// TODO: How many steps do we want to allow? Is 120 ok?
+				var step_size = Math.abs(options[this.selected].range[1]-options[this.selected].range[0])/120;
+				this.$("#range_min_slider").attr("step", step_size);
+				this.$("#range_max_slider").attr("step", step_size);
+
+
 				this.$("#range_min_slider").on("input change", function(){
 					var newrange = [parseFloat(this.value), options[that.selected].range[1]];
 					options[that.selected].range = newrange;
@@ -100,11 +108,11 @@
 					that.updateRange(options);
 				});
 
-				
+
 				// Register necessary key events
 				this.registerKeyEvents(this.$("#range_min"));
 				this.registerKeyEvents(this.$("#range_max"));
-				
+
 
 				var colorscale_options = "";
 				var selected_colorscale;
@@ -119,7 +127,7 @@
 
 				this.$("#style").empty();
 				this.$("#style").append(colorscale_options);
-				
+
 
 				this.$("#style").change(function(evt){
 					var selected = $(evt.target).find("option:selected").text();
@@ -152,8 +160,8 @@
 					// Register necessary key events
 					this.registerKeyEvents(this.$("#coefficients_range_min"));
 					this.registerKeyEvents(this.$("#coefficients_range_max"));
-					
-				}	
+
+				}
 
 				if (protocol == "WPS"){
 					this.$("#shc").empty();
@@ -172,7 +180,7 @@
 					if(this.model.get('shc_name')){
 						that.$("#shc").append('<p id="filename" style="font-size:.9em;">Selected File: '+this.model.get('shc_name')+'</p>');
 					}
-					
+
 				}
 
 				that.updateRange(options);
@@ -183,7 +191,7 @@
 
 			onClose: function() {
 				this.close();
-			}, 
+			},
 
 			updateRange: function(options){
 				this.model.set("parameters", options);
@@ -288,8 +296,8 @@
 				var range_max = parseFloat($("#range_max").val());
 				error = error || this.checkValue(range_max,$("#range_max"));
 
-				
-				
+
+
 				// Set parameters and redraw color scale
 				if(!error){
 					options[this.selected].range = [range_min, range_max];
@@ -390,7 +398,7 @@
 					this.$("#logarithmic input").change(function(evt){
 						var options = that.model.get("parameters");
 						options[that.selected].logarithmic = !options[that.selected].logarithmic;
-						
+
 						that.model.set("parameters", options);
 						Communicator.mediator.trigger("layer:parameters:changed", that.model.get("name"));
 
@@ -405,7 +413,7 @@
 	      	createScale: function(logscale){
 
 	      		var superscript = "⁰¹²³⁴⁵⁶⁷⁸⁹",
-    			formatPower = function(d) { 
+    			formatPower = function(d) {
     				if (d>=0)
     					return (d + "").split("").map(function(c) { return superscript[c]; }).join("");
     				else if (d<0)
@@ -427,7 +435,7 @@
 				$("#setting_colorscale").append(
 					'<div id="scaleimagecontainer" style="width:'+scalewidth+'px; height:20px; margin-left:'+margin+'px"></div>'
 				)
-				
+
 				var image = this.plot.getScaleImage();
 				image.className = "scaleimage"
 				$("#scaleimagecontainer").append(image);
@@ -439,7 +447,7 @@
 					.attr("height", 40);
 
 				var axisScale;
-				
+
 				if(logscale){
 					axisScale = d3.scale.log();
 					if (range_min == 0)
@@ -453,8 +461,8 @@
 
 				var xAxis = d3.svg.axis()
 					.scale(axisScale)
-					.ticks(8, function(d) { 
-						return 10 + formatPower(Math.round(Math.log(d) / Math.LN10)); 
+					.ticks(8, function(d) {
+						return 10 + formatPower(Math.round(Math.log(d) / Math.LN10));
 					});
 
 				xAxis.tickValues( axisScale.ticks( 5 ).concat( axisScale.domain() ) );

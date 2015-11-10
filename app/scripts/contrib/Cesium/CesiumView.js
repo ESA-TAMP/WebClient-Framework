@@ -1,6 +1,7 @@
 
 
 CESIUM_BASE_URL = "bower_components/cesium/Build/Cesium/"
+function defaultFor(arg, val) { return typeof arg !== 'undefined' ? arg : val; }
 
 define(['backbone.marionette',
 		'communicator',
@@ -88,7 +89,7 @@ define(['backbone.marionette',
 
 			createMap: function() {
 
-				// Problem arose in some browsers where aspect ratio was kept not adapting 
+				// Problem arose in some browsers where aspect ratio was kept not adapting
 				// to height; Added height style attribute to 100% to solve problem
 				this.$el.attr("style","height:100%;");
 
@@ -158,7 +159,7 @@ define(['backbone.marionette',
 
 			    // Show Wireframe
 			    //this.map.scene.globe._surface._tileProvider._debug.wireframe = true;
-			    
+
 
 				//this.map.scene.fxaaOrderIndependentTranslucency = false;
 
@@ -182,7 +183,7 @@ define(['backbone.marionette',
 				this.map.scene.camera.frustum.far = this.map.scene.camera.frustum.far * 15
 
 				this.map.clock.onTick.addEventListener(this.handleTick.bind(this));
-				
+
 				globals.baseLayers.each(function(baselayer) {
 					if (baselayer.get("name") == name){
 						var ces_layer = this.map.scene.imageryLayers.get(0);
@@ -190,7 +191,7 @@ define(['backbone.marionette',
 				 		baselayer.set("ces_layer", ces_layer);
 					}
 				}, this);
-				
+
 				//Go through all defined baselayer and add them to the map
 				globals.baseLayers.each(function(baselayer) {
 					if (baselayer.get("name")!=name){
@@ -203,7 +204,7 @@ define(['backbone.marionette',
 					}
 				}, this);
 
-				
+
 				// Go through all products and add them to the map
 				_.each(globals.products.last(globals.products.length).reverse(), function(product){
 					var layer = this.createLayer(product);
@@ -249,7 +250,7 @@ define(['backbone.marionette',
 				if (!this.map) {
 					this.createMap();
 				}
-				
+
 				this.isClosed = false;
 				$("#cesium_save").on("click", this.onSaveImage.bind(this));
 				//this.onResize();
@@ -277,7 +278,7 @@ define(['backbone.marionette',
                 if( typeof(views) == 'undefined'){
 	                view = layerdesc.get('view');
 	            } else {
-	            	
+
 	            	if (views.length == 1){
 	                	view = views[0];
 	                } else {
@@ -310,7 +311,7 @@ define(['backbone.marionette',
 		            		"</div>");
 	            	}
 	            }
-	            
+
                 switch(view.protocol){
                     case "WMTS":
                     	return_layer = new Cesium.WebMapTileServiceImageryProvider({
@@ -348,7 +349,7 @@ define(['backbone.marionette',
 							});
                     	}
                     	params = $.extend(additional_parameters, params);
-                    	params.styles = styles; 
+                    	params.styles = styles;
 
                     	if(layerdesc.get("height")){
 	                    	params.elevation = layerdesc.get("height");
@@ -373,7 +374,7 @@ define(['backbone.marionette',
 
                     default:
                     	// No supported view available
-                    	// Return dummy Image provider to help with with sorting of layers 
+                    	// Return dummy Image provider to help with with sorting of layers
                     	//return  new Cesium.WebMapServiceImageryProvider();
                     	return false;
                     break;
@@ -383,11 +384,11 @@ define(['backbone.marionette',
                 /*return_layer.events.register("loadstart", this, function() {
                   	Communicator.mediator.trigger("progress:change", true);
                 });
-                
+
                 return_layer.events.register("loadend", this, function() {
                   	Communicator.mediator.trigger("progress:change", false);
                 });*/
-                return return_layer;                
+                return return_layer;
             },
 
 			centerMap: function(data) {
@@ -426,7 +427,7 @@ define(['backbone.marionette',
 						this.map.scene.imageryLayers.raise(layer_moved);
 				}
 
-				
+
 				console.log("Map products sorted");
 			},
 
@@ -434,6 +435,19 @@ define(['backbone.marionette',
 				//var ces_layer = options.model.get("ces_layer");
 				globals.products.each(function(product) {
                 	if(product.get("name")==options.model.get("name")){
+
+		            			if(product.get("views")[0].protocol == "WCS"){
+		            				var cur_coll = this.coverages_collections[product.get("views")[0].id];
+		            				if(cur_coll){
+													for (var p=0; p<cur_coll._primitives.length; p++){
+														var prim = cur_coll._primitives[p];
+
+														prim.appearance.material.uniforms.alpha = options.value;
+
+													}
+												}
+		            			}
+
                 		var ces_layer = product.get("ces_layer");
 
                 		if( _.has(this.features_collection, options.model.get("views")[0].id) ){
@@ -463,10 +477,10 @@ define(['backbone.marionette',
 
             changeLayer: function(options) {
             	// Seems for some reason self a layer needs to be as shown at all times
-            	// or cesium will throw an error, so first activate the new layer, then 
+            	// or cesium will throw an error, so first activate the new layer, then
             	// deactivate the others
 				if (options.isBaseLayer){
-					
+
 					globals.baseLayers.each(function(baselayer) {
 						var ces_layer = baselayer.get("ces_layer");
 						if (ces_layer) {
@@ -522,10 +536,10 @@ define(['backbone.marionette',
 
 			        		}else if (product.get("views")[0].protocol == "WCS"){
 			        			this.checkCoverages(product, options.visible);
-			        										
+
                     		}else if (product.get("views")[0].protocol == "WPS"){
                     			this.checkShc(product, options.visible);
-								
+
                     		}else if (product.get("views")[0].protocol == "WMS" || product.get("views")[0].protocol == "WMTS" ){
 
                     			var parameters = product.get("parameters");
@@ -567,9 +581,9 @@ define(['backbone.marionette',
                     				var ces_layer = product.get("ces_layer");
 									ces_layer.show = options.visible;
                     			}
-                    			
 
-	                    		
+
+
 							}
 							if(options.visible){
 								// Manage custom attribution element (add attribution for active baselayer)
@@ -597,7 +611,7 @@ define(['backbone.marionette',
                 					this.activeModels.splice(this.activeModels.indexOf(product.get('name')), 1);
 
                 				if (this.activeModels.length != 2){
-                					if(this.difference_image)	
+                					if(this.difference_image)
 										this.map.scene.imageryLayers.remove(this.difference_image);
 									this.difference_image = null;
 
@@ -660,7 +674,7 @@ define(['backbone.marionette',
 										$(".cesium-viewer").append('<div id="colorlegend"></div>');
 
 										data = $.parseXML(data);
-										if(self.difference_image)	
+										if(self.difference_image)
 											self.map.scene.imageryLayers.remove(self.difference_image);
 
 										var img64 = $(data.getElementsByTagName("ComplexData")).text();
@@ -672,13 +686,13 @@ define(['backbone.marionette',
 										var style = $(data.getElementsByTagName("LiteralData")).text().split(",");
 
 
-										
+
 										var margin = 20;
 										var width = $("#colorlegend").width();
 										var scalewidth =  width - margin *2;
 										console.log(width);
 
-										
+
 										$("#colorlegend").append(
 											'<div class="'+style[0]+'" style="width:'+scalewidth+'px; height:20px; margin-left:'+margin+'px"></div>'
 										);
@@ -745,7 +759,7 @@ define(['backbone.marionette',
 
 						var ces_layer = product.get("ces_layer");
 						var index = this.map.scene.imageryLayers.indexOf(ces_layer);
-						
+
 						var url = product.get("views")[0].urls[0];
 
 						var coefficients_range = product.get("coefficients_range");
@@ -762,13 +776,13 @@ define(['backbone.marionette',
 							"coefficients_range": coefficients_range.join()
 						}))
 
-							.done(function( data ) {	
-								self.map.scene.imageryLayers.remove(ces_layer);									
+							.done(function( data ) {
+								self.map.scene.imageryLayers.remove(ces_layer);
 							    imageURI = "data:image/gif;base64,"+data;
 							    var imagelayer = new Cesium.SingleTileImageryProvider({url: imageURI});
 								ces_layer = self.map.scene.imageryLayers.addImageryProvider(imagelayer, index);
 								product.set("ces_layer", ces_layer);
-								// TODO: Hack to position layer at correct index, adding imagery provider  
+								// TODO: Hack to position layer at correct index, adding imagery provider
 								// with index does not seem to be working
 								var ces_index = self.map.scene.imageryLayers.indexOf(ces_layer);
 								var to_move = index - ces_index;
@@ -786,16 +800,38 @@ define(['backbone.marionette',
     			}
             },
 
-            createPrimitive: function(image, bbox, cov_id, cur_coll){
+            createPrimitive: function(image, bbox, cov_id, cur_coll, alpha, height){
+							height = defaultFor(height, 0);
+							alpha = defaultFor(alpha, 1.0);
 				var instance = new Cesium.GeometryInstance({
 				  geometry : new Cesium.RectangleGeometry({
 				    rectangle : Cesium.Rectangle.fromDegrees(bbox[0],bbox[1],bbox[2],bbox[3]),
-				    vertexFormat : Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT
+				    vertexFormat : Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT,
+						height: height
 				  })
 				});
 
-				var newmat = new Cesium.Material.fromType('Image');
-				newmat.uniforms.image = image;
+
+				var newmat = new Cesium.Material({
+		        fabric : {
+		            uniforms : {
+		                image : image,
+										repeat : new Cesium.Cartesian2(1.0, 1.0),
+		                alpha : alpha
+		            },
+		            components : {
+		                diffuse : 'texture2D(image, fract(repeat * materialInput.st)).rgb',
+		                alpha : 'texture2D(image, fract(repeat * materialInput.st)).a * alpha'
+		            }
+		        },
+						flat: true,
+		        translucent : true
+		    })
+
+
+
+				/*var newmat = new Cesium.Material.fromType('Image');
+				newmat.uniforms.image = image;*/
 
 				var prim = new Cesium.Primitive({
 				  geometryInstances : [instance],
@@ -811,8 +847,8 @@ define(['backbone.marionette',
 				cur_coll.add(prim);
 			},
 
-			loadCoverage: function(request, bbox, cov_id, range, cur_coll, prim){
-				
+			loadCoverage: function(request, bbox, cov_id, range, cur_coll, alpha, prim){
+
 				var self = this;
 
 				return $.ajax({
@@ -823,25 +859,42 @@ define(['backbone.marionette',
 				.done(function( data ) {
 
 					var gt = GeoTIFF.parse(data);
-					var i = gt.getImage(0);
-					var rasdata = i.readRasters()[0];
+					var img = gt.getImage(0);
+					var rasdata = img.readRasters();
 
-					self.p_plot.addDataset(cov_id, rasdata, i.getWidth(), i.getHeight());
-					self.p_plot.setDomain(range);
-					self.p_plot.setNoDataValue(-9999);
-					self.p_plot.renderDataset(cov_id);
-					if (prim){
-						prim["cov_id"] = cov_id;
-						prim.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+
+					// Check if we have a multilayered tif
+					if (rasdata.length > 1){
+
+						for (var i = 0; i < rasdata.length; i++) {
+							self.p_plot.addDataset((cov_id+"_"+i), rasdata[i], img.getWidth(), img.getHeight());
+							self.p_plot.setDomain(range);
+							self.p_plot.setNoDataValue(-9999);
+							self.p_plot.setClamp(false);
+							self.p_plot.renderDataset((cov_id+"_"+i));
+							self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, (cov_id+"_"+i), cur_coll, alpha, i*18000);
+						}
+
 					}else{
-						self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, cov_id, cur_coll);
+
+						self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
+						self.p_plot.setDomain(range);
+						self.p_plot.setNoDataValue(-9999);
+						self.p_plot.renderDataset(cov_id);
+						if (prim){
+							prim["cov_id"] = cov_id;
+							prim.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+						}else{
+							self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, cov_id, cur_coll, alpha);
+						}
+
 					}
-					
+
 				});
 			},
 
 			addCoverage: function(request, cov_id){
-				
+
 				var self = this;
 
 				return $.ajax({
@@ -873,7 +926,7 @@ define(['backbone.marionette',
             	}
 
             	var cur_coll = this.coverages_collections[product.get("views")[0].id];
-            	
+
             	if(visible){
 
             		cur_coll.show = true;
@@ -905,7 +958,7 @@ define(['backbone.marionette',
 
 
 					.done(function( data ) {
-						
+
 						var coverages = Papa.parse(data, {
 							header: true,
 							skipEmptyLines: true
@@ -936,7 +989,7 @@ define(['backbone.marionette',
 							var prim_to_remove = [];
 
 							for (var p=0; p<cur_coll._primitives.length; p++){
-								if( 
+								if(
 									!_.find(coverages.data, function(c){
 										return c.identifier == cur_coll._primitives[p].cov_id;
 									})
@@ -954,7 +1007,7 @@ define(['backbone.marionette',
 							// and the texture data saved in the plot library so we check there for availability
 							// to see if we have to free the texture
 							for (var i = self.stackedDataset.length - 1; i >= 0; i--) {
-								if( 
+								if(
 									!_.find(coverages.data, function(c){
 										return c.identifier == self.stackedDataset[i];
 									})
@@ -964,13 +1017,13 @@ define(['backbone.marionette',
 										self.stackedDataset.splice(i,1);
 									}
 								}
-							
+
 							};
 
 							for (var p=0; p<cur_coll._primitives.length; p++){
 								// We also check to see if there is an already created primitive for
 								// the stack animation
-								if( 
+								if(
 									!_.find(self.stackedDataset, function(c){
 										return c == self.stackedDataset[i];
 									})
@@ -979,16 +1032,16 @@ define(['backbone.marionette',
 								}
 							};
 						}
-						
+
 						var deferreds = [];
 
 						// Let us sort them by start date
 						coverages.data = _.sortBy(coverages.data, function(c){ return Date.parse(c.starttime); });
 
 						for (var i = coverages.data.length - 1; i >= 0; i--) {
-							
+
 							var bbox = coverages.data[i].bbox;
-							bbox = bbox.substring(1, bbox.length - 1).split(",").map(parseFloat); 
+							bbox = bbox.substring(1, bbox.length - 1).split(",").map(parseFloat);
 							var request = url + "?service=WCS&request=GetCoverage&version=2.0.1&coverageid="+coverages.data[i].identifier;
 
 
@@ -1001,15 +1054,20 @@ define(['backbone.marionette',
 								request = "http://demo.v-manip.eox.at/ALARO_humidity.tif";
 								//request = "http://demo.v-manip.eox.at/GOME2_test.tif"
 							}
-							
-							
+
+							if (collection == "ALARO_Temperature_isobaric_201305181200"){
+								request = "http://demo.v-manip.eox.at/ALARO_Temperature_isobaric_f32.tif";
+								//request = "http://demo.v-manip.eox.at/GOME2_test.tif"
+							}
+
+
 
 							///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
 							// Check if coverage is already in collection, if not add them
-							if( 
+							if(
 								!_.find(cur_coll._primitives, function(p){
 									return p.cov_id == coverages.data[i].identifier;
 								})
@@ -1021,12 +1079,12 @@ define(['backbone.marionette',
 
 								if(!stacked){
 									// If not stacked just request and create primitves for all coverages
-									deferreds.push(self.loadCoverage(request, bbox, cov_id, range, cur_coll, null));
+									deferreds.push(self.loadCoverage(request, bbox, cov_id, range, cur_coll, alpha, null));
 								}else if(stacked && i == coverages.data.length-1){
 									// If the collection is stacked and this is the last element (in time)
 									// of the list it means the primitive is not available already and needs to be created
 									// or we have found an already created primite and saved it to stacked primitive
-									deferreds.push(self.loadCoverage(request, bbox, cov_id, range, cur_coll, stacked_prim));
+									deferreds.push(self.loadCoverage(request, bbox, cov_id, range, cur_coll, alpha, stacked_prim));
 									Communicator.mediator.trigger("date:tick:select", new Date(coverages.data[i].starttime));
 								}else{
 									// We only request the data if it is not already avaialble
@@ -1056,7 +1114,7 @@ define(['backbone.marionette',
 									// Remove handlers
 									$("#play-button").off();
 
-									$("#play-button").on('click', function () { 
+									$("#play-button").on('click', function () {
 
 											$("#play-button").html('<i class="fa fa-pause"></i>');
 								        	// Create a draw loop using requestAnimationFrame. The
@@ -1071,9 +1129,9 @@ define(['backbone.marionette',
 														prim_to_render.cov_id = to_play[play_index].identifier;
 														Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
 											        }
-											        
+
 											    }, 1000 / fps);
-											  	
+
 											}
 
 											if (!self.playback){
@@ -1083,14 +1141,14 @@ define(['backbone.marionette',
 								        		self.playback = false;
 								        		$("#play-button").html('<i class="fa fa-play"></i>');
 								        	}
-								       
+
 								    	}
 								    );
 
 									// Setup back button
 									$("#step-back-button").off();
 
-									$("#step-back-button").on('click', function () { 
+									$("#step-back-button").on('click', function () {
 								        play_index = (play_index-1);
 								        if(play_index<0)
 								        	play_index = play_length-1;
@@ -1104,16 +1162,16 @@ define(['backbone.marionette',
 								    // Setup forward button
 									$("#step-forward-button").off();
 
-									$("#step-forward-button").on('click', function () {				        
+									$("#step-forward-button").on('click', function () {
 								        play_index = (play_index+1) % play_length;
 									  	self.p_plot.renderDataset(to_play[play_index].identifier);
 										prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
 										prim_to_render.cov_id = to_play[play_index].identifier;
 										Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
 								    });
-									
+
 								}
-								
+
 							}).fail(function(){
 							    // Probably want to catch failure
 							}).always(function(){
@@ -1181,7 +1239,7 @@ define(['backbone.marionette',
 						});
 					});
 				}
-               
+
             },
 
             createFeatures: function (results, identifier, band, alpha){
@@ -1201,11 +1259,11 @@ define(['backbone.marionette',
 				if(band == "B_NEC"){
 
 					this.features_collection[identifier] = new Cesium.PrimitiveCollection();
-					
+
 
 					_.each(results.data, function(row){
 
-						var arrowmat = 	new Cesium.Material.fromType('PolylineArrow');			
+						var arrowmat = 	new Cesium.Material.fromType('PolylineArrow');
 						arrowmat.uniforms.color = Cesium.Color.fromBytes(row.col_r, row.col_g, row.col_b, alpha*255);
 
 						this.features_collection[identifier].add(new Cesium.Primitive({
@@ -1246,7 +1304,7 @@ define(['backbone.marionette',
 						        	color: new Cesium.ColorGeometryInstanceAttribute(row.col_r/255, row.col_g/255, row.col_b/255, alpha)
 						        }
 						    })
-					    );	
+					    );
 
 					}, this);
 
@@ -1281,7 +1339,7 @@ define(['backbone.marionette',
 
 				}
 
-        		
+
             },
 
 
@@ -1361,7 +1419,7 @@ define(['backbone.marionette',
 									this.map.scene.imageryLayers.remove(ces_layer, false);
 
 									// When changing height or coefficient range and fieldlienes is selected
-									// model would be added multiple times, need to check if model already 
+									// model would be added multiple times, need to check if model already
 									// marked as active and avoid adding it to list
 									if (this.activeFL.indexOf(product.get('name'))==-1)
 	                    				this.activeFL.push(product.get("name"));
@@ -1379,11 +1437,11 @@ define(['backbone.marionette',
             					this.checkFieldLines();
 								if(product.get("name")==layer){
 				                	var ces_layer = product.get("ces_layer");
-				                	
+
 				                	ces_layer.imageryProvider.updateProperties("dim_bands", band);
-				                	
+
 				                	ces_layer.imageryProvider.updateProperties("dim_range", (range[0]+","+range[1]));
-				                	
+
 				                	ces_layer.imageryProvider.updateProperties("elevation", height);
 
 				                	if(style)
@@ -1402,7 +1460,7 @@ define(['backbone.marionette',
 							this.checkShc(product, product.get("visible"));
 						}
 				    }
-                    
+
 	            }, this);
             },
 
@@ -1472,7 +1530,7 @@ define(['backbone.marionette',
 	                    callback: function(extent) {
 
 				            /*console.log('Extent created (N: ' + extent.north.toFixed(3) +
-				            			 ', E: ' + extent.east.toFixed(3) + 
+				            			 ', E: ' + extent.east.toFixed(3) +
 				            			 ', S: ' + extent.south.toFixed(3) +
 				            			 ', W: ' + extent.west.toFixed(3) + ')');*/
 
@@ -1521,7 +1579,7 @@ define(['backbone.marionette',
 					}*/
 				}
 			},
-           
+
 
 			onSelectionChanged: function(feature, coords, color){
 
@@ -1567,7 +1625,7 @@ define(['backbone.marionette',
 		            this.map.scene.primitives.add(this.extentPrimitive);
 
 		            this.checkFieldLines();
-		            
+
 
 
 				}else{
@@ -1641,7 +1699,7 @@ define(['backbone.marionette',
                 		}
                 	}, this);
 
-                	
+
 
 	            }else{
 	            	_.each(_.keys(this.FL_collection), function(key){
@@ -1650,7 +1708,7 @@ define(['backbone.marionette',
 	            	}, this);
 	            }
 
-				
+
 			},
 
 			onFieldlinesChanged: function(){
@@ -1693,7 +1751,7 @@ define(['backbone.marionette',
 				}, this);
 
         		this.map.scene.primitives.add(this.FL_collection[name]);
-				
+
 			},
 
 			onHighlightPoint: function(coords){
@@ -1725,7 +1783,7 @@ define(['backbone.marionette',
 			        //color : Cesium.Color.RED,
 			        scale : 1
 			    });
-			    
+
 			},
 
 			onRemoveHighlights: function(){
@@ -1752,7 +1810,7 @@ define(['backbone.marionette',
 							this.checkLayerFeatures(product, product.get("visible"));
 	                	}
 				    }
-                    
+
 	            }, this);
 			},*/
 
@@ -1804,7 +1862,7 @@ define(['backbone.marionette',
 	            	y: Cesium.Math.toDegrees(prim.south),
 	            	z: altitude
 	            });
-	            
+
 	            return coordinates;
 	        },
 
@@ -1827,7 +1885,7 @@ define(['backbone.marionette',
 
 				this.begin_time = time.start;
 				this.end_time = time.end;
-                                        
+
 	            globals.products.each(function(product) {
                     if(product.get("timeSlider")){
                     	product.set("time",string);
@@ -1844,10 +1902,10 @@ define(['backbone.marionette',
 
 	                    if(product.get("views")[0].protocol == "CZML"){
 	                    	this.checkLayerFeatures(product, product.get("visible"));
-                			
+
 		        		}else if (product.get("views")[0].protocol == "WCS"){
 			        		this.checkCoverages(product, product.get("visible"));
-			        										
+
                 		}else if (product.get("views")[0].protocol == "WPS"){
 
                 			if(product.get("visible")){
@@ -1872,7 +1930,7 @@ define(['backbone.marionette',
 
 									var ces_layer = product.get("ces_layer");
 									var index = this.map.scene.imageryLayers.indexOf(ces_layer);
-									
+
 									var url = product.get("views")[0].urls[0];
 
 									$.post( url, Tmpl_load_shc({
@@ -1886,8 +1944,8 @@ define(['backbone.marionette',
 										"height": product.get("height")
 									}))
 
-										.done(function( data ) {	
-											self.map.scene.imageryLayers.remove(ces_layer);									
+										.done(function( data ) {
+											self.map.scene.imageryLayers.remove(ces_layer);
 										    imageURI = "data:image/gif;base64,"+data;
 										    var imagelayer = new Cesium.SingleTileImageryProvider({url: imageURI});
 											ces_layer = self.map.scene.imageryLayers.addImageryProvider(imagelayer, index);
@@ -1946,7 +2004,7 @@ define(['backbone.marionette',
 
 						.done(function( data ) {
 
-							if(self.difference_image)	
+							if(self.difference_image)
 								self.map.scene.imageryLayers.remove(self.difference_image);
 
 							var img64 = $(data.getElementsByTagName("ComplexData")).text();
@@ -1958,7 +2016,7 @@ define(['backbone.marionette',
 							var style = $(data.getElementsByTagName("LiteralData")).text().split(",");
 
 
-							
+
 							var margin = 20;
 							var width = $("#colorlegend").width();
 							var scalewidth =  width - margin *2;
@@ -2080,7 +2138,7 @@ define(['backbone.marionette',
 				}.bind(this));
 
 				this.diff_overlay.setZIndex(minzindex-1);
-	
+
 			},
 
 			onSaveImage: function(){
@@ -2101,8 +2159,8 @@ define(['backbone.marionette',
 			},
 
 			handleTick: function(clock) {
-				// TODO: Cesium does not provide a method to know when the camera has stopped, 
-				//       this approach is not ideal, when the movement mantains inertia difference 
+				// TODO: Cesium does not provide a method to know when the camera has stopped,
+				//       this approach is not ideal, when the movement mantains inertia difference
 				//       values are very low and there are comparison errors.
 			    var camera = this.map.scene.camera;
 
