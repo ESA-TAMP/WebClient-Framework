@@ -86,7 +86,7 @@
 				this.$("#range_max_slider").attr("value", options[this.selected].range[1]);
 				//max_label.innerHTML = max_range;
 
-				
+
 				// Set the step size
 				// TODO: How many steps do we want to allow? Is 120 ok?
 				var step_size = Math.abs(options[this.selected].range[1]-options[this.selected].range[0])/120;
@@ -465,7 +465,8 @@
 						return 10 + formatPower(Math.round(Math.log(d) / Math.LN10));
 					});
 
-				xAxis.tickValues( axisScale.ticks( 5 ).concat( axisScale.domain() ) );
+				xAxis.tickValues( axisScale.ticks( 3 ).concat( axisScale.domain() ) );
+				xAxis.tickFormat(d3.format(".3g"));
 
 			    var g = svgContainer.append("g")
 			        .attr("class", "x axis")

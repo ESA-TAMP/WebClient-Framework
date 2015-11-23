@@ -1042,7 +1042,10 @@ define(['backbone.marionette',
 
 							var bbox = coverages.data[i].bbox;
 							bbox = bbox.substring(1, bbox.length - 1).split(",").map(parseFloat);
-							var request = url + "?service=WCS&request=GetCoverage&version=2.0.1&coverageid="+coverages.data[i].identifier;
+							//var request = url + "?service=WCS&request=GetCoverage&version=2.0.1&coverageid="+coverages.data[i].identifier;
+
+							var request = url.substring(0,url.length-11) + "/coverage/"+coverages.data[i].identifier+".tif";
+							//console.log(request);
 
 
 							///////////////////////////////////////////////////////////////////////////////////////////////////////////

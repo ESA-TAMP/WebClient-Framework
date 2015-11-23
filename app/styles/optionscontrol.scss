@@ -1,9 +1,13 @@
 @import "defaults";
 
 .optionscontrol {
-    width: 30em;
+    width: 35em;
     top: 10em;
     right: 10em;
     font-size: .9em;
     position: absolute;
+}
+
+#parameters{
+  padding: 8px;
 }
