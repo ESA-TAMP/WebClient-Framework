@@ -16,6 +16,7 @@
             initialize: function(options){
             	this.listenTo(Communicator.mediator, "dialog:open:about", this.onDialogOpenAbout);
             	this.listenTo(Communicator.mediator, "ui:open:layercontrol", this.onLayerControlOpen);
+							this.listenTo(Communicator.mediator, "ui:open:productsearch", this.onProductSearchOpen);
             	this.listenTo(Communicator.mediator, "ui:open:toolselection", this.onToolSelectionOpen);
 				this.listenTo(Communicator.mediator, "ui:open:options", this.onOptionsOpen);
 				this.listenTo(Communicator.mediator, "ui:open:storybanner", this.StoryBannerOpen);
@@ -37,8 +38,16 @@
 				} else {
 					App.layout.close();
                 }
-               
+
 			},
+			onProductSearchOpen: function(event){
+				if (_.isUndefined(App.productSearchView.isClosed) || App.productSearchView.isClosed) {
+					App.viewContent.show(App.productSearchView);
+				}else{
+					App.viewContent.close();
+				}
+			},
+
 			onToolSelectionOpen: function(event){
 				if (_.isUndefined(App.toolLayout.isClosed) || App.toolLayout.isClosed) {
 					App.rightSideBar.show(App.toolLayout);
@@ -64,7 +73,7 @@
                 App.storyBanner = new App.views.StoryBannerView({
                 	template: App.templates[event]
                 });
-                
+
 				if (_.isUndefined(App.storyView.isClosed) || App.storyView.isClosed) {
 					App.storyView.show(App.storyBanner);
 				} else {

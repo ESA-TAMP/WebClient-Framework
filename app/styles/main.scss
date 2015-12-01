@@ -18,6 +18,7 @@ $iconWhiteSpritePath: "../images/glyphicons-halflings-white.png";
 @import "cesium";
 @import "layersettings";
 @import "spinner";
+@import "productsearch";
 
 /* Not used right now ;)
 #preloadedImages {
@@ -68,7 +69,7 @@ hr {
 
 
 /*
- * Color legend attributes 
+ * Color legend attributes
  */
 
 #colorlegend{
@@ -133,7 +134,7 @@ body.wait *, body.wait {
   top: calc(50%);
 }
 
-div#preload { 
+div#preload {
   display: none;
 }
 
@@ -209,7 +210,7 @@ div#preload {
 }
 
 .modal{
-  overflow-y: hidden !important; 
+  overflow-y: hidden !important;
 }
 
 #about .modal-content{
@@ -249,7 +250,7 @@ button[active=active] {
  * Layer control styles
  */
 .layercontrol {
-    width: 23.8em;
+    width: 26.8em;
     top: 10em;
     left: 3em;
     font-size: .9em;
@@ -287,6 +288,10 @@ button[active=active] {
 }
 .fa-sort {
     cursor: ns-resize;
+}
+
+#products .form-control{
+  word-break: break-all;
 }
 
 /*
@@ -475,5 +480,3 @@ button[active=active] {
 .popover {
   position: fixed;
 }
-
-

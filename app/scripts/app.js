@@ -36,7 +36,7 @@
 				// Load jquery ui tooltip tool
 
 				/*$(document).ready(function() {
-				    $("body").tooltip({ 
+				    $("body").tooltip({
 				    	selector: '[data-toggle=tooltip]',
 				    	position: { my: "left+5 center", at: "right center" },
 						hide: { effect: false, duration: 0 },
@@ -45,7 +45,7 @@
 
 				});*/
 
-				$("body").tooltip({ 
+				$("body").tooltip({
 			    	selector: '[data-toggle=tooltip]',
 			    	position: { my: "left+5 center", at: "right center" },
 					hide: { effect: false, duration: 0 },
@@ -134,7 +134,7 @@
 					);
 					console.log("Added baselayer " + baselayer.id );
 				}, this);
-				
+
 				var autoColor = {
 		            colors : d3.scale.category10(),
 		            index : 0,
@@ -182,14 +182,14 @@
 						domain.push(product.processes[0].layer_id);
 						range.push(p_color);
 					}
-					
+
 					console.log("Added product " + product.name );
 				}, this);
 
 				var productcolors = d3.scale.ordinal().domain(domain).range(range);
 
 				globals.objects.add('productcolors', productcolors);
-	      	
+
 				//Overlays are loaded and added to the global collection
 				_.each(config.mapConfig.overlays, function(overlay) {
 
@@ -226,7 +226,7 @@
 
 
 
-				// If Navigation Bar is set in configuration go trhough the 
+				// If Navigation Bar is set in configuration go trhough the
 				// defined elements creating a item collection to rendered
 				// by the marionette collection view
 				if (config.navBarConfig) {
@@ -362,8 +362,8 @@
                             active: visMode.active,
                             type: "vis_mode"
                         }));
-                }, this);	
-                
+                }, this);
+
                 // Create Collection Views to hold set of views for selection tools
                 this.visualizationToolsView = new v.ToolSelectionView({
                 	collection:visualizationToolsCollection,
@@ -396,6 +396,8 @@
                     })
                 });
 
+								this.productSearchView = new v.ProductSearchView();
+
 
                 this.layerSettings = new v.LayerSettings();
 
@@ -403,7 +405,7 @@
                 this.toolLayout = new ToolControlLayout();
                 this.optionsLayout = new OptionsLayout();
 
-                
+
 
                 // Instance timeslider view
                 this.timeSliderView = new v.TimeSliderView(config.timeSlider);
@@ -457,7 +459,7 @@
 
                 // The tooltip is called twice at beginning and end, it seems to show the style of the
                 // tooltips more consistently, there is some problem where sometimes no style is shown for tooltips
-                $("body").tooltip({ 
+                $("body").tooltip({
 			    	selector: '[data-toggle=tooltip]',
 			    	position: { my: "left+5 center", at: "right center" },
 					hide: { effect: false, duration: 0 },
@@ -465,7 +467,7 @@
 			    });
 
 
-			   
+
 			    (function($){
 				    /**
 				     * Register ajax transports for blob send/recieve and array buffer send/receive via XMLHttpRequest Level 2

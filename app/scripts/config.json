@@ -357,6 +357,17 @@
         }]
     },
 
+    "productProviders":[
+      {
+        "url": "http://demo.v-manip.eox.at/browse/ows",
+        "protocol": "EOWCS"
+      },
+      {
+        "url": "http://vtdas-dave.zamg.ac.at/davprc/ows",
+        "protocol": "EOWCS"
+      }
+    ],
+
 
     "regions": [{
         "name": "main",
@@ -392,6 +403,11 @@
             "icon": "fa-globe",
             "eventToRaise": "ui:open:layercontrol",
             "template": "LayerControl"
+        },{
+            "name": "Product search",
+            "icon": "fa fa-search",
+            "eventToRaise": "ui:open:productsearch",
+            "template": "ProductSearch"
         }, {
             "name": "Tools",
             "icon": "fa-wrench",
@@ -446,7 +462,8 @@
         "views/DownloadView",
         "views/DownloadFilterView",
         "views/StoryBannerView",
-        "views/LayerSettings"
+        "views/LayerSettings",
+        "views/ProductSearchView"
     ],
 
     "models": [
@@ -503,6 +520,9 @@
     }, {
         "id": "UseCase_MagneticModels",
         "template": "hbs!tmpl/UseCase_MagneticModels"
+    }, {
+        "id": "ProductSearch",
+        "template": "hbs!tmpl/ProductSearch"
     }],
 
     "selectionTools": [{
