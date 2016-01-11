@@ -1,6 +1,6 @@
 {
 
-    "debug": false,
+    "debug": true,
 
     "modules": [
         "contrib/AnalyticsViewer/AnalyticsViewModule",
@@ -208,6 +208,32 @@
                     "uom":"K",
                     "colorscale": "viridis",
                     "name": "Surface Temperature",
+                    "selected": true
+                }
+            }
+        },{
+            "name": "Cloudsat",
+            "visible": false,
+            "timeSlider": true,
+            "timeSliderProtocol": "WPS",
+            "views": [{
+                "id": "Cloudsat",
+                "protocol": "WCS",
+                "urls": [
+                    "http://demo.v-manip.eox.at/browse/ows"
+                ]
+            }],
+            "download": {
+                "id": "Cloudsat",
+                "protocol": "EOWCS",
+                "url": "http://demo.v-manip.eox.at/browse/ows"
+            },
+            "parameters": {
+                "Humidity": {
+                    "range": [-40, 0],
+                    "uom":"?",
+                    "colorscale": "viridis",
+                    "name": "Humidity",
                     "selected": true
                 }
             }

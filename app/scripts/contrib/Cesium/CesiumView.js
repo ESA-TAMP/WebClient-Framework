@@ -22,7 +22,10 @@ define(['backbone.marionette',
 		'geotiff',
 		'plotty'
 	],
-	function(Marionette, Communicator, App, MapModel, globals, Papa, Tmpl_load_shc, Tmpl_calc_diff, Tmpl_get_field_lines, Tmpl_retrive_swarm_features, Tmpl_get_time_data, Tmpl_wcs_get_coverage) {
+	function(Marionette, Communicator, App, MapModel, globals, Papa,
+			 Tmpl_load_shc, Tmpl_calc_diff, Tmpl_get_field_lines,
+			 Tmpl_retrive_swarm_features, Tmpl_get_time_data,
+			 Tmpl_wcs_get_coverage) {
 
 		var CesiumView = Marionette.View.extend({
 
@@ -244,6 +247,239 @@ define(['backbone.marionette',
 					}
                 }, this);
 
+                var that = this;
+
+                this.$el.on('mousedown', function (evt) {
+				  that.$el.on('mouseup mousemove', function handler(evt) {
+				  	// Make sure it is a click event
+				    if (evt.type === 'mouseup') {
+				      	var offset = $(this).offset()
+	                	var x = evt.pageX - offset.left;
+	                	var y = evt.pageY - offset.top;
+
+	                	var cartesian = that.map.camera.pickEllipsoid(new Cesium.Cartesian2(x,y), that.map.scene.globe.ellipsoid);
+	                	var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+
+	                	var pos_x = Cesium.Math.toDegrees(cartographic.longitude);
+	                	var pos_y = Cesium.Math.toDegrees(cartographic.latitude);
+	                	var p = {x:pos_x, y:pos_y};
+
+	                	that.map.entities.removeById("positionselection");
+
+						// TODO: One interesting way of getting this is by picking
+	                	// This is only possible as "raycast" from camera into the scene
+	                	// which is not practical for examning things like volumes
+	                	// Still it has interesting potential for investigation
+	                	//var primitives = that.map.scene.drillPick(new Cesium.Cartesian2(x,y));
+	                	var checkInside = function(p, rect){
+	                		if(rect){
+                				var e = Cesium.Math.toDegrees(rect.east),
+									w = Cesium.Math.toDegrees(rect.west),
+									n = Cesium.Math.toDegrees(rect.north),
+									s = Cesium.Math.toDegrees(rect.south);
+								if( w <= p.x && p.x <= e &&
+								    s <= p.y && p.y <= n ) {
+								    return true;
+								}
+                			}
+
+                			return false;
+	                	}
+	                	var primitives = [];
+	                	// Go through al primitives ans see if point is inside
+	                	_.each(that.map.scene.primitives._primitives, function (prim) {
+	                		// Is a coverage primitive
+	                		if(prim.hasOwnProperty('cov_id')){
+	                			var rect = prim.geometryInstances[0].geometry._rectangle;
+	                			if(checkInside(p,rect))
+	                				primitives.push(prim);
+	                			
+	                		}
+	                		// Is a collection
+	                		if(prim.hasOwnProperty('_primitives') && prim.show){
+	                			_.each(prim._primitives, function (subprim) {
+			                		// Is a coverage primitive
+			                		if(subprim.hasOwnProperty('cov_id')){
+			                			var rect = subprim.geometryInstances[0].geometry._rectangle;
+			                			if(checkInside(p,rect))
+			                				primitives.push(subprim);
+			                			
+			                		}
+
+	                			});
+	                		}	                
+	                	});              	
+
+	                	var color = Cesium.Color.RED;
+			            var surfacePosition = Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 0);
+			            var heightPosition = Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 600000);
+
+			            //WebGL Globe only contains lines, so that's the only graphics we create.
+			            var polyline = new Cesium.PolylineGraphics();
+			            polyline.material = new Cesium.ColorMaterialProperty(color);
+			            polyline.width = new Cesium.ConstantProperty(2);
+			            polyline.followSurface = new Cesium.ConstantProperty(false);
+			            polyline.positions = new Cesium.ConstantProperty([surfacePosition, heightPosition]);
+
+			            //The polyline instance itself needs to be on an entity.
+			            var entity = new Cesium.Entity({
+			                id : "positionselection",
+			                show : true,
+			                polyline : polyline
+			            });
+
+			            
+			            //Add the entity to the collection.
+			            that.map.entities.add(entity);
+
+	                	var renderdata = [];
+
+	                	if(primitives){
+	                		var pos = 0;
+	                		for (var i = primitives.length - 1; i >= 0; i--) {
+
+	                			
+	                			var cov_id = primitives[i].cov_id;
+			                	var rect = primitives[i].geometryInstances[0].geometry._rectangle;
+			                	
+			                	if(that.p_plot.datasetAvailable(cov_id)) {
+									var ds = that.p_plot.datasetCollection[cov_id];
+									var w = ds.width;
+									var h = ds.height;
+									var east = Cesium.Math.toDegrees(rect.east);
+									var west = Cesium.Math.toDegrees(rect.west);
+									var north = Cesium.Math.toDegrees(rect.north);
+									var south = Cesium.Math.toDegrees(rect.south);
+									var res_x = Math.abs(east - west)/w;
+									var res_y = Math.abs(north - south)/h;
+									var x = Math.floor(Math.abs(pos_x - west)/res_x);
+									var y = Math.floor(Math.abs(pos_y - north)/res_y);
+									/*console.log(x,y);
+									console.log(ds.data[(y*w)+x]);*/
+									var index = cov_id.lastIndexOf("_");
+									var pos = parseInt(cov_id.substr(index+1));
+									var id = cov_id.substr(0,index);
+									if(cov_id.split('_').length>3){
+										function getPosition(str, m, i) {
+										   return str.split(m, i).join(m).length;
+										}
+										id = cov_id.substr(0,getPosition(cov_id, '_', 3));
+									}
+									renderdata.push({
+										id:id,
+										val: ds.data[(y*w)+x],
+										pos: pos++
+									})
+
+								}
+								
+	                		};
+	                	}
+
+	                	$("#pickingresults").empty();
+	                	$("#pickingresults").hide();
+
+	                	if (renderdata.length > 0){
+
+	                		$("#pickingresults").show();
+
+		                	var margin = {top: 20, right: 20, bottom: 40, left: 50},
+							    width = $("#pickingresults").width() - margin.left - margin.right,
+							    height = $("#pickingresults").height() - margin.top - margin.bottom;
+
+							var x = d3.scale.linear()
+							    .range([0, width]);
+
+							var y = d3.scale.linear()
+							    .range([height, 0]);
+
+							var color = d3.scale.category10();
+
+							var xAxis = d3.svg.axis()
+							    .scale(x)
+							    .orient("bottom");
+
+							var yAxis = d3.svg.axis()
+							    .scale(y)
+							    .orient("left");
+
+							var svg = d3.select("#pickingresults").append("svg")
+							    .attr("width", width + margin.left + margin.right)
+							    .attr("height", height + margin.top + margin.bottom)
+							  .append("g")
+							    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+							  x.domain(d3.extent(renderdata, function(d) { return d.val; })).nice();
+							  y.domain(d3.extent(renderdata, function(d) { return d.pos; })).nice();
+
+							  svg.append("g")
+							      .attr("class", "x axis")
+							      .attr("transform", "translate(0," + height + ")")
+							      .call(xAxis)
+							    .append("text")
+							      .attr("class", "label")
+							      .attr("x", width)
+							      .attr("y", -6)
+							      .style("text-anchor", "end")
+							      .text("Measure value");
+
+							  svg.append("g")
+							      .attr("class", "y axis")
+							      .call(yAxis)
+							    .append("text")
+							      .attr("class", "label")
+							      .attr("transform", "rotate(-90)")
+							      .attr("y", 6)
+							      .attr("dy", ".71em")
+							      .style("text-anchor", "end")
+							      .text("Band")
+
+							  svg.selectAll(".dot")
+							      .data(renderdata)
+							    .enter().append("circle")
+							      .attr("class", "dot")
+							      .attr("r", 3.5)
+							      .attr("cx", function(d) { return x(d.val); })
+							      .attr("cy", function(d) { return y(d.pos); })
+							      .style("fill", function(d) { return color(d.id); });
+
+							  var legend = svg.selectAll(".legend")
+							      .data(color.domain())
+							    .enter().append("g")
+							      .attr("class", "legend")
+							      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+							  legend.append("rect")
+							      .attr("x", width - 18)
+							      .attr("width", 18)
+							      .attr("height", 18)
+							      .style("fill", color);
+
+							  legend.append("text")
+							      .attr("x", width - 24)
+							      .attr("y", 9)
+							      .attr("dy", ".35em")
+							      .style("text-anchor", "end")
+							      .text(function(d) { return d; });
+						  }
+
+				    }// else here would be a drag event
+				    that.$el.off('mouseup mousemove', handler);
+				  });
+				});
+
+                this.$el.click(function(e){
+
+                	// Left mouse click
+                	if (e.which == 1){
+                	
+
+						}
+	                	
+	                });
+				
+
 			},
 
 			onShow: function() {
@@ -377,6 +613,7 @@ define(['backbone.marionette',
                     	// Return dummy Image provider to help with with sorting of layers
                     	//return  new Cesium.WebMapServiceImageryProvider();
                     	return false;
+                    	
                     break;
 
                 };
@@ -800,9 +1037,77 @@ define(['backbone.marionette',
     			}
             },
 
+            createCurtain: function(image, positions, cov_id, cur_coll, alpha, height){
+
+				var newmat = new Cesium.Material({
+			        fabric : {
+			            uniforms : {
+			                image : image,
+							repeat : new Cesium.Cartesian2(1.0, -1.0),
+			                alpha : alpha
+			            },
+			            components : {
+			                diffuse : 'texture2D(image, fract(repeat * materialInput.st)).rgb',
+			                alpha : 'texture2D(image, fract(repeat * materialInput.st)).a * alpha'
+			            }
+			        },
+					flat: true,
+			        translucent : true
+			    });
+
+			    var max_heights = [];
+			    var min_heights = [];
+			    for (var i = (positions.length/2) - 1; i >= 0; i--) {
+			    	max_heights.push(height*10);
+			    	min_heights.push(0.0);
+			    };
+
+			    var wall = new Cesium.WallGeometry({
+					positions : Cesium.Cartesian3.fromDegreesArray(positions),
+					minimumHeights : max_heights,
+					maximumHeights : min_heights,
+				});
+
+				var wallGeometry = Cesium.WallGeometry.createGeometry(wall);
+
+				var instance = new Cesium.GeometryInstance({
+				  geometry : wallGeometry
+				});
+
+				var prim = new Cesium.Primitive({
+				  geometryInstances : [instance],
+				  appearance : new Cesium.MaterialAppearance({
+				  	translucent : true,
+				  	flat: true,
+				    material : newmat
+				  }),
+				  releaseGeometryInstances: false
+				});
+
+				prim["cov_id"] = cov_id;
+
+				cur_coll.add(prim);
+
+
+			   //this.map.entities.add(wall);
+
+			   /*var wall_1 = this.map.entities.add({
+				    id: 'wall_1',
+				    name: 'Two-position wall',
+				    wall: {
+				        positions: Cesium.Cartesian3.fromDegreesArray(positions),
+				        maximumHeights: max_heights,
+				        minimumHeights: min_heights,
+				        material: material
+				        //material: newmat
+				    }
+				});*/
+
+            },
+
             createPrimitive: function(image, bbox, cov_id, cur_coll, alpha, height){
-							height = defaultFor(height, 0);
-							alpha = defaultFor(alpha, 1.0);
+				height = defaultFor(height, 0);
+				alpha = defaultFor(alpha, 1.0);
 				var instance = new Cesium.GeometryInstance({
 				  geometry : new Cesium.RectangleGeometry({
 				    rectangle : Cesium.Rectangle.fromDegrees(bbox[0],bbox[1],bbox[2],bbox[3]),
@@ -813,20 +1118,20 @@ define(['backbone.marionette',
 
 
 				var newmat = new Cesium.Material({
-		        fabric : {
-		            uniforms : {
-		                image : image,
-										repeat : new Cesium.Cartesian2(1.0, 1.0),
-		                alpha : alpha
-		            },
-		            components : {
-		                diffuse : 'texture2D(image, fract(repeat * materialInput.st)).rgb',
-		                alpha : 'texture2D(image, fract(repeat * materialInput.st)).a * alpha'
-		            }
-		        },
-						flat: true,
-		        translucent : true
-		    })
+			        fabric : {
+			            uniforms : {
+			                image : image,
+							repeat : new Cesium.Cartesian2(1.0, 1.0),
+			                alpha : alpha
+			            },
+			            components : {
+			                diffuse : 'texture2D(image, fract(repeat * materialInput.st)).rgb',
+			                alpha : 'texture2D(image, fract(repeat * materialInput.st)).a * alpha'
+			            }
+			        },
+					flat: true,
+			        translucent : true
+			    });
 
 
 
@@ -839,7 +1144,8 @@ define(['backbone.marionette',
 				  	translucent : true,
 				  	flat: true,
 				    material : newmat
-				  })
+				  }),
+				  releaseGeometryInstances: false
 				});
 
 				prim["cov_id"] = cov_id;
@@ -861,33 +1167,63 @@ define(['backbone.marionette',
 					var gt = GeoTIFF.parse(data);
 					var img = gt.getImage(0);
 					var rasdata = img.readRasters();
+					var meta = img.getGDALMetadata();
 
 
-					// Check if we have a multilayered tif
-					if (rasdata.length > 1){
+					// Check if the GeoTIFF is a vertical curtain
+					if(meta && meta.hasOwnProperty('COORDINATES') && meta.hasOwnProperty('HEIGHT_LEVELS') &&
+					   	meta.hasOwnProperty('HEIGHT_LEVELS_NUMBER')){
 
-						for (var i = 0; i < rasdata.length; i++) {
-							self.p_plot.addDataset((cov_id+"_"+i), rasdata[i], img.getWidth(), img.getHeight());
-							self.p_plot.setDomain(range);
-							self.p_plot.setNoDataValue(-9999);
-							self.p_plot.setClamp(false);
-							self.p_plot.renderDataset((cov_id+"_"+i));
-							self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, (cov_id+"_"+i), cur_coll, alpha, i*18000);
-						}
-
-					}else{
+					   	var coords = meta.COORDINATES.split(',');
+					   	var positions = [];
+					   	for (var i = coords.length - 1; i >= 0; i--) {
+					   		positions = positions.concat($.trim(coords[i]).split(' ').map(Number));
+					   	};
+					   	var height = meta.HEIGHT_LEVELS.split(' ');
+					   	height = Number(height[height.length-1]);
 
 						self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
 						self.p_plot.setDomain(range);
 						self.p_plot.setNoDataValue(-9999);
+						self.p_plot.setClamp(false);
 						self.p_plot.renderDataset(cov_id);
 						if (prim){
 							prim["cov_id"] = cov_id;
 							prim.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
 						}else{
-							self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, cov_id, cur_coll, alpha);
+							self.createCurtain(self.p_plot.canvas.toDataURL(), positions, cov_id, cur_coll, alpha, height);
+							
 						}
 
+					}else{
+
+
+						// Check if we have a multilayered tif
+						if (rasdata.length > 1){
+
+							for (var i = 0; i < rasdata.length; i++) {
+								self.p_plot.addDataset((cov_id+"_"+i), rasdata[i], img.getWidth(), img.getHeight());
+								self.p_plot.setDomain(range);
+								self.p_plot.setNoDataValue(-9999);
+								self.p_plot.setClamp(false);
+								self.p_plot.renderDataset((cov_id+"_"+i));
+								self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, (cov_id+"_"+i), cur_coll, alpha, i*18000);
+							}
+
+						}else{
+
+							self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
+							self.p_plot.setDomain(range);
+							self.p_plot.setNoDataValue(-9999);
+							self.p_plot.renderDataset(cov_id);
+							if (prim){
+								prim["cov_id"] = cov_id;
+								prim.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+							}else{
+								self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, cov_id, cur_coll, alpha);
+							}
+
+						}
 					}
 
 				});
@@ -1040,12 +1376,17 @@ define(['backbone.marionette',
 
 						for (var i = coverages.data.length - 1; i >= 0; i--) {
 
-							var bbox = coverages.data[i].bbox;
-							bbox = bbox.substring(1, bbox.length - 1).split(",").map(parseFloat);
-							//var request = url + "?service=WCS&request=GetCoverage&version=2.0.1&coverageid="+coverages.data[i].identifier;
 
-							var request = url.substring(0,url.length-11) + "/coverage/"+coverages.data[i].identifier+".tif";
-							//console.log(request);
+							if (collection != "Cloudsat"){
+
+								var bbox = coverages.data[i].bbox;
+								bbox = bbox.substring(1, bbox.length - 1).split(",").map(parseFloat);
+								//var request = url + "?service=WCS&request=GetCoverage&version=2.0.1&coverageid="+coverages.data[i].identifier;
+
+								var request = url.substring(0,url.length-11) + "/coverage/"+coverages.data[i].identifier+".tif";
+								//console.log(request);
+
+							}
 
 
 							///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1063,7 +1404,10 @@ define(['backbone.marionette',
 								//request = "http://demo.v-manip.eox.at/GOME2_test.tif"
 							}
 
-
+							if (collection == "Cloudsat"){
+								request = "http://demo.v-manip.eox.at/Cloudsat_Reflectivity_2013137113720_0005.tif";
+								//request = "http://demo.v-manip.eox.at/GOME2_test.tif"
+							}
 
 							///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1079,6 +1423,15 @@ define(['backbone.marionette',
 								var bbox = bbox;
 								var cov_id = coverages.data[i].identifier;
 								var plot = self.p_plot;
+
+								//////////////////////////////////
+								// TODO: Remove
+								// Testing overwrite
+								if (collection == "Cloudsat"){
+									cov_id = 'Cloudsat';
+									stacked = false;
+								} 
+								//////////////////////////////////
 
 								if(!stacked){
 									// If not stacked just request and create primitves for all coverages
