@@ -1,4 +1,5 @@
 
+var ELEVATION_EXAGERATION = 70;
 
 CESIUM_BASE_URL = "bower_components/cesium/Build/Cesium/"
 function defaultFor(arg, val) { return typeof arg !== 'undefined' ? arg : val; }
@@ -20,7 +21,8 @@ define(['backbone.marionette',
 		'drawhelper',
 		'filesaver',
 		'geotiff',
-		'plotty'
+		'plotty',
+		'analytics'
 	],
 	function(Marionette, Communicator, App, MapModel, globals, Papa,
 			 Tmpl_load_shc, Tmpl_calc_diff, Tmpl_get_field_lines,
@@ -63,6 +65,28 @@ define(['backbone.marionette',
 				this.stackedDataset = [];
 				this.playback = false;
 				// TODO: Need to change this into an object which contais arrays for all different layers/collections
+
+				var args = {
+					scatterEl: $('#pickingresults')[0],
+					selection_x: "val",
+					selection_y: ["height"],
+					showDropDownSelection: false
+				};
+
+				this.sp = new scatterPlot(args, function(){
+					},
+					function (values) {
+						//Communicator.mediator.trigger("cesium:highlight:point", [values.Latitude, values.Longitude, values.Radius]);
+					}, 
+					function(){
+						//Communicator.mediator.trigger("cesium:highlight:removeAll");
+					},
+					function(filter){
+						//Communicator.mediator.trigger("download:set:filter", filter);
+					}
+				);
+
+				
 
 				Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(-5.0, -40.0, 40.0, 90.0);
 
@@ -340,6 +364,10 @@ define(['backbone.marionette',
 
 	                			
 	                			var cov_id = primitives[i].cov_id;
+	                			var height = pos;
+	                			if (primitives[i].hasOwnProperty("height")){
+	                				height = primitives[i].height;
+	                			}
 			                	var rect = primitives[i].geometryInstances[0].geometry._rectangle;
 			                	
 			                	if(that.p_plot.datasetAvailable(cov_id)) {
@@ -365,10 +393,11 @@ define(['backbone.marionette',
 										}
 										id = cov_id.substr(0,getPosition(cov_id, '_', 3));
 									}
+									pos++;
 									renderdata.push({
 										id:id,
 										val: ds.data[(y*w)+x],
-										pos: pos++
+										height: height
 									})
 
 								}
@@ -383,85 +412,9 @@ define(['backbone.marionette',
 
 	                		$("#pickingresults").show();
 
-		                	var margin = {top: 20, right: 20, bottom: 40, left: 50},
-							    width = $("#pickingresults").width() - margin.left - margin.right,
-							    height = $("#pickingresults").height() - margin.top - margin.bottom;
+	                		that.sp.loadData({parsedData: renderdata});
+	                		$('#download_button').remove();
 
-							var x = d3.scale.linear()
-							    .range([0, width]);
-
-							var y = d3.scale.linear()
-							    .range([height, 0]);
-
-							var color = d3.scale.category10();
-
-							var xAxis = d3.svg.axis()
-							    .scale(x)
-							    .orient("bottom");
-
-							var yAxis = d3.svg.axis()
-							    .scale(y)
-							    .orient("left");
-
-							var svg = d3.select("#pickingresults").append("svg")
-							    .attr("width", width + margin.left + margin.right)
-							    .attr("height", height + margin.top + margin.bottom)
-							  .append("g")
-							    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-
-							  x.domain(d3.extent(renderdata, function(d) { return d.val; })).nice();
-							  y.domain(d3.extent(renderdata, function(d) { return d.pos; })).nice();
-
-							  svg.append("g")
-							      .attr("class", "x axis")
-							      .attr("transform", "translate(0," + height + ")")
-							      .call(xAxis)
-							    .append("text")
-							      .attr("class", "label")
-							      .attr("x", width)
-							      .attr("y", -6)
-							      .style("text-anchor", "end")
-							      .text("Measure value");
-
-							  svg.append("g")
-							      .attr("class", "y axis")
-							      .call(yAxis)
-							    .append("text")
-							      .attr("class", "label")
-							      .attr("transform", "rotate(-90)")
-							      .attr("y", 6)
-							      .attr("dy", ".71em")
-							      .style("text-anchor", "end")
-							      .text("Band")
-
-							  svg.selectAll(".dot")
-							      .data(renderdata)
-							    .enter().append("circle")
-							      .attr("class", "dot")
-							      .attr("r", 3.5)
-							      .attr("cx", function(d) { return x(d.val); })
-							      .attr("cy", function(d) { return y(d.pos); })
-							      .style("fill", function(d) { return color(d.id); });
-
-							  var legend = svg.selectAll(".legend")
-							      .data(color.domain())
-							    .enter().append("g")
-							      .attr("class", "legend")
-							      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
-
-							  legend.append("rect")
-							      .attr("x", width - 18)
-							      .attr("width", 18)
-							      .attr("height", 18)
-							      .style("fill", color);
-
-							  legend.append("text")
-							      .attr("x", width - 24)
-							      .attr("y", 9)
-							      .attr("dy", ".35em")
-							      .style("text-anchor", "end")
-							      .text(function(d) { return d; });
 						  }
 
 				    }// else here would be a drag event
@@ -1043,7 +996,7 @@ define(['backbone.marionette',
 			        fabric : {
 			            uniforms : {
 			                image : image,
-							repeat : new Cesium.Cartesian2(1.0, -1.0),
+							repeat : new Cesium.Cartesian2(-1.0, -1.0),
 			                alpha : alpha
 			            },
 			            components : {
@@ -1058,7 +1011,7 @@ define(['backbone.marionette',
 			    var max_heights = [];
 			    var min_heights = [];
 			    for (var i = (positions.length/2) - 1; i >= 0; i--) {
-			    	max_heights.push(height*10);
+			    	max_heights.push(height);
 			    	min_heights.push(0.0);
 			    };
 
@@ -1149,6 +1102,7 @@ define(['backbone.marionette',
 				});
 
 				prim["cov_id"] = cov_id;
+				prim["height"] = height/ELEVATION_EXAGERATION;
 
 				cur_coll.add(prim);
 			},
@@ -1180,7 +1134,7 @@ define(['backbone.marionette',
 					   		positions = positions.concat($.trim(coords[i]).split(' ').map(Number));
 					   	};
 					   	var height = meta.HEIGHT_LEVELS.split(' ');
-					   	height = Number(height[height.length-1]);
+					   	height = Number(height[height.length-1])*ELEVATION_EXAGERATION/10;
 
 						self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
 						self.p_plot.setDomain(range);
@@ -1201,13 +1155,23 @@ define(['backbone.marionette',
 						// Check if we have a multilayered tif
 						if (rasdata.length > 1){
 
+							var heights;
+							if(meta && meta.hasOwnProperty('VERTICAL_LEVELS')){
+								heights = meta.VERTICAL_LEVELS.slice(1, -1).match(/\S+/g).map(Number);
+							}
+
 							for (var i = 0; i < rasdata.length; i++) {
 								self.p_plot.addDataset((cov_id+"_"+i), rasdata[i], img.getWidth(), img.getHeight());
 								self.p_plot.setDomain(range);
 								self.p_plot.setNoDataValue(-9999);
 								self.p_plot.setClamp(false);
 								self.p_plot.renderDataset((cov_id+"_"+i));
-								self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, (cov_id+"_"+i), cur_coll, alpha, i*18000);
+
+								var height = i*18000;
+								if (i<=heights.length){
+									height = heights[i]*ELEVATION_EXAGERATION;
+								}
+								self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, (cov_id+"_"+i), cur_coll, alpha, height);
 							}
 
 						}else{
@@ -1254,6 +1218,7 @@ define(['backbone.marionette',
             	// Remove possible timetick and play button
             	Communicator.mediator.trigger("date:tick:select", false);
             	$('#playercontrols').hide();
+            	$('#timestamp').hide();
 
 
             	if(!_.has(this.coverages_collections, product.get("views")[0].id)){
@@ -1376,17 +1341,13 @@ define(['backbone.marionette',
 
 						for (var i = coverages.data.length - 1; i >= 0; i--) {
 
+							var bbox = coverages.data[i].bbox;
+							bbox = bbox.substring(1, bbox.length - 1).split(",").map(parseFloat);
+							//var request = url + "?service=WCS&request=GetCoverage&version=2.0.1&coverageid="+coverages.data[i].identifier;
 
-							if (collection != "Cloudsat"){
-
-								var bbox = coverages.data[i].bbox;
-								bbox = bbox.substring(1, bbox.length - 1).split(",").map(parseFloat);
-								//var request = url + "?service=WCS&request=GetCoverage&version=2.0.1&coverageid="+coverages.data[i].identifier;
-
-								var request = url.substring(0,url.length-11) + "/coverage/"+coverages.data[i].identifier+".tif";
-								//console.log(request);
-
-							}
+							//var request = url.substring(0,url.length-11) + "/coverage/"+coverages.data[i].identifier+".tif";
+							var request = url.substring(0,url.length-11) + "/davprc/coverage/"+coverages.data[i].identifier;
+							//console.log(request);
 
 
 							///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1394,20 +1355,17 @@ define(['backbone.marionette',
 							// Testing overwrite
 
 
-							if (collection == "ALARO_Specific_Humidity_201305150000"){
+							/*if (collection == "ALARO_Specific_Humidity_201305150000"){
 								request = "http://demo.v-manip.eox.at/ALARO_humidity.tif";
-								//request = "http://demo.v-manip.eox.at/GOME2_test.tif"
 							}
 
 							if (collection == "ALARO_Temperature_isobaric_201305181200"){
 								request = "http://demo.v-manip.eox.at/ALARO_Temperature_isobaric_f32.tif";
-								//request = "http://demo.v-manip.eox.at/GOME2_test.tif"
 							}
 
 							if (collection == "Cloudsat"){
 								request = "http://demo.v-manip.eox.at/Cloudsat_Reflectivity_2013137113720_0005.tif";
-								//request = "http://demo.v-manip.eox.at/GOME2_test.tif"
-							}
+							}*/
 
 							///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1423,15 +1381,6 @@ define(['backbone.marionette',
 								var bbox = bbox;
 								var cov_id = coverages.data[i].identifier;
 								var plot = self.p_plot;
-
-								//////////////////////////////////
-								// TODO: Remove
-								// Testing overwrite
-								if (collection == "Cloudsat"){
-									cov_id = 'Cloudsat';
-									stacked = false;
-								} 
-								//////////////////////////////////
 
 								if(!stacked){
 									// If not stacked just request and create primitves for all coverages
@@ -1466,7 +1415,7 @@ define(['backbone.marionette',
 									var fps = 15;
 
 									$('#playercontrols').show();
-
+									
 									// Remove handlers
 									$("#play-button").off();
 
@@ -1484,6 +1433,8 @@ define(['backbone.marionette',
 														prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
 														prim_to_render.cov_id = to_play[play_index].identifier;
 														Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
+														$('#timestamp').show();
+														$('#timestamp').text(to_play[play_index].starttime);
 											        }
 
 											    }, 1000 / fps);

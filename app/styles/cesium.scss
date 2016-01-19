@@ -55,3 +55,27 @@
   top: 10px;
   z-index: 1050;
 }
+
+#timestamp{
+  position: absolute;
+  width: 160px;
+  text-align: center;
+  height: 30px;
+  left: 50%;
+  margin-left: -80px;
+  padding-top: 4px;
+  bottom: 160px;
+  border-radius: 5px;
+  background-color: white;
+  font-weight: bold;
+}
+
+#pickingresults{
+  position:absolute;
+  width:35%;
+  height:35%;
+  bottom: 90px;
+  right: 10px;
+  background-color: white;
+  display:none;
+}
