@@ -86,6 +86,14 @@
 				this.$("#range_max_slider").attr("value", options[this.selected].range[1]);
 				//max_label.innerHTML = max_range;
 
+				this.$("#opacitysilder").val(this.model.attributes.opacity*100);
+				this.$("#opacitysilder").on("input change", function(){
+					var opacity = Number(this.value)/100;
+					that.model.set("opacity", opacity);
+					Communicator.mediator.trigger('productCollection:updateOpacity', {model:that.model, value:opacity});
+				});
+
+
 
 				// Set the step size
 				// TODO: How many steps do we want to allow? Is 120 ok?

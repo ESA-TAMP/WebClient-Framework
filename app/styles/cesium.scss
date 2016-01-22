@@ -78,8 +78,12 @@
   position:absolute;
   width:35%;
   height:35%;
-  bottom: 90px;
-  right: 10px;
+  display: block;
+  border: 1px solid black;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.39);
+  border-radius: 4px;
+  right: 38px;
+  bottom: 125px;
   background-color: white;
   display:none;
 }

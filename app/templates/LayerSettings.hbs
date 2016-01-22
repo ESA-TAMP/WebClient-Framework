@@ -16,6 +16,7 @@
 			</form>
 
 		  <li style="margin-top: 15px;">
+
 		  	<div id="colorscale">
 
 		  		<form>
@@ -23,17 +24,26 @@
 				  <select name="style" id="style"></select>
 				</form>
 
-		    	<div id="setting_colorscale" style="width:100%; pointer-events: none;"></div>
+		    	
 		    </div>
+		  </li>
+
+		  <li style="margin-top: 15px;">
+		  	<label>Range Settings:</label>
+		    <div id="setting_colorscale" style="width:100%; pointer-events: none;"></div>
 		  </li>
 
 		  <li style="margin-top: -15px; z-index: 1000;">
 		  	<input id="range_min" type="text" style="width:60px;"/>
 		  	<input id="range_max" type="text" style="width:60px; float:right;"/>
 		  </li>
-		  <li style="z-index: 1000;">
+		  <li style="z-index: 1000; margin-top: 15px;">
 		  	<input id="range_min_slider" type="range" style="width:45%;"/><label for="min" id="min_label"></label>
 		  	<input id="range_max_slider" type="range" style="width:45%; float:right;"/><label for="max" id="max_label"></label>
+		  </li>
+		  <li style="margin-top: 15px;">
+		  	<label for="opacitysilder" id="opacitysilder_label">Opacity</label>
+		  	<input id="opacitysilder" type="range" min=0  max=100 step=1 style="width:100%;"/>
 		  </li>
 		  
 		</ul>

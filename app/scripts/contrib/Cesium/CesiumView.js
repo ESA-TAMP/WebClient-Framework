@@ -68,34 +68,14 @@ define(['backbone.marionette',
 				this.pickingActive = false;
 				this.bboxActive = false;
 
-
 				// TODO: Need to change this into an object which contais arrays for all different layers/collections
+				this.currentCoverages = [];
 
-				var args = {
-					scatterEl: $('#pickingresults')[0],
-					selection_x: "val",
-					selection_y: ["height"],
-					showDropDownSelection: false
-				};
-
-				this.sp = new scatterPlot(args, function(){
-					},
-					function (values) {
-						//Communicator.mediator.trigger("cesium:highlight:point", [values.Latitude, values.Longitude, values.Radius]);
-					}, 
-					function(){
-						//Communicator.mediator.trigger("cesium:highlight:removeAll");
-					},
-					function(filter){
-						//Communicator.mediator.trigger("download:set:filter", filter);
-					}
-				);
-
-				
+				this.selection_x = '';
+				this.selection_y = '';
 
 				Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(-5.0, -40.0, 40.0, 90.0);
-
-
+				
 				Cesium.WebMapServiceImageryProvider.prototype.updateProperties = function(property, value) {
 
 			        property = "&"+property+"=";
@@ -178,6 +158,34 @@ define(['backbone.marionette',
 						clock: clock
 					});
 				}
+
+				// Remove gazettier input form
+				$('.cesium-viewer-geocoderContainer').remove();
+				// Remove GUI elements (TAMP will only use one window)
+				$('.gui').remove();
+
+				// Create needle (not shown) entity used to visualize picking location
+				this.map.entities.add({
+	            	id: 'needle',
+			        position : Cesium.Cartesian3.fromDegrees(0, 0, 600000),
+			        show: false,
+			        point : {
+			            //show : true, // default
+			            color : Cesium.Color.RED, // default: WHITE
+			            pixelSize : 12, // default: 1
+			            outlineColor : Cesium.Color.WHITE, // default: BLACK
+			            outlineWidth : 2 // default: 0
+			        },
+			        polyline : {
+			        	positions: [
+			        		Cesium.Cartesian3.fromDegrees(0, 0, 0),
+			        		Cesium.Cartesian3.fromDegrees(0, 0, 600000)
+			        	],
+			        	followSurface: false,
+			        	width: 2,
+			        	material : Cesium.Color.RED
+			        }
+			    });
 
 				var mm = globals.objects.get('mapmodel');
 
@@ -293,8 +301,7 @@ define(['backbone.marionette',
 	                	var pos_y = Cesium.Math.toDegrees(cartographic.latitude);
 	                	var p = {x:pos_x, y:pos_y};
 
-	                	that.map.entities.removeById("positionselection");
-	                	that.map.entities.removeById("needlehead");
+	                	that.map.entities.getById("needle").show = false;
 
 						// TODO: One interesting way of getting this is by picking
 	                	// This is only possible as "raycast" from camera into the scene
@@ -338,41 +345,15 @@ define(['backbone.marionette',
 
 	                			});
 	                		}	                
-	                	});              	
+	                	}); 
 
-	                	var color = Cesium.Color.RED;
-			            var surfacePosition = Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 0);
-			            var heightPosition = Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 600000);
-
-			            //WebGL Globe only contains lines, so that's the only graphics we create.
-			            var polyline = new Cesium.PolylineGraphics();
-			            polyline.material = new Cesium.ColorMaterialProperty(color);
-			            polyline.width = new Cesium.ConstantProperty(2);
-			            polyline.followSurface = new Cesium.ConstantProperty(false);
-			            polyline.positions = new Cesium.ConstantProperty([surfacePosition, heightPosition]);
-
-			            //The polyline instance itself needs to be on an entity.
-			            var entity = new Cesium.Entity({
-			                id : "positionselection",
-			                show : true,
-			                polyline : polyline
-			            });
-
-			            
-			            //Add the entity to the collection.
-			            that.map.entities.add(entity);
-
-			            that.map.entities.add({
-			            	id: 'needlehead',
-					        position : Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 600000),
-					        point : {
-					            show : true, // default
-					            color : Cesium.Color.RED, // default: WHITE
-					            pixelSize : 12, // default: 1
-					            outlineColor : Cesium.Color.WHITE, // default: BLACK
-					            outlineWidth : 2 // default: 0
-					        }
-					    });
+	                	var needle = that.map.entities.getById('needle');
+                		needle.position.setValue(Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 600000));
+                		needle.polyline._positions.setValue([
+                			Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 0),
+				        	Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 600000)
+				        ])
+				        that.map.entities.getById("needle").show = true;
 
 	                	var renderdata = [];
 
@@ -395,6 +376,15 @@ define(['backbone.marionette',
 			                		for (var i = that.stackedDataset.length - 1; i >= 0; i--) {
 			                			var stackCovID = that.stackedDataset[i];
 			                			if(that.p_plot.datasetAvailable(stackCovID)) {
+			                				var timestamp = pos;
+			                				var covsData = that.currentCoverages.data;
+			                				for (var cov in covsData){
+			                					if(covsData[cov].identifier == stackCovID){
+			                						if(covsData[cov].hasOwnProperty('starttime')){
+			                							timestamp = new Date(covsData[cov].starttime);
+			                						}
+			                					}
+			                				};
 											var ds = that.p_plot.datasetCollection[stackCovID];
 											var w = ds.width;
 											var h = ds.height;
@@ -416,10 +406,12 @@ define(['backbone.marionette',
 												id = stackCovID.substr(0,getPosition(stackCovID, '_', 3));
 											}
 											pos++;
+											this.selection_x = 'timestamp';
+											this.selection_y = 'measurement';
 											renderdata.push({
 												id:id,
-												val: ds.data[(y*w)+x],
-												height: pos
+												measurement: ds.data[(y*w)+x],
+												timestamp: timestamp
 											})
 
 										}
@@ -449,9 +441,11 @@ define(['backbone.marionette',
 											id = cov_id.substr(0,getPosition(cov_id, '_', 3));
 										}
 										//pos++;
+										this.selection_x = 'measurement';
+										this.selection_y = 'height';
 										renderdata.push({
 											id:id,
-											val: ds.data[(y*w)+x],
+											measurement: ds.data[(y*w)+x],
 											height: height
 										})
 
@@ -469,8 +463,32 @@ define(['backbone.marionette',
 
 	                		$("#pickingresults").show();
 
-	                		that.sp.loadData({parsedData: renderdata});
+	                		var args = {
+								scatterEl: $('#pickingresults')[0],
+								selection_x: this.selection_x,
+								selection_y: [this.selection_y],
+								showDropDownSelection: false,
+								margin: {top: 45, right: 20, bottom: 10, left: 50}
+							};
+
+							var sp = new scatterPlot(args, function(){
+								},
+								function (values) {
+									//Communicator.mediator.trigger("cesium:highlight:point", [values.Latitude, values.Longitude, values.Radius]);
+								}, 
+								function(){
+									//Communicator.mediator.trigger("cesium:highlight:removeAll");
+								},
+								function(filter){
+									//Communicator.mediator.trigger("download:set:filter", filter);
+								}
+							);
+
+	                		sp.loadData({parsedData: renderdata});
+	                		// Move some things around
 	                		$('#download_button').remove();
+	                		$('#pickingresults').find('#save').attr('style','position: absolute; right: 29px; top: 7px');
+	                		$('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');
 
 						  }
 
@@ -1322,6 +1340,8 @@ define(['backbone.marionette',
 							skipEmptyLines: true
 						});
 
+						self.currentCoverages = coverages;
+
 						function identicalBbox(array) {
 							if (array.length == 1 || array.length == 0)
 								return false;
@@ -1898,8 +1918,7 @@ define(['backbone.marionette',
 					}
 					else{
 						this.pickingActive = false;
-						this.map.entities.removeById("positionselection");
-						this.map.entities.removeById("needlehead");
+						this.map.entities.getById("needle").show = false;
 						$("#pickingresults").empty();
 	                	$("#pickingresults").hide();
 					}
@@ -1911,8 +1930,7 @@ define(['backbone.marionette',
 
 						if(this.pickingActive) {
 							this.pickingActive = false;
-							this.map.entities.removeById("positionselection");
-							this.map.entities.removeById("needlehead");
+							this.map.entities.getById("needle").show = false;
 							$("#pickingresults").empty();
 		                	$("#pickingresults").hide();
 						}

@@ -714,21 +714,7 @@
 
     ],
 
-    "visualizationModes": [{
-            "id": "SingleView",
-            "eventToRaise": "layout:switch:singleview",
-            "description": "Single view of map",
-            "icon": "fa fa-stop fa-2x",
-            "enabled": true,
-            "active": true
-        }, {
-            "id": "SplitView",
-            "eventToRaise": "layout:switch:splitview",
-            "description": "Splits screen to visualize two maps side by side",
-            "icon": "fa fa-pause fa-2x",
-            "enabled": true,
-            "active": false
-        }
+    "visualizationModes": [
 
     ],
 
