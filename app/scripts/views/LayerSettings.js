@@ -30,7 +30,7 @@
 				// If settings open rerender view to update changes
 				this.listenTo(Communicator.mediator, "layer:settings:changed", this.onParameterChange);
 
-				this.$(".panel-title").html('<h3 class="panel-title"><i class="fa fa-fw fa-gears"></i> ' + this.model.get("name") + ' Settings</h3>');
+				this.$(".panel-title").html('<h3 class="panel-title"><i class="fa fa-fw fa-sliders"></i> ' + this.model.get("name") + ' Settings</h3>');
 
 		    	this.$('.close').on("click", _.bind(this.onClose, this));
 		    	this.$el.draggable({

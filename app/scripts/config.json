@@ -565,6 +565,11 @@
             "eventToRaise": "ui:open:layercontrol",
             "template": "LayerControl"
         }, {
+            "name": "Processes",
+            "icon": "fa-gears",
+            "eventToRaise": "ui:open:processes",
+            "template": "LayerControl"
+        }, {
             "name": "Tools",
             "icon": "fa-wrench",
             "eventToRaise": "ui:open:toolselection",
@@ -618,7 +623,8 @@
         "views/DownloadView",
         "views/DownloadFilterView",
         "views/StoryBannerView",
-        "views/LayerSettings"
+        "views/LayerSettings",
+        "views/ProcessesView"
     ],
 
     "models": [
@@ -678,9 +684,14 @@
     }],
 
     "selectionTools": [{
+        "id": "pointSelection",
+        "description": "Picking tool - Click to set a pin for picking data",
+        "icon": "fa fa-map-pin fa-2x",
+        "selectionType":"single"
+    },{
         "id": "bboxSelection",
         "description": "Bounding box selection tool - Click and drag to create a selection",
-        "icon": "icon-large icon-vector-path-square",
+        "icon": "fa fa-object-group fa-2x",
         "selectionType":"single"
     }],
 

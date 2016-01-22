@@ -64,6 +64,11 @@ define(['backbone.marionette',
 
 				this.stackedDataset = [];
 				this.playback = false;
+
+				this.pickingActive = false;
+				this.bboxActive = false;
+
+
 				// TODO: Need to change this into an object which contais arrays for all different layers/collections
 
 				var args = {
@@ -276,7 +281,7 @@ define(['backbone.marionette',
                 this.$el.on('mousedown', function (evt) {
 				  that.$el.on('mouseup mousemove', function handler(evt) {
 				  	// Make sure it is a click event
-				    if (evt.type === 'mouseup') {
+				    if (that.pickingActive && evt.type === 'mouseup') {
 				      	var offset = $(this).offset()
 	                	var x = evt.pageX - offset.left;
 	                	var y = evt.pageY - offset.top;
@@ -289,6 +294,7 @@ define(['backbone.marionette',
 	                	var p = {x:pos_x, y:pos_y};
 
 	                	that.map.entities.removeById("positionselection");
+	                	that.map.entities.removeById("needlehead");
 
 						// TODO: One interesting way of getting this is by picking
 	                	// This is only possible as "raycast" from camera into the scene
@@ -356,12 +362,24 @@ define(['backbone.marionette',
 			            //Add the entity to the collection.
 			            that.map.entities.add(entity);
 
+			            that.map.entities.add({
+			            	id: 'needlehead',
+					        position : Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 600000),
+					        point : {
+					            show : true, // default
+					            color : Cesium.Color.RED, // default: WHITE
+					            pixelSize : 12, // default: 1
+					            outlineColor : Cesium.Color.WHITE, // default: BLACK
+					            outlineWidth : 2 // default: 0
+					        }
+					    });
+
 	                	var renderdata = [];
 
 	                	if(primitives){
-	                		var pos = 0;
+	                		
 	                		for (var i = primitives.length - 1; i >= 0; i--) {
-
+	                			var pos = 0;
 	                			
 	                			var cov_id = primitives[i].cov_id;
 	                			var height = pos;
@@ -369,39 +387,78 @@ define(['backbone.marionette',
 	                				height = primitives[i].height;
 	                			}
 			                	var rect = primitives[i].geometryInstances[0].geometry._rectangle;
-			                	
-			                	if(that.p_plot.datasetAvailable(cov_id)) {
-									var ds = that.p_plot.datasetCollection[cov_id];
-									var w = ds.width;
-									var h = ds.height;
-									var east = Cesium.Math.toDegrees(rect.east);
-									var west = Cesium.Math.toDegrees(rect.west);
-									var north = Cesium.Math.toDegrees(rect.north);
-									var south = Cesium.Math.toDegrees(rect.south);
-									var res_x = Math.abs(east - west)/w;
-									var res_y = Math.abs(north - south)/h;
-									var x = Math.floor(Math.abs(pos_x - west)/res_x);
-									var y = Math.floor(Math.abs(pos_y - north)/res_y);
-									/*console.log(x,y);
-									console.log(ds.data[(y*w)+x]);*/
-									var index = cov_id.lastIndexOf("_");
-									var pos = parseInt(cov_id.substr(index+1));
-									var id = cov_id.substr(0,index);
-									if(cov_id.split('_').length>3){
-										function getPosition(str, m, i) {
-										   return str.split(m, i).join(m).length;
-										}
-										id = cov_id.substr(0,getPosition(cov_id, '_', 3));
-									}
-									pos++;
-									renderdata.push({
-										id:id,
-										val: ds.data[(y*w)+x],
-										height: height
-									})
 
-								}
-								
+			                	// Check if coverage is part of a time stack
+			                	if (that.stackedDataset.indexOf(cov_id)){
+			                		// The coverage is part of the stacked dataset 
+			                		// so we can go through all elements
+			                		for (var i = that.stackedDataset.length - 1; i >= 0; i--) {
+			                			var stackCovID = that.stackedDataset[i];
+			                			if(that.p_plot.datasetAvailable(stackCovID)) {
+											var ds = that.p_plot.datasetCollection[stackCovID];
+											var w = ds.width;
+											var h = ds.height;
+											var east = Cesium.Math.toDegrees(rect.east);
+											var west = Cesium.Math.toDegrees(rect.west);
+											var north = Cesium.Math.toDegrees(rect.north);
+											var south = Cesium.Math.toDegrees(rect.south);
+											var res_x = Math.abs(east - west)/w;
+											var res_y = Math.abs(north - south)/h;
+											var x = Math.floor(Math.abs(pos_x - west)/res_x);
+											var y = Math.floor(Math.abs(pos_y - north)/res_y);
+											var index = stackCovID.lastIndexOf("_");
+											//var pos = parseInt(cov_id.substr(index+1));
+											var id = stackCovID.substr(0,index);
+											if(stackCovID.split('_').length>3){
+												function getPosition(str, m, i) {
+												   return str.split(m, i).join(m).length;
+												}
+												id = stackCovID.substr(0,getPosition(stackCovID, '_', 3));
+											}
+											pos++;
+											renderdata.push({
+												id:id,
+												val: ds.data[(y*w)+x],
+												height: pos
+											})
+
+										}
+			                		};
+			                	}else{
+			                		if(that.p_plot.datasetAvailable(cov_id)) {
+										var ds = that.p_plot.datasetCollection[cov_id];
+										var w = ds.width;
+										var h = ds.height;
+										var east = Cesium.Math.toDegrees(rect.east);
+										var west = Cesium.Math.toDegrees(rect.west);
+										var north = Cesium.Math.toDegrees(rect.north);
+										var south = Cesium.Math.toDegrees(rect.south);
+										var res_x = Math.abs(east - west)/w;
+										var res_y = Math.abs(north - south)/h;
+										var x = Math.floor(Math.abs(pos_x - west)/res_x);
+										var y = Math.floor(Math.abs(pos_y - north)/res_y);
+										/*console.log(x,y);
+										console.log(ds.data[(y*w)+x]);*/
+										var index = cov_id.lastIndexOf("_");
+										//var pos = parseInt(cov_id.substr(index+1));
+										var id = cov_id.substr(0,index);
+										if(cov_id.split('_').length>3){
+											function getPosition(str, m, i) {
+											   return str.split(m, i).join(m).length;
+											}
+											id = cov_id.substr(0,getPosition(cov_id, '_', 3));
+										}
+										//pos++;
+										renderdata.push({
+											id:id,
+											val: ds.data[(y*w)+x],
+											height: height
+										})
+
+									}
+
+			                	}
+			                						
 	                		};
 	                	}
 
@@ -1830,60 +1887,66 @@ define(['backbone.marionette',
             onSelectionActivated: function(arg) {
 				this.selectionType = arg.selectionType;
 
-				if (arg.active) {
-
-					var self = this;
-					this.drawhelper.startDrawingExtent({
-	                    callback: function(extent) {
-
-				            /*console.log('Extent created (N: ' + extent.north.toFixed(3) +
-				            			 ', E: ' + extent.east.toFixed(3) +
-				            			 ', S: ' + extent.south.toFixed(3) +
-				            			 ', W: ' + extent.west.toFixed(3) + ')');*/
-
-							//var colorindex = self.map.scene.primitives.length+1;
-							var colorindex = 0;
-							if(self.selectionType == "single"){
-								//self.map.scene.primitives.removeAll();
-								colorindex = self.map.scene.primitives.length;
-								Communicator.mediator.trigger("selection:changed", null);
-							}
-
-							//var color = self.colors(colorindex);
-							var color = null;
-
-							//Communicator.mediator.trigger("selection:changed", evt.feature);
-							// MH: this is a hack: I send the openlayers AND the coords so self the viewers (RBV, SliceViewer) do
-							// not have to be rewritten. This has to be changed somewhen...
-							var coordinates = self._convertCoordsFromCesium(extent, 0);
-							var feature = self._convertCoordsToOpenLayers(coordinates);
-							Communicator.mediator.trigger("selection:changed", feature, coordinates, color);
-	                    }
-	                });
-
-					/*for (key in this.drawControls) {
-						var control = this.drawControls[key];
-						if (arg.id == key) {
-							control.activate();
-						} else {
-							control.layer.removeAllFeatures();
-							control.deactivate();
+				if(arg.id=='pointSelection'){
+					if (arg.active) {
+						if(this.bboxSelection){
+							this.bboxSelection = false;
 							Communicator.mediator.trigger("selection:changed", null);
+							this.drawhelper.stopDrawing();
 						}
-					}*/
-				} else {
-					//this.map.scene.primitives.removeAll();
-					Communicator.mediator.trigger("selection:changed", null);
-					//this.drawhelper.muteHandlers(true);
-					//this.map.screenSpaceEventHandler.destroy();
-					this.drawhelper.stopDrawing();
-					/*for (key in this.drawControls) {
-						var control = this.drawControls[key];
-						control.layer.removeAllFeatures();
-						control.deactivate();
-						Communicator.mediator.trigger("selection:changed", null);
+						this.pickingActive = true;
+					}
+					else{
+						this.pickingActive = false;
+						this.map.entities.removeById("positionselection");
+						this.map.entities.removeById("needlehead");
+						$("#pickingresults").empty();
+	                	$("#pickingresults").hide();
+					}
 
-					}*/
+				}else if(arg.id=='bboxSelection'){
+
+					if (arg.active) {
+						
+
+						if(this.pickingActive) {
+							this.pickingActive = false;
+							this.map.entities.removeById("positionselection");
+							this.map.entities.removeById("needlehead");
+							$("#pickingresults").empty();
+		                	$("#pickingresults").hide();
+						}
+						
+
+						this.bboxSelection = true;
+						var self = this;
+						this.drawhelper.startDrawingExtent({
+		                    callback: function(extent) {
+
+								//var colorindex = self.map.scene.primitives.length+1;
+								var colorindex = 0;
+								if(self.selectionType == "single"){
+									//self.map.scene.primitives.removeAll();
+									colorindex = self.map.scene.primitives.length;
+									Communicator.mediator.trigger("selection:changed", null);
+								}
+
+								//var color = self.colors(colorindex);
+								var color = null;
+
+								//Communicator.mediator.trigger("selection:changed", evt.feature);
+								// MH: this is a hack: I send the openlayers AND the coords so self the viewers (RBV, SliceViewer) do
+								// not have to be rewritten. This has to be changed somewhen...
+								var coordinates = self._convertCoordsFromCesium(extent, 0);
+								var feature = self._convertCoordsToOpenLayers(coordinates);
+								Communicator.mediator.trigger("selection:changed", feature, coordinates, color);
+		                    }
+		                });
+					} else {
+						this.bboxSelection = false;
+						Communicator.mediator.trigger("selection:changed", null);
+						this.drawhelper.stopDrawing();
+					}
 				}
 			},
 
