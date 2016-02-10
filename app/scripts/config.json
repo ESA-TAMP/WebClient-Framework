@@ -160,6 +160,58 @@
                 }
             }
         },{
+            "name": "OMI_L2_SO2",
+            "visible": false,
+            "timeSlider": true,
+            "timeSliderProtocol": "WPS",
+            "views": [{
+                "id": "OMI_L2_SO2",
+                "protocol": "WCS",
+                "urls": [
+                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
+                ]
+            }],
+            "download": {
+                "id": "OMI_L2_SO2",
+                "protocol": "EOWCS",
+                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
+            },
+            "parameters": {
+                "Specific Humidity": {
+                    "range": [-15.7, 10.4],
+                    "uom":"hPa",
+                    "colorscale": "viridis",
+                    "name": "Specific Humidity",
+                    "selected": true
+                }
+            }
+        },{
+            "name": "OMI_L3e_SO2",
+            "visible": false,
+            "timeSlider": true,
+            "timeSliderProtocol": "WPS",
+            "views": [{
+                "id": "OMI_L3e_SO2",
+                "protocol": "WCS",
+                "urls": [
+                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
+                ]
+            }],
+            "download": {
+                "id": "OMI_L3e_SO2",
+                "protocol": "EOWCS",
+                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
+            },
+            "parameters": {
+                "Specific Humidity": {
+                    "range": [-15.7, 10.4],
+                    "uom":"hPa",
+                    "colorscale": "viridis",
+                    "name": "Specific Humidity",
+                    "selected": true
+                }
+            }
+        },{
             "name": "ALARO Specific humidity isobaric",
             "visible": false,
             "timeSlider": true,
@@ -558,7 +610,7 @@
 
     "navBarConfig": {
         "title": "TAMP",
-        "url": "http://www.sistema.at/wp/?page_id=496",
+        "url": "http://vtpip.zamg.ac.at/",
         "items": [{
             "name": "Layers",
             "icon": "fa-globe",

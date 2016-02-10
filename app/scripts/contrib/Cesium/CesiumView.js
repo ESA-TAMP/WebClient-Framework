@@ -370,7 +370,7 @@ define(['backbone.marionette',
 			                	var rect = primitives[i].geometryInstances[0].geometry._rectangle;
 
 			                	// Check if coverage is part of a time stack
-			                	if (that.stackedDataset.indexOf(cov_id)){
+			                	if (that.stackedDataset.indexOf(cov_id)!=-1){
 			                		// The coverage is part of the stacked dataset 
 			                		// so we can go through all elements
 			                		for (var i = that.stackedDataset.length - 1; i >= 0; i--) {
@@ -459,7 +459,21 @@ define(['backbone.marionette',
 	                	$("#pickingresults").empty();
 	                	$("#pickingresults").hide();
 
-	                	if (renderdata.length > 0){
+	                	if (renderdata.length == 1){
+	                		$("#pickingresults").show();
+	                		$("#pickingresults").empty();
+
+	                		$("#pickingresults").append('<div style="margin: 0 auto" id="prcontainer"></div>');
+	                		$("#prcontainer").append('<ul id="listdisplay"></ul>');
+	                		var cur_obj = renderdata[0];
+
+							for (key in cur_obj){
+								if (cur_obj.hasOwnProperty(key)) {
+									$("#listdisplay").append('<li>'/*+key+': '*/+cur_obj[key]+'</li>');
+								}
+	                		}
+
+	                	}else if (renderdata.length > 1){
 
 	                		$("#pickingresults").show();
 
@@ -1467,6 +1481,8 @@ define(['backbone.marionette',
 									// of the list it means the primitive is not available already and needs to be created
 									// or we have found an already created primite and saved it to stacked primitive
 									deferreds.push(self.loadCoverage(request, bbox, cov_id, range, cur_coll, alpha, stacked_prim));
+									// We need to add it to the stacked list as it will be compared to to see if part of a stack collection
+									self.stackedDataset.push(cov_id);
 									Communicator.mediator.trigger("date:tick:select", new Date(coverages.data[i].starttime));
 								}else{
 									// We only request the data if it is not already avaialble

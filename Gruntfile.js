@@ -363,6 +363,8 @@ module.exports = function (grunt) {
                         'bower_components/virtualglobeviewer/src/**',
                         'bower_components/cesium/Build/Cesium/**',
                         'bower_components/papaparse/papaparse.min.js',
+                        'bower_components/plotty/lib/scripts/plotty.min.js',
+                        'bower_components/geotiffjs/dist/geotiff.min.js',
                         'scripts/vendor/**',
                         'scripts/core/ColorRamp/ColorRampControl.hbs'
                     ]

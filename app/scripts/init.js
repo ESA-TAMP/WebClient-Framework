@@ -118,7 +118,7 @@
             keypress: '../bower_components/Keypress/keypress',
             //xtk: '../scripts/vendor/xtk_edge',
             //'xtk-gui': '../scripts/vendor/xtk_xdat.gui',
-            papaparse: '../bower_components/papaparse/papaparse',
+            papaparse: '../bower_components/papaparse/papaparse.min',
             geotiff: '../bower_components/geotiffjs/dist/geotiff.min',
             plotty: '../bower_components/plotty/lib/scripts/plotty.min'
 
