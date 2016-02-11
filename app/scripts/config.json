@@ -95,67 +95,56 @@
                 "format": "image/jpeg",
                 "crs": "EPSG:4326"
             }]
-        }, {
-            "name": "Blue Marble",
-            "visible": false,
-            "views": [{
-                "id": "bluemarble",
-                "protocol": "WMTS",
-                "urls": [
-                    "http://a.tiles.maps.eox.at/wmts/",
-                    "http://b.tiles.maps.eox.at/wmts/",
-                    "http://c.tiles.maps.eox.at/wmts/",
-                    "http://d.tiles.maps.eox.at/wmts/",
-                    "http://e.tiles.maps.eox.at/wmts/"
-                ],
-                "matrixSet": "WGS84",
-                "style": "default",
-                "format": "image/png",
-                "maxExtent": [-180.000000, -90.000000, 180.000000, 90.000000],
-                "resolutions": [0.70312500000000000000, 0.35156250000000000000, 0.17578125000000000000, 0.08789062500000000000, 0.04394531250000000000, 0.02197265625000000000, 0.01098632812500000000, 0.00549316406250000000, 0.00274658203125000000, 0.00137329101562500000, 0.00068664550781250000, 0.00034332275390625000, 0.00017166137695312500, 0.00008583068847656250, 0.00004291534423828120, 0.00002145767211914060, 0.00001072883605957030, 0.00000536441802978516],
-                "projection": "EPSG:4326",
-                "gutter": 0,
-                "buffer": 0,
-                "units": "dd",
-                "transitionEffect": "resize",
-                "isphericalMercator": false,
-                "wrapDateLine": true,
-                "zoomOffset": 0,
-                "attribution": "Blue Marble { &copy; <a href=\"http://nasa.gov\" target=\"_blank\">NASA</a> }"
-            }, {
-                "id": "bluemarble",
-                "protocol": "WMS",
-                "urls": [
-                    "http://tiles.maps.eox.at/wms"
-                ],
-                "style": "default",
-                "format": "image/jpeg",
-                "crs": "EPSG:4326"
-            }]
         }],
         "products": [{
-            "name": "ALARO Temperature Surface VMANIP",
+            "name": "WRFCHEM_D01",
             "visible": false,
             "timeSlider": true,
             "timeSliderProtocol": "WPS",
             "views": [{
-                "id": "ALARO_Temperature_surface_201305150000_data",
+                "id": "WRFCHEM_D01",
                 "protocol": "WCS",
                 "urls": [
-                    "http://demo.v-manip.eox.at/browse/ows"
+                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
                 ]
             }],
             "download": {
-                "id": "ALARO_Temperature_surface_201305150000_data",
+                "id": "WRFCHEM_D01",
                 "protocol": "EOWCS",
-                "url": "http://demo.v-manip.eox.at/browse/ows"
+                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
             },
             "parameters": {
-                "Surface Temperature": {
-                    "range": [265, 315],
-                    "uom":"K",
+                "Unknown": {
+                    "range": [0, 0.0001],
+                    "uom":"Unknown",
                     "colorscale": "viridis",
-                    "name": "Surface Temperature",
+                    "name": "Unknown",
+                    "selected": true
+                }
+            }
+        },{
+            "name": "FLEXPART_SO2",
+            "visible": false,
+            "timeSlider": true,
+            "timeSliderProtocol": "WPS",
+            "views": [{
+                "id": "FLEXPART_SO2",
+                "protocol": "WCS",
+                "urls": [
+                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
+                ]
+            }],
+            "download": {
+                "id": "FLEXPART_SO2",
+                "protocol": "EOWCS",
+                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
+            },
+            "parameters": {
+                "Unknown": {
+                    "range": [50, 3000],
+                    "uom":"Unknown",
+                    "colorscale": "viridis",
+                    "name": "Unknown",
                     "selected": true
                 }
             }
@@ -177,11 +166,11 @@
                 "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
             },
             "parameters": {
-                "Specific Humidity": {
+                "Unknown": {
                     "range": [-15.7, 10.4],
-                    "uom":"hPa",
+                    "uom":"Unknown",
                     "colorscale": "viridis",
-                    "name": "Specific Humidity",
+                    "name": "Unknown",
                     "selected": true
                 }
             }
@@ -203,16 +192,16 @@
                 "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
             },
             "parameters": {
-                "Specific Humidity": {
+                "Unknown": {
                     "range": [-15.7, 10.4],
-                    "uom":"hPa",
+                    "uom":"Unknown",
                     "colorscale": "viridis",
-                    "name": "Specific Humidity",
+                    "name": "Unknown",
                     "selected": true
                 }
             }
         },{
-            "name": "ALARO Specific humidity isobaric",
+            "name": "ALARO Specific Humidity isobaric",
             "visible": false,
             "timeSlider": true,
             "timeSliderProtocol": "WPS",
@@ -238,45 +227,19 @@
                 }
             }
         },{
-            "name": "ALARO Surface Pressure",
-            "visible": false,
-            "timeSlider": true,
-            "timeSliderProtocol": "WPS",
-            "views": [{
-                "id": "ALARO_Surface_pressure_surface",
-                "protocol": "WCS",
-                "urls": [
-                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
-                ]
-            }],
-            "download": {
-                "id": "ALARO_Surface_pressure_surface",
-                "protocol": "EOWCS",
-                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
-            },
-            "parameters": {
-                "Surface Pressure": {
-                    "range": [800, 1100],
-                    "uom":"PA",
-                    "colorscale": "viridis",
-                    "name": "Surface Pressure",
-                    "selected": true
-                }
-            }
-        },{
             "name": "ALARO Temperature isobaric",
             "visible": false,
             "timeSlider": true,
             "timeSliderProtocol": "WPS",
             "views": [{
-                "id": "ALARO_Temperature_isobaricInhPa",
+                "id": "ALARO_Temperature_isobaricInUnknown",
                 "protocol": "WCS",
                 "urls": [
                     "http://vtdas-dave.zamg.ac.at/davprc/ows"
                 ]
             }],
             "download": {
-                "id": "ALARO_Temperature_isobaricInhPa",
+                "id": "ALARO_Temperature_isobaricInUnknown",
                 "protocol": "EOWCS",
                 "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
             },
@@ -295,94 +258,16 @@
             "timeSlider": true,
             "timeSliderProtocol": "WPS",
             "views": [{
-                "id": "ALARO_Temperature_surface",
+                "id": "ALARO_Temperature_surface_201305150000_data",
                 "protocol": "WCS",
                 "urls": [
-                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
+                    "http://demo.v-manip.eox.at/browse/ows"
                 ]
             }],
             "download": {
-                "id": "ALARO_Temperature_surface",
+                "id": "ALARO_Temperature_surface_201305150000_data",
                 "protocol": "EOWCS",
-                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
-            },
-            "parameters": {
-                "Surface Temperature": {
-                    "range": [265, 315],
-                    "uom":"K",
-                    "colorscale": "viridis",
-                    "name": "Surface Temperature",
-                    "selected": true
-                }
-            }
-        },{
-            "name": "AROME Specific humidity isobaric",
-            "visible": false,
-            "timeSlider": true,
-            "timeSliderProtocol": "WPS",
-            "views": [{
-                "id": "AROME_Specific_humidity_isobaricInhPa",
-                "protocol": "WCS",
-                "urls": [
-                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
-                ]
-            }],
-            "download": {
-                "id": "AROME_Specific_humidity_isobaricInhPa",
-                "protocol": "EOWCS",
-                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
-            },
-            "parameters": {
-                "Specific Humidity": {
-                    "range": [0.001, 0.02],
-                    "uom":"hPa",
-                    "colorscale": "viridis",
-                    "name": "Specific Humidity",
-                    "selected": true
-                }
-            }
-        },{
-            "name": "AROME Surface Pressure",
-            "visible": false,
-            "timeSlider": true,
-            "timeSliderProtocol": "WPS",
-            "views": [{
-                "id": "AROME_Surface_pressure_surface",
-                "protocol": "WCS",
-                "urls": [
-                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
-                ]
-            }],
-            "download": {
-                "id": "AROME_Surface_pressure_surface",
-                "protocol": "EOWCS",
-                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
-            },
-            "parameters": {
-                "Surface Pressure": {
-                    "range": [800, 1100],
-                    "uom":"PA",
-                    "colorscale": "viridis",
-                    "name": "Surface Pressure",
-                    "selected": true
-                }
-            }
-        },{
-            "name": "AROME Temperature isobaric",
-            "visible": false,
-            "timeSlider": true,
-            "timeSliderProtocol": "WPS",
-            "views": [{
-                "id": "AROME_Temperature_isobaricInhPa",
-                "protocol": "WCS",
-                "urls": [
-                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
-                ]
-            }],
-            "download": {
-                "id": "AROME_Temperature_isobaricInhPa",
-                "protocol": "EOWCS",
-                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
+                "url": "http://demo.v-manip.eox.at/browse/ows"
             },
             "parameters": {
                 "Surface Temperature": {
@@ -399,16 +284,16 @@
             "timeSlider": true,
             "timeSliderProtocol": "WPS",
             "views": [{
-                "id": "AROME_Temperature_surface",
+                "id": "AROME_Temperature_surface_201305150000_data",
                 "protocol": "WCS",
                 "urls": [
-                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
+                    "http://demo.v-manip.eox.at/browse/ows"
                 ]
             }],
             "download": {
-                "id": "AROME_Temperature_surface",
+                "id": "AROME_Temperature_surface_201305150000_data",
                 "protocol": "EOWCS",
-                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
+                "url": "http://demo.v-manip.eox.at/browse/ows"
             },
             "parameters": {
                 "Surface Temperature": {
@@ -419,112 +304,7 @@
                     "selected": true
                 }
             }
-        },{
-            "name": "MOD07 Temperature Surface",
-            "visible": false,
-            "timeSlider": true,
-            "timeSliderProtocol": "WPS",
-            "views": [{
-                "id": "MOD07_Surface_temperature_data",
-                "protocol": "WCS",
-                "urls": [
-                    "http://demo.v-manip.eox.at/browse/ows"
-                ]
-            }],
-            "download": {
-                "id": "MOD07_Surface_temperature_data",
-                "protocol": "EOWCS",
-                "url": "http://demo.v-manip.eox.at/browse/ows"
-            },
-            "parameters": {
-                "Surface Temperature": {
-                    "range": [270, 310],
-                    "uom":"K",
-                    "colorscale": "viridis",
-                    "name": "Surface Temperature",
-                    "selected": true
-                }
-            }
-        },{
-            "name": "Cloudsat_Reflectivity",
-            "visible": false,
-            "timeSlider": true,
-            "timeSliderProtocol": "WPS",
-            "views": [{
-                "id": "Cloudsat_Reflectivity",
-                "protocol": "WCS",
-                "urls": [
-                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
-                ]
-            }],
-            "download": {
-                "id": "Cloudsat_Reflectivity",
-                "protocol": "EOWCS",
-                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
-            },
-            "parameters": {
-                "Humidity": {
-                    "range": [-40, 40],
-                    "uom":"?",
-                    "colorscale": "viridis",
-                    "name": "Humidity",
-                    "selected": true
-                }
-            }
-        },{
-            "name": "MOD07 Retrieved Temperature Profiles",
-            "visible": false,
-            "timeSlider": true,
-            "timeSliderProtocol": "WPS",
-            "views": [{
-                "id": "MOD07_RETRIEVEDTEMPERATUREPROFILES",
-                "protocol": "WCS",
-                "urls": [
-                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
-                ]
-            }],
-            "download": {
-                "id": "MOD07_RETRIEVEDTEMPERATUREPROFILES",
-                "protocol": "EOWCS",
-                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
-            },
-            "parameters": {
-                "Temperature Isobaric": {
-                    "range": [220, 310],
-                    "uom":"K",
-                    "colorscale": "viridis",
-                    "name": "Humidity",
-                    "selected": true
-                }
-            }
-        },{
-            "name": "MOD07 Specific Humidity",
-            "visible": false,
-            "timeSlider": true,
-            "timeSliderProtocol": "WPS",
-            "views": [{
-                "id": "MOD07_SPECIFICUMIDITY",
-                "protocol": "WCS",
-                "urls": [
-                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
-                ]
-            }],
-            "download": {
-                "id": "MOD07_SPECIFICUMIDITY",
-                "protocol": "EOWCS",
-                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
-            },
-            "parameters": {
-                "Temperature Isobaric": {
-                    "range": [0, 0.05],
-                    "uom":"K",
-                    "colorscale": "viridis",
-                    "name": "Humidity",
-                    "selected": true
-                }
-            }
-        }
-        ],
+        }],
         "overlays": [{
             "name": "Coastline",
             "id": "coastline",
@@ -651,12 +431,12 @@
             "end": "2013-10-17T11:45:00Z"
         },
         "brush": {
-            "start": "2013-05-15T00:00:01Z",
-            "end": "2013-05-15T01:30:00Z"
+            "start": "2014-07-15T00:00:01Z",
+            "end": "2014-07-15T01:30:00Z"
         },
         "display": {
-            "start": "2013-05-13T01:00:00Z",
-            "end": "2013-05-20T01:00:00Z"
+            "start": "2014-05-13T01:00:00Z",
+            "end": "2015-01-20T01:00:00Z"
         }
     },
 

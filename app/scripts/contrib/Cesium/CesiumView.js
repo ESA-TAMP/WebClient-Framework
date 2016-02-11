@@ -338,7 +338,7 @@ define(['backbone.marionette',
 			                		// Is a coverage primitive
 			                		if(subprim.hasOwnProperty('cov_id')){
 			                			var rect = subprim.geometryInstances[0].geometry._rectangle;
-			                			if(checkInside(p,rect))
+			                			if(subprim.show && checkInside(p,rect))
 			                				primitives.push(subprim);
 			                			
 			                		}
@@ -358,6 +358,8 @@ define(['backbone.marionette',
 	                	var renderdata = [];
 
 	                	if(primitives){
+
+	                		var volume_primitives = false;
 	                		
 	                		for (var i = primitives.length - 1; i >= 0; i--) {
 	                			var pos = 0;
@@ -366,6 +368,8 @@ define(['backbone.marionette',
 	                			var height = pos;
 	                			if (primitives[i].hasOwnProperty("height")){
 	                				height = primitives[i].height;
+	                				if(height!=0)
+	                					volume_primitives = true;
 	                			}
 			                	var rect = primitives[i].geometryInstances[0].geometry._rectangle;
 
@@ -373,11 +377,11 @@ define(['backbone.marionette',
 			                	if (that.stackedDataset.indexOf(cov_id)!=-1){
 			                		// The coverage is part of the stacked dataset 
 			                		// so we can go through all elements
-			                		for (var i = that.stackedDataset.length - 1; i >= 0; i--) {
-			                			var stackCovID = that.stackedDataset[i];
+			                		for (var j = that.stackedDataset.length - 1; j >= 0; j--) {
+			                			var stackCovID = that.stackedDataset[j];
 			                			if(that.p_plot.datasetAvailable(stackCovID)) {
 			                				var timestamp = pos;
-			                				var covsData = that.currentCoverages.data;
+			                				var covsData = that.currentCoverages;
 			                				for (var cov in covsData){
 			                					if(covsData[cov].identifier == stackCovID){
 			                						if(covsData[cov].hasOwnProperty('starttime')){
@@ -408,16 +412,21 @@ define(['backbone.marionette',
 											pos++;
 											this.selection_x = 'timestamp';
 											this.selection_y = 'measurement';
-											renderdata.push({
-												id:id,
-												measurement: ds.data[(y*w)+x],
-												timestamp: timestamp
-											})
 
+											if (ds.data[(y*w)+x]!=-9999){
+												renderdata.push({
+													id:id,
+													measurement: ds.data[(y*w)+x],
+													timestamp: timestamp
+												})
+											}
+											
 										}
 			                		};
 			                	}else{
 			                		if(that.p_plot.datasetAvailable(cov_id)) {
+
+			                			
 										var ds = that.p_plot.datasetCollection[cov_id];
 										var w = ds.width;
 										var h = ds.height;
@@ -440,14 +449,35 @@ define(['backbone.marionette',
 											}
 											id = cov_id.substr(0,getPosition(cov_id, '_', 3));
 										}
+
+										var timestamp;
+		                				var covsData = that.currentCoverages;
+
+		                				for (var cov in covsData){
+		                					if(covsData[cov].identifier == cov_id){
+		                						if(covsData[cov].hasOwnProperty('starttime')){
+		                							timestamp = new Date(covsData[cov].starttime);
+		                						}
+		                					}
+		                				};
+
 										//pos++;
-										this.selection_x = 'measurement';
-										this.selection_y = 'height';
-										renderdata.push({
-											id:id,
-											measurement: ds.data[(y*w)+x],
-											height: height
-										})
+										if(volume_primitives){
+											this.selection_x = 'measurement';
+											this.selection_y = 'height';
+										}else{
+											this.selection_x = 'timestamp';
+											this.selection_y = 'measurement';
+										}
+
+										if (ds.data[(y*w)+x]!=-9999){
+											renderdata.push({
+												id:id,
+												measurement: ds.data[(y*w)+x],
+												height: height,
+												timestamp: timestamp
+											})
+										}
 
 									}
 
@@ -1246,7 +1276,14 @@ define(['backbone.marionette',
 
 							var heights;
 							if(meta && meta.hasOwnProperty('VERTICAL_LEVELS')){
-								heights = meta.VERTICAL_LEVELS.slice(1, -1).match(/\S+/g).map(Number);
+								//heights = meta.VERTICAL_LEVELS.slice(1, -1).match(/\S+/g).map(Number);
+								heights = meta.VERTICAL_LEVELS.split(',').map(Number);
+							}
+
+							// TODO: Super dirty hack because data is weird and they dont want it to be visualized like this
+							if(heights[heights.length-1]>99999){
+								heights.pop();
+								rasdata.pop();
 							}
 
 							for (var i = 0; i < rasdata.length; i++) {
@@ -1354,7 +1391,7 @@ define(['backbone.marionette',
 							skipEmptyLines: true
 						});
 
-						self.currentCoverages = coverages;
+						self.currentCoverages = self.currentCoverages.concat(coverages.data);
 
 						function identicalBbox(array) {
 							if (array.length == 1 || array.length == 0)
