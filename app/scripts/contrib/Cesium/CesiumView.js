@@ -68,6 +68,8 @@ define(['backbone.marionette',
 				this.pickingActive = false;
 				this.bboxActive = false;
 
+				this.special1dData = [];
+
 				// TODO: Need to change this into an object which contais arrays for all different layers/collections
 				this.currentCoverages = [];
 
@@ -1306,6 +1308,7 @@ define(['backbone.marionette',
 							self.p_plot.setDomain(range);
 							self.p_plot.setNoDataValue(-9999);
 							self.p_plot.renderDataset(cov_id);
+							self.p_plot.setClamp(false);
 							if (prim){
 								prim["cov_id"] = cov_id;
 								prim.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
@@ -1335,6 +1338,7 @@ define(['backbone.marionette',
 					var rasdata = i.readRasters()[0];
 
 					self.p_plot.addDataset(cov_id, rasdata, i.getWidth(), i.getHeight());
+					self.p_plot.setClamp(false);
 					self.stackedDataset.push(cov_id);
 				});
 			},
@@ -1482,6 +1486,76 @@ define(['backbone.marionette',
 							// TODO: Remove
 							// Testing overwrite
 
+							//if ((coverages.data[i].identifier.substr(coverages.data[i].identifier.length - 3)) != 'tif' ) {
+							if ( coverages.data[i].identifier == 'PARAMARIBO' || 
+								 coverages.data[i].identifier == 'Wiener Neustadt' ||
+								 coverages.data[i].identifier == 'Sonnblick' ) {
+
+								$.ajax({
+								   dataType:'arraybuffer',
+								   type:'GET',
+								   dataType: 'xml',
+								   url: request
+								})
+								.done(function( xmldata ) {
+
+									var data = xmldata.getElementsByTagName("data");
+									var id = xmldata.getElementsByTagName("siteName")[0].textContent;
+									var field = xmldata.getElementsByTagName("field")[0].textContent.replace(/ /g,"_");
+									//console.log(id, field);
+									for (var i = data.length - 1; i >= 0; i--) {
+										//console.log(data[i].getElementsByTagName("timeStart")[0].textContent);
+										//console.log(data[i].getElementsByTagName("value")[0].textContent);
+										
+										var obj = {};
+										obj['id'] = id;
+										obj[field] = Number(data[i].getElementsByTagName("value")[0].textContent);
+										obj['timestamp'] = new Date(data[i].getElementsByTagName("timeStart")[0].textContent);
+										self.special1dData.push(obj);
+									}
+
+									$("#pickingresults").show();
+
+			                		var args = {
+										scatterEl: $('#pickingresults')[0],
+										selection_x: 'timestamp',
+										selection_y: [field],
+										showDropDownSelection: false,
+										margin: {top: 45, right: 20, bottom: 10, left: 50}
+									};
+
+									var sp = new scatterPlot(args, function(){
+										},
+										function (values) {
+											//Communicator.mediator.trigger("cesium:highlight:point", [values.Latitude, values.Longitude, values.Radius]);
+										}, 
+										function(){
+											//Communicator.mediator.trigger("cesium:highlight:removeAll");
+										},
+										function(filter){
+											//Communicator.mediator.trigger("download:set:filter", filter);
+										}
+									);
+
+			                		sp.loadData({parsedData: self.special1dData});
+			                		// Move some things around
+			                		$('#download_button').remove();
+			                		$('#pickingresults').find('#save').attr('style','position: absolute; right: 29px; top: 7px');
+			                		$('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');
+
+			                		$("#pickingresults").prepend('<button type="button" id="pickingresultsClose" class="close" style="position: absolute; right:0px; margin-right:5px; margin-top:5px;"><i class="fa fa-times-circle"></i></button>');
+
+									$('#pickingresultsClose').click(function(){
+										self.special1dData = [];
+					                	$("#pickingresults").hide();
+					                	$("#pickingresults").empty();
+					                });
+
+
+								});
+
+								continue;
+							}
 
 							/*if (collection == "ALARO_Specific_Humidity_201305150000"){
 								request = "http://demo.v-manip.eox.at/ALARO_humidity.tif";
@@ -1522,7 +1596,7 @@ define(['backbone.marionette',
 									self.stackedDataset.push(cov_id);
 									Communicator.mediator.trigger("date:tick:select", new Date(coverages.data[i].starttime));
 								}else{
-									// We only request the data if it is not already avaialble
+									// We only request the data if it is not already available
 									if(!self.p_plot.datasetAvailable(cov_id)) {
 										// It is stacked but this is any other coverage where for now we only need the data
 										// but do not actually visualize it, so we do not need to create a primitive
