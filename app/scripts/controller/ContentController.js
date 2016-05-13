@@ -21,6 +21,7 @@
 				this.listenTo(Communicator.mediator, "ui:open:storybanner", this.StoryBannerOpen);
 				this.listenTo(Communicator.mediator, "app:reset", this.OnAppReset);
 				this.listenTo(Communicator.mediator, "layer:open:settings", this.onOpenLayerSettings);
+				this.listenTo(Communicator.mediator, "ui:open:processes", this.onProcessesOpen);
 			},
 
 			onDialogOpenAbout: function(event){
@@ -55,6 +56,14 @@
 					App.optionsLayout.colorramp.show(App.colorRampView);
 				} else {
 					App.optionsLayout.close();
+				}
+			},
+
+			onProcessesOpen: function(event){
+				if (_.isUndefined(App.processesView.isClosed) || App.processesView.isClosed) {
+					App.viewContent.show(App.processesView);
+				}else{
+					App.viewContent.close();
 				}
 			},
 

@@ -30,7 +30,7 @@
 				// If settings open rerender view to update changes
 				this.listenTo(Communicator.mediator, "layer:settings:changed", this.onParameterChange);
 
-				this.$(".panel-title").html('<h3 class="panel-title"><i class="fa fa-fw fa-gears"></i> ' + this.model.get("name") + ' Settings</h3>');
+				this.$(".panel-title").html('<h3 class="panel-title"><i class="fa fa-fw fa-sliders"></i> ' + this.model.get("name") + ' Settings</h3>');
 
 		    	this.$('.close').on("click", _.bind(this.onClose, this));
 		    	this.$el.draggable({
@@ -85,6 +85,14 @@
 				this.$("#range_max_slider").attr("min", options[this.selected].range[0]);
 				this.$("#range_max_slider").attr("value", options[this.selected].range[1]);
 				//max_label.innerHTML = max_range;
+
+				this.$("#opacitysilder").val(this.model.attributes.opacity*100);
+				this.$("#opacitysilder").on("input change", function(){
+					var opacity = Number(this.value)/100;
+					that.model.set("opacity", opacity);
+					Communicator.mediator.trigger('productCollection:updateOpacity', {model:that.model, value:opacity});
+				});
+
 
 
 				// Set the step size

@@ -1,4 +1,5 @@
 
+var ELEVATION_EXAGERATION = 70;
 
 CESIUM_BASE_URL = "bower_components/cesium/Build/Cesium/"
 function defaultFor(arg, val) { return typeof arg !== 'undefined' ? arg : val; }
@@ -20,9 +21,13 @@ define(['backbone.marionette',
 		'drawhelper',
 		'filesaver',
 		'geotiff',
-		'plotty'
+		'plotty',
+		'analytics'
 	],
-	function(Marionette, Communicator, App, MapModel, globals, Papa, Tmpl_load_shc, Tmpl_calc_diff, Tmpl_get_field_lines, Tmpl_retrive_swarm_features, Tmpl_get_time_data, Tmpl_wcs_get_coverage) {
+	function(Marionette, Communicator, App, MapModel, globals, Papa,
+			 Tmpl_load_shc, Tmpl_calc_diff, Tmpl_get_field_lines,
+			 Tmpl_retrive_swarm_features, Tmpl_get_time_data,
+			 Tmpl_wcs_get_coverage) {
 
 		var CesiumView = Marionette.View.extend({
 
@@ -59,11 +64,20 @@ define(['backbone.marionette',
 
 				this.stackedDataset = [];
 				this.playback = false;
+
+				this.pickingActive = false;
+				this.bboxActive = false;
+
+				this.special1dData = [];
+
 				// TODO: Need to change this into an object which contais arrays for all different layers/collections
+				this.currentCoverages = [];
+
+				this.selection_x = '';
+				this.selection_y = '';
 
 				Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(-5.0, -40.0, 40.0, 90.0);
-
-
+				
 				Cesium.WebMapServiceImageryProvider.prototype.updateProperties = function(property, value) {
 
 			        property = "&"+property+"=";
@@ -146,6 +160,34 @@ define(['backbone.marionette',
 						clock: clock
 					});
 				}
+
+				// Remove gazettier input form
+				$('.cesium-viewer-geocoderContainer').remove();
+				// Remove GUI elements (TAMP will only use one window)
+				$('.gui').remove();
+
+				// Create needle (not shown) entity used to visualize picking location
+				this.map.entities.add({
+	            	id: 'needle',
+			        position : Cesium.Cartesian3.fromDegrees(0, 0, 600000),
+			        show: false,
+			        point : {
+			            //show : true, // default
+			            color : Cesium.Color.RED, // default: WHITE
+			            pixelSize : 12, // default: 1
+			            outlineColor : Cesium.Color.WHITE, // default: BLACK
+			            outlineWidth : 2 // default: 0
+			        },
+			        polyline : {
+			        	positions: [
+			        		Cesium.Cartesian3.fromDegrees(0, 0, 0),
+			        		Cesium.Cartesian3.fromDegrees(0, 0, 600000)
+			        	],
+			        	followSurface: false,
+			        	width: 2,
+			        	material : Cesium.Color.RED
+			        }
+			    });
 
 				var mm = globals.objects.get('mapmodel');
 
@@ -243,6 +285,274 @@ define(['backbone.marionette',
 						overlay.set("ces_layer", imagerylayer);
 					}
                 }, this);
+
+                var that = this;
+
+                this.$el.on('mousedown', function (evt) {
+				  that.$el.on('mouseup mousemove', function handler(evt) {
+				  	// Make sure it is a click event
+				    if (that.pickingActive && evt.type === 'mouseup') {
+				      	var offset = $(this).offset()
+	                	var x = evt.pageX - offset.left;
+	                	var y = evt.pageY - offset.top;
+
+	                	var cartesian = that.map.camera.pickEllipsoid(new Cesium.Cartesian2(x,y), that.map.scene.globe.ellipsoid);
+	                	var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+
+	                	var pos_x = Cesium.Math.toDegrees(cartographic.longitude);
+	                	var pos_y = Cesium.Math.toDegrees(cartographic.latitude);
+	                	var p = {x:pos_x, y:pos_y};
+
+	                	that.map.entities.getById("needle").show = false;
+
+						// TODO: One interesting way of getting this is by picking
+	                	// This is only possible as "raycast" from camera into the scene
+	                	// which is not practical for examning things like volumes
+	                	// Still it has interesting potential for investigation
+	                	//var primitives = that.map.scene.drillPick(new Cesium.Cartesian2(x,y));
+	                	var checkInside = function(p, rect){
+	                		if(rect){
+                				var e = Cesium.Math.toDegrees(rect.east),
+									w = Cesium.Math.toDegrees(rect.west),
+									n = Cesium.Math.toDegrees(rect.north),
+									s = Cesium.Math.toDegrees(rect.south);
+								if( w <= p.x && p.x <= e &&
+								    s <= p.y && p.y <= n ) {
+								    return true;
+								}
+                			}
+
+                			return false;
+	                	}
+	                	var primitives = [];
+	                	// Go through al primitives ans see if point is inside
+	                	_.each(that.map.scene.primitives._primitives, function (prim) {
+	                		// Is a coverage primitive
+	                		if(prim.hasOwnProperty('cov_id')){
+	                			var rect = prim.geometryInstances[0].geometry._rectangle;
+	                			if(checkInside(p,rect))
+	                				primitives.push(prim);
+	                			
+	                		}
+	                		// Is a collection
+	                		if(prim.hasOwnProperty('_primitives') && prim.show){
+	                			_.each(prim._primitives, function (subprim) {
+			                		// Is a coverage primitive
+			                		if(subprim.hasOwnProperty('cov_id')){
+			                			var rect = subprim.geometryInstances[0].geometry._rectangle;
+			                			if(subprim.show && checkInside(p,rect))
+			                				primitives.push(subprim);
+			                			
+			                		}
+
+	                			});
+	                		}	                
+	                	}); 
+
+	                	var needle = that.map.entities.getById('needle');
+                		needle.position.setValue(Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 600000));
+                		needle.polyline._positions.setValue([
+                			Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 0),
+				        	Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 600000)
+				        ])
+				        that.map.entities.getById("needle").show = true;
+
+	                	var renderdata = [];
+
+	                	if(primitives){
+
+	                		var volume_primitives = false;
+	                		
+	                		for (var i = primitives.length - 1; i >= 0; i--) {
+	                			var pos = 0;
+	                			
+	                			var cov_id = primitives[i].cov_id;
+	                			var height = pos;
+	                			if (primitives[i].hasOwnProperty("height")){
+	                				height = primitives[i].height;
+	                				if(height!=0)
+	                					volume_primitives = true;
+	                			}
+			                	var rect = primitives[i].geometryInstances[0].geometry._rectangle;
+
+			                	// Check if coverage is part of a time stack
+			                	if (that.stackedDataset.indexOf(cov_id)!=-1){
+			                		// The coverage is part of the stacked dataset 
+			                		// so we can go through all elements
+			                		for (var j = that.stackedDataset.length - 1; j >= 0; j--) {
+			                			var stackCovID = that.stackedDataset[j];
+			                			if(that.p_plot.datasetAvailable(stackCovID)) {
+			                				var timestamp = pos;
+			                				var covsData = that.currentCoverages;
+			                				for (var cov in covsData){
+			                					if(covsData[cov].identifier == stackCovID){
+			                						if(covsData[cov].hasOwnProperty('starttime')){
+			                							timestamp = new Date(covsData[cov].starttime);
+			                						}
+			                					}
+			                				};
+											var ds = that.p_plot.datasetCollection[stackCovID];
+											var w = ds.width;
+											var h = ds.height;
+											var east = Cesium.Math.toDegrees(rect.east);
+											var west = Cesium.Math.toDegrees(rect.west);
+											var north = Cesium.Math.toDegrees(rect.north);
+											var south = Cesium.Math.toDegrees(rect.south);
+											var res_x = Math.abs(east - west)/w;
+											var res_y = Math.abs(north - south)/h;
+											var x = Math.floor(Math.abs(pos_x - west)/res_x);
+											var y = Math.floor(Math.abs(pos_y - north)/res_y);
+											var index = stackCovID.lastIndexOf("_");
+											//var pos = parseInt(cov_id.substr(index+1));
+											var id = stackCovID.substr(0,index);
+											if(stackCovID.split('_').length>3){
+												function getPosition(str, m, i) {
+												   return str.split(m, i).join(m).length;
+												}
+												id = stackCovID.substr(0,getPosition(stackCovID, '_', 3));
+											}
+											pos++;
+											this.selection_x = 'timestamp';
+											this.selection_y = 'measurement';
+
+											if (ds.data[(y*w)+x]!=-9999){
+												renderdata.push({
+													id:id,
+													measurement: ds.data[(y*w)+x],
+													timestamp: timestamp
+												})
+											}
+											
+										}
+			                		};
+			                	}else{
+			                		if(that.p_plot.datasetAvailable(cov_id)) {
+
+			                			
+										var ds = that.p_plot.datasetCollection[cov_id];
+										var w = ds.width;
+										var h = ds.height;
+										var east = Cesium.Math.toDegrees(rect.east);
+										var west = Cesium.Math.toDegrees(rect.west);
+										var north = Cesium.Math.toDegrees(rect.north);
+										var south = Cesium.Math.toDegrees(rect.south);
+										var res_x = Math.abs(east - west)/w;
+										var res_y = Math.abs(north - south)/h;
+										var x = Math.floor(Math.abs(pos_x - west)/res_x);
+										var y = Math.floor(Math.abs(pos_y - north)/res_y);
+										/*console.log(x,y);
+										console.log(ds.data[(y*w)+x]);*/
+										var index = cov_id.lastIndexOf("_");
+										//var pos = parseInt(cov_id.substr(index+1));
+										var id = cov_id.substr(0,index);
+										if(cov_id.split('_').length>3){
+											function getPosition(str, m, i) {
+											   return str.split(m, i).join(m).length;
+											}
+											id = cov_id.substr(0,getPosition(cov_id, '_', 3));
+										}
+
+										var timestamp;
+		                				var covsData = that.currentCoverages;
+
+		                				for (var cov in covsData){
+		                					if(covsData[cov].identifier == cov_id){
+		                						if(covsData[cov].hasOwnProperty('starttime')){
+		                							timestamp = new Date(covsData[cov].starttime);
+		                						}
+		                					}
+		                				};
+
+										//pos++;
+										if(volume_primitives){
+											this.selection_x = 'measurement';
+											this.selection_y = 'height';
+										}else{
+											this.selection_x = 'timestamp';
+											this.selection_y = 'measurement';
+										}
+
+										if (ds.data[(y*w)+x]!=-9999){
+											renderdata.push({
+												id:id,
+												measurement: ds.data[(y*w)+x],
+												height: height,
+												timestamp: timestamp
+											})
+										}
+
+									}
+
+			                	}
+			                						
+	                		};
+	                	}
+
+	                	$("#pickingresults").empty();
+	                	$("#pickingresults").hide();
+
+	                	if (renderdata.length == 1){
+	                		$("#pickingresults").show();
+	                		$("#pickingresults").empty();
+
+	                		$("#pickingresults").append('<div style="margin: 0 auto" id="prcontainer"></div>');
+	                		$("#prcontainer").append('<ul id="listdisplay"></ul>');
+	                		var cur_obj = renderdata[0];
+
+							for (key in cur_obj){
+								if (cur_obj.hasOwnProperty(key)) {
+									$("#listdisplay").append('<li>'/*+key+': '*/+cur_obj[key]+'</li>');
+								}
+	                		}
+
+	                	}else if (renderdata.length > 1){
+
+	                		$("#pickingresults").show();
+
+	                		var args = {
+								scatterEl: $('#pickingresults')[0],
+								selection_x: this.selection_x,
+								selection_y: [this.selection_y],
+								showDropDownSelection: false,
+								margin: {top: 45, right: 20, bottom: 10, left: 50}
+							};
+
+							var sp = new scatterPlot(args, function(){
+								},
+								function (values) {
+									//Communicator.mediator.trigger("cesium:highlight:point", [values.Latitude, values.Longitude, values.Radius]);
+								}, 
+								function(){
+									//Communicator.mediator.trigger("cesium:highlight:removeAll");
+								},
+								function(filter){
+									//Communicator.mediator.trigger("download:set:filter", filter);
+								}
+							);
+
+	                		sp.loadData({parsedData: renderdata});
+	                		// Move some things around
+	                		$('#download_button').remove();
+	                		$('#pickingresults').find('#save').attr('style','position: absolute; right: 29px; top: 7px');
+	                		$('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');
+
+						  }
+
+				    }// else here would be a drag event
+				    that.$el.off('mouseup mousemove', handler);
+				  });
+				});
+
+                this.$el.click(function(e){
+
+                	// Left mouse click
+                	if (e.which == 1){
+                	
+
+						}
+	                	
+	                });
+				
 
 			},
 
@@ -377,6 +687,7 @@ define(['backbone.marionette',
                     	// Return dummy Image provider to help with with sorting of layers
                     	//return  new Cesium.WebMapServiceImageryProvider();
                     	return false;
+                    	
                     break;
 
                 };
@@ -800,9 +1111,77 @@ define(['backbone.marionette',
     			}
             },
 
+            createCurtain: function(image, positions, cov_id, cur_coll, alpha, height){
+
+				var newmat = new Cesium.Material({
+			        fabric : {
+			            uniforms : {
+			                image : image,
+							repeat : new Cesium.Cartesian2(-1.0, -1.0),
+			                alpha : alpha
+			            },
+			            components : {
+			                diffuse : 'texture2D(image, fract(repeat * materialInput.st)).rgb',
+			                alpha : 'texture2D(image, fract(repeat * materialInput.st)).a * alpha'
+			            }
+			        },
+					flat: true,
+			        translucent : true
+			    });
+
+			    var max_heights = [];
+			    var min_heights = [];
+			    for (var i = (positions.length/2) - 1; i >= 0; i--) {
+			    	max_heights.push(height);
+			    	min_heights.push(0.0);
+			    };
+
+			    var wall = new Cesium.WallGeometry({
+					positions : Cesium.Cartesian3.fromDegreesArray(positions),
+					minimumHeights : max_heights,
+					maximumHeights : min_heights,
+				});
+
+				var wallGeometry = Cesium.WallGeometry.createGeometry(wall);
+
+				var instance = new Cesium.GeometryInstance({
+				  geometry : wallGeometry
+				});
+
+				var prim = new Cesium.Primitive({
+				  geometryInstances : [instance],
+				  appearance : new Cesium.MaterialAppearance({
+				  	translucent : true,
+				  	flat: true,
+				    material : newmat
+				  }),
+				  releaseGeometryInstances: false
+				});
+
+				prim["cov_id"] = cov_id;
+
+				cur_coll.add(prim);
+
+
+			   //this.map.entities.add(wall);
+
+			   /*var wall_1 = this.map.entities.add({
+				    id: 'wall_1',
+				    name: 'Two-position wall',
+				    wall: {
+				        positions: Cesium.Cartesian3.fromDegreesArray(positions),
+				        maximumHeights: max_heights,
+				        minimumHeights: min_heights,
+				        material: material
+				        //material: newmat
+				    }
+				});*/
+
+            },
+
             createPrimitive: function(image, bbox, cov_id, cur_coll, alpha, height){
-							height = defaultFor(height, 0);
-							alpha = defaultFor(alpha, 1.0);
+				height = defaultFor(height, 0);
+				alpha = defaultFor(alpha, 1.0);
 				var instance = new Cesium.GeometryInstance({
 				  geometry : new Cesium.RectangleGeometry({
 				    rectangle : Cesium.Rectangle.fromDegrees(bbox[0],bbox[1],bbox[2],bbox[3]),
@@ -813,20 +1192,20 @@ define(['backbone.marionette',
 
 
 				var newmat = new Cesium.Material({
-		        fabric : {
-		            uniforms : {
-		                image : image,
-										repeat : new Cesium.Cartesian2(1.0, 1.0),
-		                alpha : alpha
-		            },
-		            components : {
-		                diffuse : 'texture2D(image, fract(repeat * materialInput.st)).rgb',
-		                alpha : 'texture2D(image, fract(repeat * materialInput.st)).a * alpha'
-		            }
-		        },
-						flat: true,
-		        translucent : true
-		    })
+			        fabric : {
+			            uniforms : {
+			                image : image,
+							repeat : new Cesium.Cartesian2(1.0, 1.0),
+			                alpha : alpha
+			            },
+			            components : {
+			                diffuse : 'texture2D(image, fract(repeat * materialInput.st)).rgb',
+			                alpha : 'texture2D(image, fract(repeat * materialInput.st)).a * alpha'
+			            }
+			        },
+					flat: true,
+			        translucent : true
+			    });
 
 
 
@@ -839,10 +1218,12 @@ define(['backbone.marionette',
 				  	translucent : true,
 				  	flat: true,
 				    material : newmat
-				  })
+				  }),
+				  releaseGeometryInstances: false
 				});
 
 				prim["cov_id"] = cov_id;
+				prim["height"] = height/ELEVATION_EXAGERATION;
 
 				cur_coll.add(prim);
 			},
@@ -861,33 +1242,81 @@ define(['backbone.marionette',
 					var gt = GeoTIFF.parse(data);
 					var img = gt.getImage(0);
 					var rasdata = img.readRasters();
+					var meta = img.getGDALMetadata();
 
 
-					// Check if we have a multilayered tif
-					if (rasdata.length > 1){
+					// Check if the GeoTIFF is a vertical curtain
+					if(meta && meta.hasOwnProperty('COORDINATES') && meta.hasOwnProperty('HEIGHT_LEVELS') &&
+					   	meta.hasOwnProperty('HEIGHT_LEVELS_NUMBER')){
 
-						for (var i = 0; i < rasdata.length; i++) {
-							self.p_plot.addDataset((cov_id+"_"+i), rasdata[i], img.getWidth(), img.getHeight());
-							self.p_plot.setDomain(range);
-							self.p_plot.setNoDataValue(-9999);
-							self.p_plot.setClamp(false);
-							self.p_plot.renderDataset((cov_id+"_"+i));
-							self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, (cov_id+"_"+i), cur_coll, alpha, i*18000);
-						}
-
-					}else{
+					   	var coords = meta.COORDINATES.split(',');
+					   	var positions = [];
+					   	for (var i = coords.length - 1; i >= 0; i--) {
+					   		positions = positions.concat($.trim(coords[i]).split(' ').map(Number));
+					   	};
+					   	var height = meta.HEIGHT_LEVELS.split(' ');
+					   	height = Number(height[height.length-1])*ELEVATION_EXAGERATION/10;
 
 						self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
 						self.p_plot.setDomain(range);
 						self.p_plot.setNoDataValue(-9999);
+						self.p_plot.setClamp(false);
 						self.p_plot.renderDataset(cov_id);
 						if (prim){
 							prim["cov_id"] = cov_id;
 							prim.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
 						}else{
-							self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, cov_id, cur_coll, alpha);
+							self.createCurtain(self.p_plot.canvas.toDataURL(), positions, cov_id, cur_coll, alpha, height);
+							
 						}
 
+					}else{
+
+
+						// Check if we have a multilayered tif
+						if (rasdata.length > 1){
+
+							var heights;
+							if(meta && meta.hasOwnProperty('VERTICAL_LEVELS')){
+								//heights = meta.VERTICAL_LEVELS.slice(1, -1).match(/\S+/g).map(Number);
+								heights = meta.VERTICAL_LEVELS.split(',').map(Number);
+							}
+
+							// TODO: Super dirty hack because data is weird and they dont want it to be visualized like this
+							if(heights[heights.length-1]>99999){
+								heights.pop();
+								rasdata.pop();
+							}
+
+							for (var i = 0; i < rasdata.length; i++) {
+								self.p_plot.addDataset((cov_id+"_"+i), rasdata[i], img.getWidth(), img.getHeight());
+								self.p_plot.setDomain(range);
+								self.p_plot.setNoDataValue(-9999);
+								self.p_plot.setClamp(false);
+								self.p_plot.renderDataset((cov_id+"_"+i));
+
+								var height = i*18000;
+								if (i<=heights.length){
+									height = heights[i]*ELEVATION_EXAGERATION;
+								}
+								self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, (cov_id+"_"+i), cur_coll, alpha, height);
+							}
+
+						}else{
+
+							self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
+							self.p_plot.setDomain(range);
+							self.p_plot.setNoDataValue(-9999);
+							self.p_plot.renderDataset(cov_id);
+							self.p_plot.setClamp(false);
+							if (prim){
+								prim["cov_id"] = cov_id;
+								prim.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+							}else{
+								self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, cov_id, cur_coll, alpha);
+							}
+
+						}
 					}
 
 				});
@@ -909,6 +1338,7 @@ define(['backbone.marionette',
 					var rasdata = i.readRasters()[0];
 
 					self.p_plot.addDataset(cov_id, rasdata, i.getWidth(), i.getHeight());
+					self.p_plot.setClamp(false);
 					self.stackedDataset.push(cov_id);
 				});
 			},
@@ -918,6 +1348,7 @@ define(['backbone.marionette',
             	// Remove possible timetick and play button
             	Communicator.mediator.trigger("date:tick:select", false);
             	$('#playercontrols').hide();
+            	$('#timestamp').hide();
 
 
             	if(!_.has(this.coverages_collections, product.get("views")[0].id)){
@@ -963,6 +1394,8 @@ define(['backbone.marionette',
 							header: true,
 							skipEmptyLines: true
 						});
+
+						self.currentCoverages = self.currentCoverages.concat(coverages.data);
 
 						function identicalBbox(array) {
 							if (array.length == 1 || array.length == 0)
@@ -1044,7 +1477,8 @@ define(['backbone.marionette',
 							bbox = bbox.substring(1, bbox.length - 1).split(",").map(parseFloat);
 							//var request = url + "?service=WCS&request=GetCoverage&version=2.0.1&coverageid="+coverages.data[i].identifier;
 
-							var request = url.substring(0,url.length-11) + "/coverage/"+coverages.data[i].identifier+".tif";
+							//var request = url.substring(0,url.length-11) + "/coverage/"+coverages.data[i].identifier+".tif";
+							var request = url.substring(0,url.length-11) + "/davprc/coverage/"+coverages.data[i].identifier;
 							//console.log(request);
 
 
@@ -1052,18 +1486,88 @@ define(['backbone.marionette',
 							// TODO: Remove
 							// Testing overwrite
 
+							//if ((coverages.data[i].identifier.substr(coverages.data[i].identifier.length - 3)) != 'tif' ) {
+							if ( coverages.data[i].identifier == 'PARAMARIBO' || 
+								 coverages.data[i].identifier == 'Wiener Neustadt' ||
+								 coverages.data[i].identifier == 'Sonnblick' ) {
 
-							if (collection == "ALARO_Specific_Humidity_201305150000"){
+								$.ajax({
+								   dataType:'arraybuffer',
+								   type:'GET',
+								   dataType: 'xml',
+								   url: request
+								})
+								.done(function( xmldata ) {
+
+									var data = xmldata.getElementsByTagName("data");
+									var id = xmldata.getElementsByTagName("siteName")[0].textContent;
+									var field = xmldata.getElementsByTagName("field")[0].textContent.replace(/ /g,"_");
+									//console.log(id, field);
+									for (var i = data.length - 1; i >= 0; i--) {
+										//console.log(data[i].getElementsByTagName("timeStart")[0].textContent);
+										//console.log(data[i].getElementsByTagName("value")[0].textContent);
+										
+										var obj = {};
+										obj['id'] = id;
+										obj[field] = Number(data[i].getElementsByTagName("value")[0].textContent);
+										obj['timestamp'] = new Date(data[i].getElementsByTagName("timeStart")[0].textContent);
+										self.special1dData.push(obj);
+									}
+
+									$("#pickingresults").show();
+
+			                		var args = {
+										scatterEl: $('#pickingresults')[0],
+										selection_x: 'timestamp',
+										selection_y: [field],
+										showDropDownSelection: false,
+										margin: {top: 45, right: 20, bottom: 10, left: 50}
+									};
+
+									var sp = new scatterPlot(args, function(){
+										},
+										function (values) {
+											//Communicator.mediator.trigger("cesium:highlight:point", [values.Latitude, values.Longitude, values.Radius]);
+										}, 
+										function(){
+											//Communicator.mediator.trigger("cesium:highlight:removeAll");
+										},
+										function(filter){
+											//Communicator.mediator.trigger("download:set:filter", filter);
+										}
+									);
+
+			                		sp.loadData({parsedData: self.special1dData});
+			                		// Move some things around
+			                		$('#download_button').remove();
+			                		$('#pickingresults').find('#save').attr('style','position: absolute; right: 29px; top: 7px');
+			                		$('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');
+
+			                		$("#pickingresults").prepend('<button type="button" id="pickingresultsClose" class="close" style="position: absolute; right:0px; margin-right:5px; margin-top:5px;"><i class="fa fa-times-circle"></i></button>');
+
+									$('#pickingresultsClose').click(function(){
+										self.special1dData = [];
+					                	$("#pickingresults").hide();
+					                	$("#pickingresults").empty();
+					                });
+
+
+								});
+
+								continue;
+							}
+
+							/*if (collection == "ALARO_Specific_Humidity_201305150000"){
 								request = "http://demo.v-manip.eox.at/ALARO_humidity.tif";
-								//request = "http://demo.v-manip.eox.at/GOME2_test.tif"
 							}
 
 							if (collection == "ALARO_Temperature_isobaric_201305181200"){
 								request = "http://demo.v-manip.eox.at/ALARO_Temperature_isobaric_f32.tif";
-								//request = "http://demo.v-manip.eox.at/GOME2_test.tif"
 							}
 
-
+							if (collection == "Cloudsat"){
+								request = "http://demo.v-manip.eox.at/Cloudsat_Reflectivity_2013137113720_0005.tif";
+							}*/
 
 							///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1088,9 +1592,11 @@ define(['backbone.marionette',
 									// of the list it means the primitive is not available already and needs to be created
 									// or we have found an already created primite and saved it to stacked primitive
 									deferreds.push(self.loadCoverage(request, bbox, cov_id, range, cur_coll, alpha, stacked_prim));
+									// We need to add it to the stacked list as it will be compared to to see if part of a stack collection
+									self.stackedDataset.push(cov_id);
 									Communicator.mediator.trigger("date:tick:select", new Date(coverages.data[i].starttime));
 								}else{
-									// We only request the data if it is not already avaialble
+									// We only request the data if it is not already available
 									if(!self.p_plot.datasetAvailable(cov_id)) {
 										// It is stacked but this is any other coverage where for now we only need the data
 										// but do not actually visualize it, so we do not need to create a primitive
@@ -1113,7 +1619,7 @@ define(['backbone.marionette',
 									var fps = 15;
 
 									$('#playercontrols').show();
-
+									
 									// Remove handlers
 									$("#play-button").off();
 
@@ -1131,6 +1637,8 @@ define(['backbone.marionette',
 														prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
 														prim_to_render.cov_id = to_play[play_index].identifier;
 														Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
+														$('#timestamp').show();
+														$('#timestamp').text(to_play[play_index].starttime);
 											        }
 
 											    }, 1000 / fps);
@@ -1526,60 +2034,64 @@ define(['backbone.marionette',
             onSelectionActivated: function(arg) {
 				this.selectionType = arg.selectionType;
 
-				if (arg.active) {
-
-					var self = this;
-					this.drawhelper.startDrawingExtent({
-	                    callback: function(extent) {
-
-				            /*console.log('Extent created (N: ' + extent.north.toFixed(3) +
-				            			 ', E: ' + extent.east.toFixed(3) +
-				            			 ', S: ' + extent.south.toFixed(3) +
-				            			 ', W: ' + extent.west.toFixed(3) + ')');*/
-
-							//var colorindex = self.map.scene.primitives.length+1;
-							var colorindex = 0;
-							if(self.selectionType == "single"){
-								//self.map.scene.primitives.removeAll();
-								colorindex = self.map.scene.primitives.length;
-								Communicator.mediator.trigger("selection:changed", null);
-							}
-
-							//var color = self.colors(colorindex);
-							var color = null;
-
-							//Communicator.mediator.trigger("selection:changed", evt.feature);
-							// MH: this is a hack: I send the openlayers AND the coords so self the viewers (RBV, SliceViewer) do
-							// not have to be rewritten. This has to be changed somewhen...
-							var coordinates = self._convertCoordsFromCesium(extent, 0);
-							var feature = self._convertCoordsToOpenLayers(coordinates);
-							Communicator.mediator.trigger("selection:changed", feature, coordinates, color);
-	                    }
-	                });
-
-					/*for (key in this.drawControls) {
-						var control = this.drawControls[key];
-						if (arg.id == key) {
-							control.activate();
-						} else {
-							control.layer.removeAllFeatures();
-							control.deactivate();
+				if(arg.id=='pointSelection'){
+					if (arg.active) {
+						if(this.bboxSelection){
+							this.bboxSelection = false;
 							Communicator.mediator.trigger("selection:changed", null);
+							this.drawhelper.stopDrawing();
 						}
-					}*/
-				} else {
-					//this.map.scene.primitives.removeAll();
-					Communicator.mediator.trigger("selection:changed", null);
-					//this.drawhelper.muteHandlers(true);
-					//this.map.screenSpaceEventHandler.destroy();
-					this.drawhelper.stopDrawing();
-					/*for (key in this.drawControls) {
-						var control = this.drawControls[key];
-						control.layer.removeAllFeatures();
-						control.deactivate();
-						Communicator.mediator.trigger("selection:changed", null);
+						this.pickingActive = true;
+					}
+					else{
+						this.pickingActive = false;
+						this.map.entities.getById("needle").show = false;
+						$("#pickingresults").empty();
+	                	$("#pickingresults").hide();
+					}
 
-					}*/
+				}else if(arg.id=='bboxSelection'){
+
+					if (arg.active) {
+						
+
+						if(this.pickingActive) {
+							this.pickingActive = false;
+							this.map.entities.getById("needle").show = false;
+							$("#pickingresults").empty();
+		                	$("#pickingresults").hide();
+						}
+						
+
+						this.bboxSelection = true;
+						var self = this;
+						this.drawhelper.startDrawingExtent({
+		                    callback: function(extent) {
+
+								//var colorindex = self.map.scene.primitives.length+1;
+								var colorindex = 0;
+								if(self.selectionType == "single"){
+									//self.map.scene.primitives.removeAll();
+									colorindex = self.map.scene.primitives.length;
+									Communicator.mediator.trigger("selection:changed", null);
+								}
+
+								//var color = self.colors(colorindex);
+								var color = null;
+
+								//Communicator.mediator.trigger("selection:changed", evt.feature);
+								// MH: this is a hack: I send the openlayers AND the coords so self the viewers (RBV, SliceViewer) do
+								// not have to be rewritten. This has to be changed somewhen...
+								var coordinates = self._convertCoordsFromCesium(extent, 0);
+								var feature = self._convertCoordsToOpenLayers(coordinates);
+								Communicator.mediator.trigger("selection:changed", feature, coordinates, color);
+		                    }
+		                });
+					} else {
+						this.bboxSelection = false;
+						Communicator.mediator.trigger("selection:changed", null);
+						this.drawhelper.stopDrawing();
+					}
 				}
 			},
 

@@ -409,6 +409,8 @@
                 this.timeSliderView = new v.TimeSliderView(config.timeSlider);
                 this.colorRampView = new v.ColorRampView(config.colorRamp);
 
+                this.processesView = new v.ProcessesView();
+
 
 			},
 

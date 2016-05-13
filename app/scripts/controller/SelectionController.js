@@ -19,6 +19,13 @@
 			model: new m.SelectionModel(),
 
 	    initialize: function(options){
+
+	    	var boundGetAllSelections = this.getAllSelections.bind(this);
+
+	    	this.geoSelection = null;
+	    	this.timeSelection = null;
+	    	this.activeProducts = [];
+
 	    	globals.objects.add('color', d3.scale.category10());
 	      	this.model.set('selections', []);
 	      	this.colors = globals.objects.get("color");
@@ -35,17 +42,50 @@
 
 	        this.listenTo(Communicator.mediator, "selection:changed", this.onSelectionChange);
 	        this.listenTo(Communicator.mediator, "map:load:geojson", this.onLoadGeoJSON);
+	        this.listenTo(Communicator.mediator, "map:layer:change", this.onChangeLayer);
+	        this.listenTo(Communicator.mediator, 'time:change', this.onTimeChange);
+
+	        Communicator.reqres.setHandler('selections:get:all', boundGetAllSelections);
+		
+		},
+
+		getAllSelections: function () {
+			return {
+	        	geo: this.geoSelection,
+	        	time: this.timeSelection,
+	        	actProd: this.activeProducts
+	        };
 		},
 
 	    onSelectionChange: function(selection) {
 	        if (selection != null) {
-	        	var selections = this.model.get('selections');
-	        	selections.push(selection);
-	            this.model.set('selections', selections);
+	        	this.geoSelection = selection.geometry.getBounds();
 	        }else{
-	        	this.model.set('selections', []);
+	        	this.geoSelection = null;
 	        }
 		},
+
+		onTimeChange: function(time) {
+			this.timeSelection = time;
+		},
+
+		onChangeLayer: function (options) {
+			console.log(options);
+	        if (!options.isBaseLayer){
+	            var layer = globals.products.find(function(model) { return model.get('name') == options.name; });
+	            if (layer) { // Layer will be empty if it is an overlay layer
+					
+		        	if(options.visible){
+		        		this.activeProducts.push(layer.get('download').id);
+		          	}else{
+		          		var index = this.activeProducts.indexOf(layer.get('download').id);
+		          		if (index > -1) {
+						    this.activeProducts.splice(index, 1);
+						}
+		          	}
+	            }
+	        }
+	    },
 
 		
 		onLoadGeoJSON: function(data) {

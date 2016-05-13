@@ -49,9 +49,41 @@
   border-color: #aef !important;
 }
 
+#selection .btn{
+  font-size: 12px;
+}
 
 #play_button{
   position: absolute;
   top: 10px;
   z-index: 1050;
+}
+
+#timestamp{
+  position: absolute;
+  width: 160px;
+  text-align: center;
+  height: 30px;
+  left: 50%;
+  margin-left: -80px;
+  padding-top: 4px;
+  bottom: 160px;
+  border-radius: 5px;
+  background-color: white;
+  font-weight: bold;
+  display:none;
+}
+
+#pickingresults{
+  position:absolute;
+  width:35%;
+  height:35%;
+  display: block;
+  border: 1px solid black;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.39);
+  border-radius: 4px;
+  right: 38px;
+  bottom: 125px;
+  background-color: white;
+  display:none;
 }
