@@ -33,6 +33,21 @@
 
         Communicator.reqres.setHandler('get:time', this.returnTime);
 
+        // Try to get CSRF token, if available set it for necesary ajax requests
+
+        this.csrftoken = false;
+        var name = 'csrftoken';
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    this.csrftoken = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
 
         var selectionstart = new Date(this.options.brush.start);
         var selectionend = new Date(this.options.brush.end);
@@ -134,7 +149,8 @@
                         url: product.get('download').url,
                         eoid: product.get('download').id,
                         dataset: product.get('download').id ,
-                        bbox: [extent.left, extent.bottom, extent.right, extent.top]
+                        bbox: [extent.left, extent.bottom, extent.right, extent.top],
+                        //csrftoken: this.csrftoken
                      })
                   });
                   this.activeWPSproducts.push(product.get('download').id);
@@ -144,9 +160,10 @@
                   this.slider.updateBBox([extent.left, extent.bottom, extent.right, extent.top], product.get('download').id);
                   break;
                 case "INDEX":
-                  this.slider.addDataset({
+                  var ops = {
                     id: product.get('download').id,
                     color: product.get('color'),
+                    lineplot: true,
                     data: new TimeSlider.Plugin.WPS({
                         url: product.get('download').url,
                         eoid: product.get('download').id,
@@ -154,24 +171,12 @@
                         indices: true,
                         processid: "get_indices",
                         collectionid: "index_id",
-                        output: "output"
+                        output: "output",
+                        //csrftoken: this.csrftoken
                      })
-                  });
+                  };
+                  this.slider.addDataset(ops);
 
-                  /*{
-                    id: 'dst',
-                    color: 'purple',
-                    lineplot: true,
-                    data: new TimeSlider.Plugin.WPS({ 
-                      url: 'http://localhost:8000/vires00/ows', 
-                      eoid: 'dst', 
-                      dataset: 'dst',
-                      indices: true,
-                      processid: "get_indices",
-                      collectionid: "index_id",
-                      output: "output"
-                    })
-                  },*/
                   break;
               }
               
@@ -179,6 +184,7 @@
               this.slider.removeDataset(product.get('download').id);
               if (this.activeWPSproducts.indexOf(product.get('download').id)!=-1)
                 this.activeWPSproducts.splice(this.activeWPSproducts.indexOf(product.get('download').id), 1);
+              //console.log(this.activeWPSproducts);
             }
           }
         }
@@ -191,6 +197,7 @@
       updateExtent: function(extent){
         
         for (var i=0; i<this.activeWPSproducts.length; i++){
+          //console.log(this.activeWPSproducts[i]);
           this.slider.updateBBox([extent.left, extent.bottom, extent.right, extent.top], this.activeWPSproducts[i]);
         }
       },

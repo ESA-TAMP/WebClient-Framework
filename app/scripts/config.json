@@ -3,7 +3,7 @@
     "debug": true,
 
     "modules": [
-        "contrib/AnalyticsViewer/AnalyticsViewModule",
+        "contrib/AVViewer/AVViewModule",
         "contrib/Cesium/CesiumViewModule"
     ],
 
@@ -11,9 +11,7 @@
 
     "mapConfig": {
         "model": "models/MapModel",
-        "visualizationLibs": [
-            "openlayers"
-        ],
+        "visualizationLibs": [],
         "center": [13.41, 52.52],
         "zoom": 5,
         "showSun": false,
@@ -52,7 +50,7 @@
                 "id": "terrain-light",
                 "protocol": "WMS",
                 "urls": [
-                    "http://tiles.maps.eox.at/wms"
+                    "//tiles.maps.eox.at/wms"
                 ],
                 "style": "default",
                 "format": "image/jpeg",
@@ -65,11 +63,11 @@
                 "id": "terrain",
                 "protocol": "WMTS",
                 "urls": [
-                    "http://a.tiles.maps.eox.at/wmts/",
-                    "http://b.tiles.maps.eox.at/wmts/",
-                    "http://c.tiles.maps.eox.at/wmts/",
-                    "http://d.tiles.maps.eox.at/wmts/",
-                    "http://e.tiles.maps.eox.at/wmts/"
+                    "//a.tiles.maps.eox.at/wmts/",
+                    "//b.tiles.maps.eox.at/wmts/",
+                    "//c.tiles.maps.eox.at/wmts/",
+                    "//d.tiles.maps.eox.at/wmts/",
+                    "//e.tiles.maps.eox.at/wmts/"
                 ],
                 "matrixSet": "WGS84",
                 "style": "default",
@@ -89,7 +87,7 @@
                 "id": "terrain",
                 "protocol": "WMS",
                 "urls": [
-                    "http://tiles.maps.eox.at/wms"
+                    "//tiles.maps.eox.at/wms"
                 ],
                 "style": "default",
                 "format": "image/jpeg",
@@ -389,11 +387,11 @@
             "protocol": "WMTS",
             "visible": false,
             "urls": [
-                "http://a.tiles.maps.eox.at/wmts/",
-                "http://b.tiles.maps.eox.at/wmts/",
-                "http://c.tiles.maps.eox.at/wmts/",
-                "http://d.tiles.maps.eox.at/wmts/",
-                "http://e.tiles.maps.eox.at/wmts/"
+                "//a.tiles.maps.eox.at/wmts/",
+                "//b.tiles.maps.eox.at/wmts/",
+                "//c.tiles.maps.eox.at/wmts/",
+                "//d.tiles.maps.eox.at/wmts/",
+                "//e.tiles.maps.eox.at/wmts/"
             ],
             "matrixSet": "WGS84",
             "style": "default",
@@ -411,16 +409,16 @@
             "attribution": "Overlay { Data &copy; <a href=\"http://www.openstreetmap.org/copyright\" target=\"_blank\">OpenStreetMap</a> contributors, Rendering &copy; <a href=\"http://eox.at\" target=\"_blank\">EOX</a> and <a href=\"https://github.com/mapserver/basemaps\" target=\"_blank\">MapServer</a> }"
         },
         {
-            "name": "Streets",
-            "id": "overlay",
+            "name": "Borders and Labels",
+            "id": "overlay_base",
             "protocol": "WMTS",
             "visible": false,
             "urls": [
-                "http://a.tiles.maps.eox.at/wmts/",
-                "http://b.tiles.maps.eox.at/wmts/",
-                "http://c.tiles.maps.eox.at/wmts/",
-                "http://d.tiles.maps.eox.at/wmts/",
-                "http://e.tiles.maps.eox.at/wmts/"
+                "//a.tiles.maps.eox.at/wmts/",
+                "//b.tiles.maps.eox.at/wmts/",
+                "//c.tiles.maps.eox.at/wmts/",
+                "//d.tiles.maps.eox.at/wmts/",
+                "//e.tiles.maps.eox.at/wmts/"
             ],
             "matrixSet": "WGS84",
             "style": "default",
@@ -624,85 +622,6 @@
 
     ],
 
-    "visualizationModes": [
+    "visualizationModes": []
 
-    ],
-
-    "backendConfig": {
-        "MeshFactory": {
-            "protocol": "W3DS",
-            "url": "http://demo.v-manip.eox.at/browse/ows?",
-            "version": "1.0.0"
-        },
-        "W3DSDataUrl": "http://demo.v-manip.eox.at/gltf/"
-    },
-
-    "colorRamp": {
-        "alphaThreshold": 0.05,
-        "steps": [{
-            "start": 0.0,
-            "stop": 0.063,
-            "color": [0.043, 0.059, 0.000, 1.0]
-        }, {
-            "start": 0.063,
-            "stop": 0.125,
-            "color": [0.227, 0.102, 0.004, 1.0]
-        }, {
-            "start": 0.125,
-            "stop": 0.188,
-            "color": [0.388, 0.153, 0.000, 1.0]
-        }, {
-            "start": 0.188,
-            "stop": 0.250,
-            "color": [0.420, 0.549, 0.000, 1.0]
-        }, {
-            "start": 0.250,
-            "stop": 0.313,
-            "color": [0.000, 0.718, 0.047, 1.0]
-        }, {
-            "start": 0.313,
-            "stop": 0.375,
-            "color": [0.000, 0.878, 0.788, 1.0]
-        }, {
-            "start": 0.375,
-            "stop": 0.438,
-            "color": [0.000, 0.263, 1.000, 1.0]
-        }, {
-            "start": 0.438,
-            "stop": 0.500,
-            "color": [0.565, 0.000, 1.000, 1.0]
-        }, {
-            "start": 0.500,
-            "stop": 0.563,
-            "color": [1.000, 0.000, 0.596, 1.0]
-        }, {
-            "start": 0.563,
-            "stop": 0.625,
-            "color": [1.000, 0.231, 0.000, 1.0]
-        }, {
-            "start": 0.625,
-            "stop": 0.688,
-            "color": [0.933, 1.000, 0.027, 1.0]
-        }, {
-            "start": 0.688,
-            "stop": 0.750,
-            "color": [0.286, 1.000, 0.208, 1.0]
-        }, {
-            "start": 0.750,
-            "stop": 0.813,
-            "color": [0.376, 1.000, 0.831, 1.0]
-        }, {
-            "start": 0.813,
-            "stop": 0.875,
-            "color": [0.529, 0.733, 1.000, 1.0]
-        }, {
-            "start": 0.850,
-            "stop": 0.938,
-            "color": [0.820, 0.698, 1.000, 1.0]
-        }, {
-            "start": 0.938,
-            "stop": 1.0,
-            "color": [1.000, 0.867, 0.969, 1.0]
-        }]
-    }
 }
