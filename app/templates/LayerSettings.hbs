@@ -41,7 +41,18 @@
 		  	<input id="range_min_slider" type="range" style="width:45%;"/><label for="min" id="min_label"></label>
 		  	<input id="range_max_slider" type="range" style="width:45%; float:right;"/><label for="max" id="max_label"></label>
 		  </li>
-		  <li style="margin-top: 15px;">
+		  <li style="z-index: 1000; margin-top: 15px;">
+		  <p style="font-weight: bold;">Clamp colors</p>
+		  </li>
+		  <li style="z-index: 1000; margin-top: -13px;">
+		  	<input id="clamp_min" type="checkbox" />
+		  	<input id="clamp_max" type="checkbox" style="float:right;"/>
+		  </li>
+		  <li style="z-index: 1000; margin-bottom: 10px; ">
+		  	<p style="float: left"> min </p>
+		  	<p style="float: right"> max </p>
+		  </li>
+		  <li style="margin-top: 28px;">
 		  	<label for="opacitysilder" id="opacitysilder_label">Opacity</label>
 		  	<input id="opacitysilder" type="range" min=0  max=100 step=1 style="width:100%;"/>
 		  </li>
