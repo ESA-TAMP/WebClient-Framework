@@ -21,10 +21,15 @@
 
 			initialize: function(options) {
 				this.selected = null;
-				this.plot = new plotty.plot($('<canvas></canvas>')[0], new Uint16Array([1]), 1, 1,[0,1],"viridis");
+				this.plot = new plotty.plot({
+					colorScale: 'jet',
+					domain: [0,1]
+				});
 			},
-
 			onShow: function(view){
+
+				// Unbind first to make sure we are not binding to many times
+				this.stopListening(Communicator.mediator, "layer:settings:changed", this.onParameterChange);
 
 				// Event handler to check if tutorial banner made changes to a model in order to redraw settings
 				// If settings open rerender view to update changes
@@ -33,7 +38,7 @@
 				this.$(".panel-title").html('<h3 class="panel-title"><i class="fa fa-fw fa-sliders"></i> ' + this.model.get("name") + ' Settings</h3>');
 
 		    	this.$('.close').on("click", _.bind(this.onClose, this));
-		    	this.$el.draggable({
+		    	this.$el.draggable({ 
 		    		containment: "#main",
 		    		scroll: false,
 		    		handle: '.panel-heading'
@@ -91,6 +96,20 @@
 					var opacity = Number(this.value)/100;
 					that.model.set("opacity", opacity);
 					Communicator.mediator.trigger('productCollection:updateOpacity', {model:that.model, value:opacity});
+				});
+
+				this.$("#clamp_min").on("input change", function(evt){
+					var options = that.model.get("parameters");
+					options[that.selected]['clamp_min'] = $("#clamp_min").prop('checked');
+					that.model.set("parameters", options);
+					Communicator.mediator.trigger("layer:parameters:changed", that.model.get("name"));
+				});
+
+				this.$("#clamp_max").on("input change", function(evt){
+					var options = that.model.get("parameters");
+					options[that.selected]['clamp_max'] = $("#clamp_max").prop('checked');
+					that.model.set("parameters", options);
+					Communicator.mediator.trigger("layer:parameters:changed", that.model.get("name"));
 				});
 
 
@@ -253,7 +272,8 @@
 
 				this.createHeightTextbox(this.model.get("height"));
 
-				that.updateRange(options);
+				this.model.set("parameters", options);
+				//that.updateRange(options);
 
 				Communicator.mediator.trigger("layer:parameters:changed", this.model.get("name"));
 			},
@@ -304,8 +324,8 @@
 				var range_max = parseFloat($("#range_max").val());
 				error = error || this.checkValue(range_max,$("#range_max"));
 
-
-
+				
+				
 				// Set parameters and redraw color scale
 				if(!error){
 					options[this.selected].range = [range_min, range_max];
@@ -406,7 +426,7 @@
 					this.$("#logarithmic input").change(function(evt){
 						var options = that.model.get("parameters");
 						options[that.selected].logarithmic = !options[that.selected].logarithmic;
-
+						
 						that.model.set("parameters", options);
 						Communicator.mediator.trigger("layer:parameters:changed", that.model.get("name"));
 
@@ -421,7 +441,7 @@
 	      	createScale: function(logscale){
 
 	      		var superscript = "⁰¹²³⁴⁵⁶⁷⁸⁹",
-    			formatPower = function(d) {
+    			formatPower = function(d) { 
     				if (d>=0)
     					return (d + "").split("").map(function(c) { return superscript[c]; }).join("");
     				else if (d<0)
@@ -444,7 +464,7 @@
 					'<div id="scaleimagecontainer" style="width:'+scalewidth+'px; height:20px; margin-left:'+margin+'px"></div>'
 				)
 
-				var image = this.plot.getScaleImage();
+				var image = this.plot.getColorScaleImage();
 				image.className = "scaleimage"
 				$("#scaleimagecontainer").append(image);
 
@@ -455,7 +475,7 @@
 					.attr("height", 40);
 
 				var axisScale;
-
+				
 				if(logscale){
 					axisScale = d3.scale.log();
 					if (range_min == 0)
@@ -469,8 +489,8 @@
 
 				var xAxis = d3.svg.axis()
 					.scale(axisScale)
-					.ticks(8, function(d) {
-						return 10 + formatPower(Math.round(Math.log(d) / Math.LN10));
+					.ticks(8, function(d) { 
+						return 10 + formatPower(Math.round(Math.log(d) / Math.LN10)); 
 					});
 
 				xAxis.tickValues( axisScale.ticks( 3 ).concat( axisScale.domain() ) );

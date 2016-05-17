@@ -9,7 +9,6 @@
     	'globals',
 		'app',
     	'models/SelectionModel',
-    	'openlayers',
     	'd3'
 	],
 
@@ -31,12 +30,12 @@
 	      	this.colors = globals.objects.get("color");
 
 	      	// Openlayers format readers for loading geojson selections
-			var io_options = {
+			/*var io_options = {
 				'internalProjection': new OpenLayers.Projection('EPSG:4326'),
 				'externalProjection': new OpenLayers.Projection('EPSG:4326')
 			};
 
-			this.geojson = new OpenLayers.Format.GeoJSON(io_options);
+			this.geojson = new OpenLayers.Format.GeoJSON(io_options);*/
 			//this.colors = d3.scale.category10();
 
 
@@ -59,9 +58,11 @@
 
 	    onSelectionChange: function(selection) {
 	        if (selection != null) {
-	        	this.geoSelection = selection.geometry.getBounds();
+	        	var selections = this.model.get('selections');
+	        	selections.push(selection);
+	            this.model.set('selections', selections);
 	        }else{
-	        	this.geoSelection = null;
+	        	this.model.set('selections', []);
 	        }
 		},
 

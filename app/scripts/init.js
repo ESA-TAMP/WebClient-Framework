@@ -4,14 +4,16 @@
     var root = this;
 
     root.require.config({
-        baseUrl: "scripts",
-
+        waitSeconds: 120,
         /* starting point for application */
-        deps: ['backbone.marionette', 'bootstrap', 'marionette.handlebars', 'main'],
+        deps: ['backbone', 'backbone.marionette', 'bootstrap', 'marionette.handlebars', 'main'],
 
         shim: {
             jqueryui: {
                 deps:['jquery']
+            },
+            jqueryuitouch: {
+                deps:['jqueryui']
             },
             handlebars: {
                 exports: 'Handlebars'
@@ -32,7 +34,8 @@
                 deps: ['backbone']/*,
                 exports: 'WCS'*/
             },
-            filesaver: {
+            FileSaver: {
+                deps: ['canvas-toBlob', 'Blob'],
                 exports: 'saveAs'
             },
             lm:{
@@ -66,7 +69,7 @@
         },
 
         paths: {
-            analytics: '../bower_components/analyticsviewer/lib/scripts/analytics.min',
+            analytics: '../bower_components/d3.Graphs/lib/scripts/av.min',
             cesium: "../bower_components/cesium/Build/Cesium",
             drawhelper: "../scripts/vendor/cesium_DrawHelper",
             contrib: 'contrib',
@@ -74,15 +77,19 @@
             requirejs: '../bower_components/requirejs/require',
             jquery: '../bower_components/jquery/jquery.min',
             jqueryui: '../bower_components/jquery-ui/ui/minified/jquery-ui.min',
+            jqueryuitouch: '../bower_components/jqueryui-touch-punch/jquery.ui.touch-punch.min',
             backbone: '../bower_components/backbone-amd/backbone-min',
             underscore: '../bower_components/underscore-amd/underscore-min',
             d3: '../bower_components/d3/d3.min',
             timeslider: '../bower_components/d3.TimeSlider/d3.timeslider.min',
             timeslider_plugins: '../bower_components/d3.TimeSlider/d3.timeslider.plugins.min',
             libcoverage: '../bower_components/libcoverage/libcoverage.min',
-            filesaver: '../bower_components/filesaver/FileSaver',
+
+            'canvas-toBlob': '../bower_components/canvas-toBlob.js/canvas-toBlob',
+            'Blob': '../bower_components/Blob.js/Blob',
+            'FileSaver': '../bower_components/FileSaver.js/FileSaver.min',
+
             lm: '../bower_components/lm.js/lm',
-            //nv: '../bower_components/nvd3/nv.d3.min',
 
             /* alias all marionette libs */
             'backbone.marionette': '../bower_components/backbone.marionette/lib/core/amd/backbone.marionette.min',
@@ -107,20 +114,12 @@
             /* marionette and handlebars plugin */
             'marionette.handlebars': '../bower_components/backbone.marionette.handlebars/backbone.marionette.handlebars.min',
 
-            'openlayers': '../scripts/vendor/OpenLayers',
-            // 'openlayers': 'http://openlayers.org/api/OpenLayers',
-            //'openlayers': 'http://ol3js.org/en/master/build/ol',
 
-            /* 3D viewer modules base libraries */
-
-            //virtualglobeviewer: "../bower_components/virtualglobeviewer/src",
-            //x3dom: "../scripts/vendor/x3dom-full.debug",
             keypress: '../bower_components/Keypress/keypress',
-            //xtk: '../scripts/vendor/xtk_edge',
-            //'xtk-gui': '../scripts/vendor/xtk_xdat.gui',
+
             papaparse: '../bower_components/papaparse/papaparse.min',
-            geotiff: '../bower_components/geotiffjs/dist/geotiff.min',
-            plotty: '../bower_components/plotty/lib/scripts/plotty.min'
+			geotiff: '../bower_components/geotiffjs/dist/geotiff.min',
+            plotty: '../bower_components/plotty/dist/plotty.min'
 
         },
 

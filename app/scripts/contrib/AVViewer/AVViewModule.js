@@ -2,13 +2,13 @@ define([
 	'backbone.marionette',
 	'app',
 	'communicator',
-	'./AnalyticsViewController',
-	'./AnalyticsViewRouter'
-], function(Marionette, App, Communicator, AnalyticsViewController, AnalyticsViewRouterController) {
+	'./AVViewController',
+	'./AVViewRouter'
+], function(Marionette, App, Communicator, AVViewController, AVViewRouterController) {
 
 	'use strict';
 
-	App.module('AnalyticsViewer', function(Module) {
+	App.module('AVViewer', function(Module) {
 
 		this.startsWithParent = true;
 
@@ -18,14 +18,15 @@ define([
 		// connected to the event system of the application via the Communicator.
 		// Moreover the Router responsible for this module is activated in this routine.
 		this.on('start', function(options) {
-			this.instances = {};
+			//this.instances = {};
+			this.instance = undefined;
 			this.idx = 0;
 
-			console.log('[AnalyticsViewerModule] Finished module initialization');
+			console.log('[AVViewerModule] Finished module initialization');
 		});
 
 		this.createController = function(opts) {
-			var id = undefined;
+			/*var id = undefined;
 			
 
 			if (typeof opts !== 'undefined') {
@@ -43,13 +44,20 @@ define([
 
 			// If there are no free insances create a new one
 			if (typeof id === 'undefined') {
-				id = 'AnalyticsViewer.' + this.idx++;
+				id = 'AVViewer.' + this.idx++;
 			}
 			console.log("New analytics viewer returned " +id);
-			var controller = new AnalyticsViewController({});
+			var controller = new AVViewController({});
 			this.instances[id] = controller;
 
-			return controller;
+			return controller;*/
+			var i = this.insance;
+			if(this.insance === undefined){
+				i = new AVViewController({});
+				this.insance = i;
+			}
+			return i;
+
 		};
 	});
 });

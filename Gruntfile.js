@@ -1,5 +1,3 @@
-
-
 'use strict';
 var LIVERELOAD_PORT = 35729;
 var lrSnippet = require('connect-livereload')({port: LIVERELOAD_PORT});
@@ -183,7 +181,7 @@ module.exports = function (grunt) {
                 imagesDir: '<%= yeoman.app %>/images',
                 javascriptsDir: '<%= yeoman.app %>/scripts',
                 fontsDir: '<%= yeoman.app %>/fonts',
-                /*importPath: '<%= yeoman.app %>/bower_components',*/
+                importPath: '<%= yeoman.app %>/bower_components',
                 httpImagesPath: '/images',
                 httpGeneratedImagesPath: '/images/generated',
                 httpFontsPath: '/fonts',
@@ -334,6 +332,7 @@ module.exports = function (grunt) {
                         'bower_components/jquery-ui/ui/minified/jquery-ui.min.js',
                         "bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css",
                         'bower_components/jquery-ui/ui/minified/jquery-ui.slider.min.js',
+                        'bower_components/jqueryui-touch-punch/jquery.ui.touch-punch.min.js',
                         'bower_components/backbone-amd/backbone-min.js',
                         'bower_components/backbone-amd/backbone-min.map',
                         'bower_components/underscore-amd/underscore-min.js',
@@ -342,7 +341,9 @@ module.exports = function (grunt) {
                         'bower_components/d3.TimeSlider/d3.timeslider.min.js',
                         'bower_components/d3.TimeSlider/d3.timeslider.plugins.min.js',
                         'bower_components/libcoverage/libcoverage.min.js',
-                        'bower_components/filesaver/FileSaver.js',
+                        'bower_components/FileSaver.js/FileSaver.min.js',
+                        'bower_components/canvas-toBlob.js/canvas-toBlob.js',
+                        'bower_components/Blob.js/Blob.js',
                         'bower_components/backbone.marionette/lib/core/amd/backbone.marionette.min.js',
                         'bower_components/backbone.wreqr/lib/amd/backbone.wreqr.min.js',
                         'bower_components/backbone.babysitter/lib/amd/backbone.babysitter.min.js',
@@ -355,18 +356,13 @@ module.exports = function (grunt) {
                         'bower_components/bootstrap/dist/*/*',
                         'bower_components/font-awesome/css/*',
                         'bower_components/lm.js/lm.js',
-                        'bower_components/virtualglobeviewer/src/{,*/}*.js',
                         'bower_components/Keypress/keypress.js',
-                        'bower_components/analyticsviewer/lib/scripts/analytics.min.js',
-                        'bower_components/nvd3/nv.d3.min.js',
-                        'bower_components/analyticsviewer/lib/scripts/box.js',
-                        'bower_components/virtualglobeviewer/src/**',
+                        'bower_components/d3.Graphs/lib/scripts/av.min.js',
                         'bower_components/cesium/Build/Cesium/**',
                         'bower_components/papaparse/papaparse.min.js',
-                        'bower_components/plotty/lib/scripts/plotty.min.js',
-                        'bower_components/geotiffjs/dist/geotiff.min.js',
+                        'bower_components/plotty/dist/plotty.min.js',
+						'bower_components/geotiffjs/dist/geotiff.min.js',
                         'scripts/vendor/**',
-                        'scripts/core/ColorRamp/ColorRampControl.hbs'
                     ]
                 },{
                     expand: true,
@@ -428,6 +424,31 @@ module.exports = function (grunt) {
                 }]
             }
         },
+        replace: {
+          dist: {
+            src: [
+                '<%= yeoman.dist %>/bower_components/jquery/jquery.min.js',
+                '<%= yeoman.dist %>/bower_components/backbone-amd/backbone-min.js',
+                '<%= yeoman.dist %>/bower_components/require-handlebars-plugin/hbs.js',
+                '<%= yeoman.dist %>/bower_components/cesium/Build/Cesium/Cesium.js'
+            ],
+            overwrite: true,
+            replacements: [
+                {
+                  from: '//@',
+                  to: '//#'
+                },
+                {
+                  from: /r\(\"Shaders\/PointPrimitiveCollectionFS\"\,\[\]\,function\(\).*\}\)/g ,
+                  to: 'r("Shaders/PointPrimitiveCollectionFS",[],function(){"use strict";return"#ifdef GL_EXT_frag_depth\\n#extension GL_EXT_frag_depth : enable\\n#endif\\nvarying vec4 v_color;\\nvarying vec4 v_outlineColor;\\nvarying float v_innerPercent;\\nvarying float v_pixelDistance;\\n#ifdef RENDER_FOR_PICK\\nvarying vec4 v_pickColor;\\n#endif\\nvoid main()\\n{\\nfloat distanceToCenter = length(gl_PointCoord - vec2(0.5));\\nfloat maxDistance = max(0.0, 0.5 - v_pixelDistance);\\nfloat wholeAlpha = 1.0 - smoothstep(maxDistance, 0.5, distanceToCenter);\\nfloat innerAlpha = 1.0 - smoothstep(maxDistance * v_innerPercent, 0.5 * v_innerPercent, distanceToCenter);\\nvec4 color = mix(v_outlineColor, v_color, innerAlpha);\\ncolor.a *= wholeAlpha;\\nif (color.a < 0.005)\\n{\\ndiscard;\\n}\\n#ifdef GL_EXT_frag_depth\\nfloat z = gl_FragCoord.z;\\ngl_FragDepthEXT = z + ((1.0 - z) * (1.0 - wholeAlpha));\\n#endif\\n#ifdef RENDER_FOR_PICK\\ngl_FragColor = v_pickColor;\\n#else\\ngl_FragColor = color;\\n#endif\\n}"})'
+                }
+            ],
+            variables:{
+
+            }
+
+          }
+        },
         concurrent: {
             server: [
                 'compass',
@@ -486,7 +507,7 @@ module.exports = function (grunt) {
         'cssmin',
         'uglify',
         'copy:dist',
-        //'rev',
+        'replace',
         'usemin'
     ]);
 
