@@ -62,6 +62,7 @@
     			var that = this;
 
     			if (this.$el.has( ".fa-sliders" ).length){
+
 	    			this.$el.find('.fa-sliders').click(function(){
 	    				
 	    				if (_.isUndefined(App.layerSettings.isClosed) || App.layerSettings.isClosed) {
@@ -75,7 +76,7 @@
 								App.optionsBar.show(App.layerSettings);
 							}
 						}
-	    			});
+					});
 	    		}
 			},
 

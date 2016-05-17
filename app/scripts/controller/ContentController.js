@@ -21,6 +21,17 @@
 				this.listenTo(Communicator.mediator, "ui:open:storybanner", this.StoryBannerOpen);
 				this.listenTo(Communicator.mediator, "app:reset", this.OnAppReset);
 				this.listenTo(Communicator.mediator, "layer:open:settings", this.onOpenLayerSettings);
+				this.listenTo(Communicator.mediator, "ui:fullscreen:globe", this.onFullscrenGlobe);
+				this.listenTo(Communicator.mediator, "ui:fullscreen:analytics", this.onFullscrenAnalytics);
+			},
+
+			onFullscrenGlobe: function () {
+				Communicator.mediator.trigger("layout:switch:singleview");
+			},
+
+			onFullscrenAnalytics: function () {
+				Communicator.mediator.trigger("layout:switch:singleview");
+				Communicator.mediator.trigger("region:show:view", 'tl','AVViewer');
 				this.listenTo(Communicator.mediator, "ui:open:processes", this.onProcessesOpen);
 			},
 
@@ -75,7 +86,10 @@
                 });
                 
 				if (_.isUndefined(App.storyView.isClosed) || App.storyView.isClosed) {
-					App.storyView.show(App.storyBanner);
+					//if (confirm('Starting the tutorial will reset your current view, are you sure you want to continue?')) {
+					    App.storyView.show(App.storyBanner);
+					//}
+					
 				} else {
 					App.storyView.close();
 				}

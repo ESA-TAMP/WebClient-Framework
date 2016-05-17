@@ -18,10 +18,22 @@
             <link rel="stylesheet" href="bower_components/d3.TimeSlider/d3.timeslider.min.css" />
             <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css" />
             <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
-            <link rel="stylesheet" href="bower_components/analyticsviewer/lib/styles/analytics.min.css">
+            <link rel="stylesheet" href="bower_components/d3.Graphs/lib/styles/av.min.css">
             <link rel="stylesheet" href="bower_components/cesium/Build/Cesium/Widgets/widgets.css">
             <link rel="stylesheet" href="scripts/vendor/cesium_DrawHelper.css">
         <!-- endbuild -->
+
+        <!-- Possible path configurations if dependency files are on different paths -->
+        <script type="text/javascript">
+
+            var CONFIG_URL = "scripts/config.json";
+            CESIUM_BASE_URL = "bower_components/cesium/Build/Cesium/";
+            var require = {
+                baseUrl : "scripts/"
+            };
+
+        </script>
+
         <!-- build:js scripts/vendor/modernizr.js -->
         <script src="bower_components/modernizr/modernizr.js"></script>
         <!-- endbuild -->
@@ -127,26 +139,11 @@
             function toggle(e) { e.style.display = (e.style.display == 'block' ? 'none' : 'block'); }
         </script>
 
-        <!-- build:js scripts/init.js -->
-        <script data-main="scripts/init" src="bower_components/requirejs/require.js"></script>     
+        <!-- build:js init.js -->
+        <script data-main="init" src="bower_components/requirejs/require.js"></script>     
         <!-- endbuild -->
 
 
-        <!-- Piwik -->
-        <script type="text/javascript">
-          var _paq = _paq || [];
-          _paq.push(['trackPageView']);
-          _paq.push(['enableLinkTracking']);
-          (function() {
-            var u="//nix.eox.at/piwik/";
-            _paq.push(['setTrackerUrl', u+'piwik.php']);
-            _paq.push(['setSiteId', 4]);
-            var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-            g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
-          })();
-        </script>
-        <noscript><p><img src="//nix.eox.at/piwik/piwik.php?idsite=4" style="border:0;" alt="" /></p></noscript>
-        <!-- End Piwik Code -->
 
 
     </body>

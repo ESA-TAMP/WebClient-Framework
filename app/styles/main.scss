@@ -19,19 +19,8 @@ $iconWhiteSpritePath: "../images/glyphicons-halflings-white.png";
 @import "layersettings";
 @import "spinner";
 @import "processes";
+@import "social";
 
-/* Not used right now ;)
-#preloadedImages {
-       width: 0px;
-       height: 0px;
-       display: inline;
-       background-image: url(path/to/image1.png);
-       background-image: url(path/to/image2.png);
-       background-image: url(path/to/image3.png);
-       background-image: url(path/to/image4.png);
-       background-image: url();
-}
-*/
 
 /*
  * Basic styles
@@ -59,10 +48,7 @@ hr {
 }
 
 .not-selectable {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
   -khtml-user-select: none;
-  -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
 }
@@ -212,8 +198,13 @@ div#preload {
  */
 .panel .close {
   float: right;
-  margin: -.5em -.7em 0 0;
-  font-size: 1.2em;
+  margin: -.1em -.2em 0 0;
+  font-size: 2em;
+}
+
+#about .close{
+  margin: -.2em -.2em 0 0;
+  font-size: 2em;
 }
 
 .panel .no-label, .modal .no-label {
@@ -227,14 +218,13 @@ div#preload {
   box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.39)!important;
 }
 
-.modal{
-  overflow-y: hidden !important; 
-}
 
-#about .modal-content{
- width:900px !important;
- margin-left:-150px !important;
-
+@media (min-width:768px){
+  #infoblock {    
+    width: 60%;
+    margin-left: -30%;
+    left: 50%;
+  }
 }
 
 #about ul li {
@@ -414,22 +404,9 @@ button[active=active] {
 /*
  * Time Slider
  */
-/*#timeslider {
-  position: fixed;
-  bottom: 2em;
-  width: 90%;
-  padding: 0 5%;
-}*/
-
-/*#timeslider svg.timeslider {
-  height: 4em;
-  -webkit-touch-callout: none;
-	-webkit-user-select: none;
-	-khtml-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
-}*/
+.brush .extent {
+  fill-opacity: 0.8!important;
+}
 
 #viewContent{
 	position: relative;
@@ -459,7 +436,6 @@ button[active=active] {
     opacity: 0.0;
     filter: alpha(opacity=0);
     -o-transform: translate(250px, -50px) scale(1);
-    -moz-transform: translate(-300px, 0) scale(4);
     direction: ltr;
     cursor: pointer;
 }
