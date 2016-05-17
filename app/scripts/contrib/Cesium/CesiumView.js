@@ -132,7 +132,6 @@ define(['backbone.marionette',
 					"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>");
 
 				this.$el.append('<div type="button" class="btn btn-success darkbutton" id="cesium_save">Save as Image</div>');
-				this.$el.append('<div type="button" class="btn btn-success darkbutton"  id="bb_selection">Select Area</div>');
 				
 				var layer;
 				var name = "";
@@ -611,7 +610,7 @@ define(['backbone.marionette',
 					domain: [30000,60000]
 				});
 
-				this.plot.setClamp(true, true);
+				//this.plot.setClamp(true, true);
 
 				this.isClosed = false;
 				$("#cesium_save").on("click", this.onSaveImage.bind(this));
@@ -806,13 +805,13 @@ define(['backbone.marionette',
 		            			if(product.get("views")[0].protocol == "WCS"){
 		            				var cur_coll = this.coverages_collections[product.get("views")[0].id];
 		            				if(cur_coll){
-													for (var p=0; p<cur_coll._primitives.length; p++){
-														var prim = cur_coll._primitives[p];
+										for (var p=0; p<cur_coll._primitives.length; p++){
+											var prim = cur_coll._primitives[p];
 
-														prim.appearance.material.uniforms.alpha = options.value;
+											prim.appearance.material.uniforms.alpha = options.value;
 
-													}
-												}
+										}
+									}
 		            			}
 
                 		var ces_layer = product.get("ces_layer");
@@ -1284,7 +1283,7 @@ define(['backbone.marionette',
 				cur_coll.add(prim);
 			},
 
-			loadCoverage: function(request, bbox, cov_id, range, cur_coll, alpha, prim){
+			loadCoverage: function(request, bbox, cov_id, range, cur_coll, alpha, clamp, prim){
 
 				var self = this;
 
@@ -1316,7 +1315,7 @@ define(['backbone.marionette',
 						self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
 						self.p_plot.setDomain(range);
 						self.p_plot.setNoDataValue(-9999);
-						self.p_plot.setClamp(false);
+						self.p_plot.setClamp(clamp[0],clamp[1]);
 						self.p_plot.renderDataset(cov_id);
 						if (prim){
 							prim["cov_id"] = cov_id;
@@ -1348,7 +1347,7 @@ define(['backbone.marionette',
 								self.p_plot.addDataset((cov_id+"_"+i), rasdata[i], img.getWidth(), img.getHeight());
 								self.p_plot.setDomain(range);
 								self.p_plot.setNoDataValue(-9999);
-								self.p_plot.setClamp(false);
+								self.p_plot.setClamp(clamp[0],clamp[1]);
 								self.p_plot.renderDataset((cov_id+"_"+i));
 
 								var height = i*18000;
@@ -1364,7 +1363,7 @@ define(['backbone.marionette',
 							self.p_plot.setDomain(range);
 							self.p_plot.setNoDataValue(-9999);
 							self.p_plot.renderDataset(cov_id);
-							self.p_plot.setClamp(false);
+							self.p_plot.setClamp(clamp[0],clamp[1]);
 							if (prim){
 								prim["cov_id"] = cov_id;
 								prim.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
@@ -1394,7 +1393,7 @@ define(['backbone.marionette',
 					var rasdata = i.readRasters()[0];
 
 					self.p_plot.addDataset(cov_id, rasdata, i.getWidth(), i.getHeight());
-					self.p_plot.setClamp(false);
+					//self.p_plot.setClamp(false);
 					self.stackedDataset.push(cov_id);
 				});
 			},
@@ -1428,6 +1427,8 @@ define(['backbone.marionette',
 							band = key;
 					});
 	    			var colorscale = parameters[band].colorscale;
+	    			var clamp_min = defaultFor(parameters[band].clamp_min, false);
+            		var clamp_max = defaultFor(parameters[band].clamp_max, false);
 	    			var outlines = product.get("outlines");
 	    			var range = parameters[band].range;
 	    			var alpha = product.get("opacity");
@@ -1488,6 +1489,7 @@ define(['backbone.marionette',
 							};
 
 							for (var i = prim_to_remove.length - 1; i >= 0; i--) {
+								self.p_plot.removeDataset(prim_to_remove[i].cov_id);
 								cur_coll.remove(prim_to_remove[i]);
 							};
 
@@ -1642,12 +1644,12 @@ define(['backbone.marionette',
 
 								if(!stacked){
 									// If not stacked just request and create primitves for all coverages
-									deferreds.push(self.loadCoverage(request, bbox, cov_id, range, cur_coll, alpha, null));
+									deferreds.push(self.loadCoverage(request, bbox, cov_id, range, cur_coll, alpha, [clamp_min, clamp_max], null));
 								}else if(stacked && i == coverages.data.length-1){
 									// If the collection is stacked and this is the last element (in time)
 									// of the list it means the primitive is not available already and needs to be created
 									// or we have found an already created primite and saved it to stacked primitive
-									deferreds.push(self.loadCoverage(request, bbox, cov_id, range, cur_coll, alpha, stacked_prim));
+									deferreds.push(self.loadCoverage(request, bbox, cov_id, range, cur_coll, alpha, [clamp_min, clamp_max], stacked_prim));
 									// We need to add it to the stacked list as it will be compared to to see if part of a stack collection
 									self.stackedDataset.push(cov_id);
 									Communicator.mediator.trigger("date:tick:select", new Date(coverages.data[i].starttime));
@@ -1950,6 +1952,8 @@ define(['backbone.marionette',
 						});
             			var style = parameters[band].colorscale;
             			var range = parameters[band].range;
+            			var clamp_min = defaultFor(parameters[band].clamp_min, false);
+            			var clamp_max = defaultFor(parameters[band].clamp_max, false);
             			var outlines = product.get("outlines");
             			var height = product.get("height");
 
@@ -1969,10 +1973,10 @@ define(['backbone.marionette',
 									var plot = self.p_plot;
 									plot.setDomain(range);
 									plot.setColorScale(style);
+									plot.setClamp(clamp_min, clamp_max);
 									plot.renderDataset(prim.cov_id);
 									prim.appearance.material._textures.image.copyFrom(plot.canvas);
-
-									prim.appearance.material._textures.image.copyFrom(plot.canvas);
+									//prim.appearance.material._textures.image.copyFrom(plot.canvas);
 
 								};
 							}
@@ -2113,45 +2117,28 @@ define(['backbone.marionette',
 				}else if(arg.id=='bboxSelection'){
 
 					if (arg.active) {
-						
 
-						if(this.pickingActive) {
-							this.pickingActive = false;
-							this.map.entities.getById("needle").show = false;
-							$("#pickingresults").empty();
-		                	$("#pickingresults").hide();
-						}
-						
-
-						this.bboxSelection = true;
-						var self = this;
-						this.drawhelper.startDrawingExtent({
-		                    callback: function(extent) {
-
-								//var colorindex = self.map.scene.primitives.length+1;
-								var colorindex = 0;
-								if(self.selectionType == "single"){
-									//self.map.scene.primitives.removeAll();
-									colorindex = self.map.scene.primitives.length;
-									Communicator.mediator.trigger("selection:changed", null);
-								}
-
-								//var color = self.colors(colorindex);
-								var color = null;
-
-								//Communicator.mediator.trigger("selection:changed", evt.feature);
-								// MH: this is a hack: I send the openlayers AND the coords so self the viewers (RBV, SliceViewer) do
-								// not have to be rewritten. This has to be changed somewhen...
-								var coordinates = self._convertCoordsFromCesium(extent, 0);
-								var feature = self._convertCoordsToOpenLayers(coordinates);
-								Communicator.mediator.trigger("selection:changed", feature, coordinates, color);
-		                    }
-		                });
-					} else {
-						this.bboxSelection = false;
-						Communicator.mediator.trigger("selection:changed", null);
-						this.drawhelper.stopDrawing();
-					}
+					var that = this;
+					this.drawhelper.startDrawingRectangle({
+	                    callback: function(extent) {
+							var bbox = {
+								n: Cesium.Math.toDegrees(extent.north),
+								e: Cesium.Math.toDegrees(extent.east),
+								s: Cesium.Math.toDegrees(extent.south),
+								w: Cesium.Math.toDegrees(extent.west)
+							}
+							Communicator.mediator.trigger("selection:changed", bbox);
+							$('#bb_selection').html('Clear Selection');
+	                    }
+	                });
+				} else {
+					//Communicator.mediator.trigger("selection:changed", null);
+					this.drawhelper.stopDrawing();
+					// It seems the drawhelper muted handlers reset to false and 
+					// it creates issues in cesium picking for some reason so
+					// we deactivate them again
+					this.drawhelper._handlersMuted = true;
+				}
 				}
 			},
            
@@ -2187,18 +2174,10 @@ define(['backbone.marionette',
 
 		            this.map.scene.primitives.add(this.extentPrimitive);
 
-		            this.checkFieldLines();
-		            
-
-
 				}else{
 					this.bboxsel = null;
 					if(this.extentPrimitive)
 						this.map.scene.primitives.remove(this.extentPrimitive);
-					_.each(_.keys(this.FL_collection), function(key){
-	            		this.map.scene.primitives.remove(this.FL_collection[key]);
-                		delete this.FL_collection[key];
-	            	}, this);
 				}
 
 
@@ -2510,7 +2489,7 @@ define(['backbone.marionette',
 
 			onSaveImage: function(){
 				this.map.canvas.toBlob(function(blob) {
-					saveAs(blob, "VirES_Services_Screenshot.jpg");
+					saveAs(blob, "TAMP_Screenshot.jpg");
 				}, "image/jpeg");
 			},
 

@@ -98,6 +98,20 @@
 					Communicator.mediator.trigger('productCollection:updateOpacity', {model:that.model, value:opacity});
 				});
 
+				this.$("#clamp_min").on("input change", function(evt){
+					var options = that.model.get("parameters");
+					options[that.selected]['clamp_min'] = $("#clamp_min").prop('checked');
+					that.model.set("parameters", options);
+					Communicator.mediator.trigger("layer:parameters:changed", that.model.get("name"));
+				});
+
+				this.$("#clamp_max").on("input change", function(evt){
+					var options = that.model.get("parameters");
+					options[that.selected]['clamp_max'] = $("#clamp_max").prop('checked');
+					that.model.set("parameters", options);
+					Communicator.mediator.trigger("layer:parameters:changed", that.model.get("name"));
+				});
+
 
 
 				// Set the step size

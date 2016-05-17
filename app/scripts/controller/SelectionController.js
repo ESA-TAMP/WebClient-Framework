@@ -58,9 +58,11 @@
 
 	    onSelectionChange: function(selection) {
 	        if (selection != null) {
-	        	this.geoSelection = selection.geometry.getBounds();
+	        	var selections = this.model.get('selections');
+	        	selections.push(selection);
+	            this.model.set('selections', selections);
 	        }else{
-	        	this.geoSelection = null;
+	        	this.model.set('selections', []);
 	        }
 		},
 

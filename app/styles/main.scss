@@ -208,9 +208,8 @@ div#preload {
 }
 
 .panel .no-label, .modal .no-label {
-  float: left;
-  margin: -.55em 0 0 -.6em;
-  font-size: 1em;
+  margin: -0.0em 0 0 -.4em;
+  font-size: 1.5em;
 }
 
 .panel {
@@ -275,6 +274,14 @@ button[active=active] {
   margin-bottom: 0;
   margin-top: .2em;
 }
+
+#products{
+  max-height: 525px;
+  overflow-y: auto;
+  padding-right: 10px;
+  padding-left: 10px;
+}
+
 .layercontrol li {
     margin: .2em 0 .8em 0;
     padding: 0 0 0 .6em;

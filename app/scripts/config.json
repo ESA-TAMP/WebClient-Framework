@@ -121,6 +121,110 @@
                 }
             }
         },{
+            "name": "WRFCHEM_D01_2D",
+            "visible": false,
+            "timeSlider": true,
+            "timeSliderProtocol": "WPS",
+            "views": [{
+                "id": "WRFCHEM_D01_2D",
+                "protocol": "WCS",
+                "urls": [
+                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
+                ]
+            }],
+            "download": {
+                "id": "WRFCHEM_D01_2D",
+                "protocol": "EOWCS",
+                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
+            },
+            "parameters": {
+                "Unknown": {
+                    "range": [0, 2000.0],
+                    "uom":"Unknown",
+                    "colorscale": "viridis",
+                    "name": "Unknown",
+                    "selected": true
+                }
+            }
+        },{
+            "name": "WRFCHEM_D02_2D",
+            "visible": false,
+            "timeSlider": true,
+            "timeSliderProtocol": "WPS",
+            "views": [{
+                "id": "WRFCHEM_D02_2D",
+                "protocol": "WCS",
+                "urls": [
+                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
+                ]
+            }],
+            "download": {
+                "id": "WRFCHEM_D02_2D",
+                "protocol": "EOWCS",
+                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
+            },
+            "parameters": {
+                "Unknown": {
+                    "range": [0, 5.0],
+                    "uom":"Unknown",
+                    "colorscale": "viridis",
+                    "name": "Unknown",
+                    "selected": true
+                }
+            }
+        },{
+            "name": "GOME_M01_L02_SO2",
+            "visible": false,
+            "timeSlider": true,
+            "timeSliderProtocol": "WPS",
+            "views": [{
+                "id": "GOME_M01_L02_SO2",
+                "protocol": "WCS",
+                "urls": [
+                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
+                ]
+            }],
+            "download": {
+                "id": "GOME_M01_L02_SO2",
+                "protocol": "EOWCS",
+                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
+            },
+            "parameters": {
+                "Unknown": {
+                    "range": [0, 5.0],
+                    "uom":"Unknown",
+                    "colorscale": "viridis",
+                    "name": "Unknown",
+                    "selected": true
+                }
+            }
+        },{
+            "name": "GOME_M02_L02_SO2",
+            "visible": false,
+            "timeSlider": true,
+            "timeSliderProtocol": "WPS",
+            "views": [{
+                "id": "GOME_M02_L02_SO2",
+                "protocol": "WCS",
+                "urls": [
+                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
+                ]
+            }],
+            "download": {
+                "id": "GOME_M02_L02_SO2",
+                "protocol": "EOWCS",
+                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
+            },
+            "parameters": {
+                "Unknown": {
+                    "range": [0, 5.0],
+                    "uom":"Unknown",
+                    "colorscale": "viridis",
+                    "name": "Unknown",
+                    "selected": true
+                }
+            }
+        },{
             "name": "FLEXPART_SO2",
             "visible": false,
             "timeSlider": true,
@@ -199,6 +303,110 @@
                 }
             }
         },{
+            "name": "OMI_L2_AOT483",
+            "visible": false,
+            "timeSlider": true,
+            "timeSliderProtocol": "WPS",
+            "views": [{
+                "id": "OMI_L2_AOT483",
+                "protocol": "WCS",
+                "urls": [
+                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
+                ]
+            }],
+            "download": {
+                "id": "OMI_L2_AOT483",
+                "protocol": "EOWCS",
+                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
+            },
+            "parameters": {
+                "Unknown": {
+                    "range": [-15.7, 10.4],
+                    "uom":"Unknown",
+                    "colorscale": "viridis",
+                    "name": "Unknown",
+                    "selected": true
+                }
+            }
+        },{
+            "name": "OMI_L2_AOT451",
+            "visible": false,
+            "timeSlider": true,
+            "timeSliderProtocol": "WPS",
+            "views": [{
+                "id": "OMI_L2_AOT451",
+                "protocol": "WCS",
+                "urls": [
+                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
+                ]
+            }],
+            "download": {
+                "id": "OMI_L2_AOT451",
+                "protocol": "EOWCS",
+                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
+            },
+            "parameters": {
+                "Unknown": {
+                    "range": [-15.7, 10.4],
+                    "uom":"Unknown",
+                    "colorscale": "viridis",
+                    "name": "Unknown",
+                    "selected": true
+                }
+            }
+        },{
+            "name": "OMI_L2_AOT388",
+            "visible": false,
+            "timeSlider": true,
+            "timeSliderProtocol": "WPS",
+            "views": [{
+                "id": "OMI_L2_AOT388",
+                "protocol": "WCS",
+                "urls": [
+                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
+                ]
+            }],
+            "download": {
+                "id": "OMI_L2_AOT388",
+                "protocol": "EOWCS",
+                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
+            },
+            "parameters": {
+                "Unknown": {
+                    "range": [-15.7, 10.4],
+                    "uom":"Unknown",
+                    "colorscale": "viridis",
+                    "name": "Unknown",
+                    "selected": true
+                }
+            }
+        },{
+            "name": "OMI_L2_AOT367",
+            "visible": false,
+            "timeSlider": true,
+            "timeSliderProtocol": "WPS",
+            "views": [{
+                "id": "OMI_L2_AOT367",
+                "protocol": "WCS",
+                "urls": [
+                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
+                ]
+            }],
+            "download": {
+                "id": "OMI_L2_AOT367",
+                "protocol": "EOWCS",
+                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
+            },
+            "parameters": {
+                "Unknown": {
+                    "range": [-15.7, 10.4],
+                    "uom":"Unknown",
+                    "colorscale": "viridis",
+                    "name": "Unknown",
+                    "selected": true
+                }
+            }
+        },{
             "name": "OMI_L3e_SO2",
             "visible": false,
             "timeSlider": true,
@@ -225,106 +433,80 @@
                 }
             }
         },{
-            "name": "ALARO Specific Humidity isobaric",
+            "name": "PARASOL_L2_AOT_LAND",
             "visible": false,
             "timeSlider": true,
             "timeSliderProtocol": "WPS",
             "views": [{
-                "id": "ALARO_Specific_humidity_isobaricInhPa",
+                "id": "PARASOL_L2_AOT_LAND",
                 "protocol": "WCS",
                 "urls": [
                     "http://vtdas-dave.zamg.ac.at/davprc/ows"
                 ]
             }],
             "download": {
-                "id": "ALARO_Specific_humidity_isobaricInhPa",
+                "id": "PARASOL_L2_AOT_LAND",
                 "protocol": "EOWCS",
                 "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
             },
             "parameters": {
-                "Specific Humidity": {
-                    "range": [0.001, 0.02],
-                    "uom":"hPa",
+                "Unknown": {
+                    "range": [0, 5],
+                    "uom":"Unknown",
                     "colorscale": "viridis",
-                    "name": "Specific Humidity",
+                    "name": "Unknown",
                     "selected": true
                 }
             }
         },{
-            "name": "ALARO Temperature isobaric",
+            "name": "PARASOL_L2_AOT_SEA",
             "visible": false,
             "timeSlider": true,
             "timeSliderProtocol": "WPS",
             "views": [{
-                "id": "ALARO_Temperature_isobaricInhPa",
+                "id": "PARASOL_L2_AOT_SEA",
                 "protocol": "WCS",
                 "urls": [
                     "http://vtdas-dave.zamg.ac.at/davprc/ows"
                 ]
             }],
             "download": {
-                "id": "ALARO_Temperature_isobaricInhPa",
+                "id": "PARASOL_L2_AOT_SEA",
                 "protocol": "EOWCS",
                 "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
             },
             "parameters": {
-                "Surface Temperature": {
-                    "range": [265, 315],
-                    "uom":"K",
+                "Unknown": {
+                    "range": [0, 1],
+                    "uom":"Unknown",
                     "colorscale": "viridis",
-                    "name": "Surface Temperature",
+                    "name": "Unknown",
                     "selected": true
                 }
             }
         },{
-            "name": "ALARO Temperature Surface",
+            "name": "BASCOE",
             "visible": false,
             "timeSlider": true,
             "timeSliderProtocol": "WPS",
             "views": [{
-                "id": "ALARO_Temperature_surface_201305150000_data",
+                "id": "BASCOE",
                 "protocol": "WCS",
                 "urls": [
-                    "http://demo.v-manip.eox.at/browse/ows"
+                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
                 ]
             }],
             "download": {
-                "id": "ALARO_Temperature_surface_201305150000_data",
+                "id": "BASCOE",
                 "protocol": "EOWCS",
-                "url": "http://demo.v-manip.eox.at/browse/ows"
+                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
             },
             "parameters": {
-                "Surface Temperature": {
-                    "range": [265, 315],
-                    "uom":"K",
+                "Unknown": {
+                    "range": [0.000001, 0.00001],
+                    "uom":"Unknown",
                     "colorscale": "viridis",
-                    "name": "Surface Temperature",
-                    "selected": true
-                }
-            }
-        },{
-            "name": "AROME Temperature Surface",
-            "visible": false,
-            "timeSlider": true,
-            "timeSliderProtocol": "WPS",
-            "views": [{
-                "id": "AROME_Temperature_surface_201305150000_data",
-                "protocol": "WCS",
-                "urls": [
-                    "http://demo.v-manip.eox.at/browse/ows"
-                ]
-            }],
-            "download": {
-                "id": "AROME_Temperature_surface_201305150000_data",
-                "protocol": "EOWCS",
-                "url": "http://demo.v-manip.eox.at/browse/ows"
-            },
-            "parameters": {
-                "Surface Temperature": {
-                    "range": [265, 315],
-                    "uom":"K",
-                    "colorscale": "viridis",
-                    "name": "Surface Temperature",
+                    "name": "Unknown",
                     "selected": true
                 }
             }
