@@ -1362,8 +1362,8 @@ define(['backbone.marionette',
 							self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
 							self.p_plot.setDomain(range);
 							self.p_plot.setNoDataValue(-9999);
-							self.p_plot.renderDataset(cov_id);
 							self.p_plot.setClamp(clamp[0],clamp[1]);
+							self.p_plot.renderDataset(cov_id);
 							if (prim){
 								prim["cov_id"] = cov_id;
 								prim.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
@@ -2299,7 +2299,8 @@ define(['backbone.marionette',
 
 				this.FL_collection[name] = new Cesium.Primitive({
 					geometryInstances: instances,
-					appearance: new Cesium.PolylineColorAppearance()
+					appearance: new Cesium.PolylineColorAppearance(),
+					debugShowBoundingVolume: true
 				});
 				
 

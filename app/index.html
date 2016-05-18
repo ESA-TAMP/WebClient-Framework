@@ -32,6 +32,24 @@
                 baseUrl : "scripts/"
             };
 
+            var PRODUCT_URL = "http://vtdas-dave.zamg.ac.at/davprc/ows";
+            var USER_PRODUCTS = [
+                {
+                    "name": "BASCOE",
+                    "id": "BASCOE",
+                    "parameters": {
+                        "Parameter1": {
+                            "range": [0.000001, 0.00001], // Optional: default [0,1]
+                            "uom":"Unknown", // Optional: default "Unknown"
+                            "colorscale": "viridis", // Optional: default "viridis"
+                            "name": "First parameter/band" // Optional default "Parameter1"
+                        }
+                    }
+                }
+            ];
+
+            
+
         </script>
 
         <!-- build:js scripts/vendor/modernizr.js -->

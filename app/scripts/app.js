@@ -185,6 +185,48 @@
 					console.log("Added product " + product.name );
 				}, this);
 
+				this.productServer = defaultFor(PRODUCT_URL, "http://vtdas-dave.zamg.ac.at/davprc/ows");
+				var additional_products = [];
+
+				if (typeof USER_PRODUCTS !== 'undefined') {
+
+					for (var i = USER_PRODUCTS.length - 1; i >= 0; i--) {
+
+						var p = USER_PRODUCTS[i];
+
+						if(_.keys(p.parameters).length>0){
+							p.parameters[_.keys(p.parameters)[0]]["selected"]=true;
+						}
+
+						globals.products.add(
+							new m.LayerModel({
+								name: p.name,
+								visible: defaultFor(p.visible,false),
+								timeSlider: true,
+								timeSliderProtocol: defaultFor(p.timeSliderProtocol, "WPS"),
+								color: defaultFor(p.color, autoColor.getColor()),
+								opacity: defaultFor(p.opacity, 1),
+								views: defaultFor(p.views, [{
+									"id": p.id,
+					                "protocol": "WCS",
+					                "urls": [this.productServer]
+								}]),
+								view: {isBaseLayer: false},
+								download: {
+									id: p.id,
+									protocol: "WCS",
+									url: this.productServer
+								},
+								processes: [],
+								parameters: p.parameters
+							})
+						);
+					
+					console.log("Added user product " + p.name );
+
+					}
+				}
+
 				var productcolors = d3.scale.ordinal().domain(domain).range(range);
 
 				globals.objects.add('productcolors', productcolors);
