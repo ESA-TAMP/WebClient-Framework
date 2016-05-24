@@ -194,36 +194,44 @@
 
 						var p = USER_PRODUCTS[i];
 
-						if(_.keys(p.parameters).length>0){
-							p.parameters[_.keys(p.parameters)[0]]["selected"]=true;
+						var pKeys = _.keys(p.parameters);
+						if(pKeys.length>0){
+							p.parameters[pKeys[0]]["selected"]=true;
+							for (var j = pKeys.length - 1; j >= 0; j--) {
+								p.parameters[pKeys[j]]["colorscale"] = defaultFor(p.parameters[pKeys[j]]["colorscale"], "viridis");
+							}
 						}
 
-						globals.products.add(
-							new m.LayerModel({
-								name: p.name,
-								visible: defaultFor(p.visible,false),
-								timeSlider: true,
-								timeSliderProtocol: defaultFor(p.timeSliderProtocol, "WPS"),
-								color: defaultFor(p.color, autoColor.getColor()),
-								opacity: defaultFor(p.opacity, 1),
-								views: defaultFor(p.views, [{
-									"id": p.id,
-					                "protocol": "WCS",
-					                "urls": [this.productServer]
-								}]),
-								view: {isBaseLayer: false},
-								download: {
-									id: p.id,
-									protocol: "WCS",
-									url: this.productServer
-								},
-								processes: [],
-								parameters: p.parameters
-							})
-						);
-					
-					console.log("Added user product " + p.name );
+						if (p.id != "None" && p.id != ""){
+							var wcs_id = p.id.split('_').slice(0,-2).join('_');
 
+							globals.products.add(
+								new m.LayerModel({
+									name: p.name,
+									visible: defaultFor(p.visible,false),
+									timeSlider: true,
+									timeSliderProtocol: defaultFor(p.timeSliderProtocol, "WPS"),
+									timeRange: [new Date(p.date[0]), new Date(p.date[1])],
+									color: defaultFor(p.color, autoColor.getColor()),
+									opacity: defaultFor(p.opacity, 1),
+									process_id: p.id,
+									views: defaultFor(p.views, [{
+										"id": wcs_id,
+						                "protocol": "WCS",
+						                "urls": [this.productServer]
+									}]),
+									view: {isBaseLayer: false},
+									download: {
+										id: wcs_id,
+										protocol: "WCS",
+										url: this.productServer
+									},
+									processes: [],
+									parameters: p.parameters
+								})
+							);
+							console.log("Added user product " + p.name );
+						}
 					}
 				}
 

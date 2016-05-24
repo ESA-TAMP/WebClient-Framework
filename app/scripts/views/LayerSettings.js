@@ -63,7 +63,9 @@
 
 				this.$("#options").empty();
 
-				this.$("#options").append(option);
+				if(_.keys(options).length==1){
+					this.$("#parameters").find("ul").find(":first-child").first().hide();
+				}
 
 				if(options[this.selected].description){
 					this.$("#description").text(options[this.selected].description);
@@ -213,6 +215,21 @@
 				that.updateRange(options);
 
 				this.createHeightTextbox(this.model.get("height"));
+
+				if(!(typeof this.model.get("timeRange") === 'undefined')){
+
+					this.$("#centertime").empty();
+
+					this.$("#centertime").append(
+					'<button style="width:100%;" type="button" class="btn btn-default">Show time extent</button>'
+					);
+					var timerange = this.model.get("timeRange");
+
+					this.$("#centertime").click(function(){
+						Communicator.mediator.trigger("date:center", timerange);
+					});
+
+				}
 
 		    },
 

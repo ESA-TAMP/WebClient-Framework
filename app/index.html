@@ -34,21 +34,237 @@
 
             var PRODUCT_URL = "http://vtdas-dave.zamg.ac.at/davprc/ows";
             var USER_PRODUCTS = [
-                {
-                    "name": "BASCOE",
-                    "id": "BASCOE",
-                    "parameters": {
-                        "Parameter1": {
-                            "range": [0.000001, 0.00001], // Optional: default [0,1]
-                            "uom":"Unknown", // Optional: default "Unknown"
-                            "colorscale": "viridis", // Optional: default "viridis"
-                            "name": "First parameter/band" // Optional default "Parameter1"
+                
+                    {
+                        "name": "GOME2B SO2 Level 2 3D",
+                        "id": "GOME2B_SO2_L2_3D_4326_025",
+                        "date":
+                        [ 
+                            "Sept. 15, 2014",
+                            "Sept. 26, 2014"
+                        ],
+                        "parameters":
+                        {
+                            "Parameter1": 
+                            {
+                                    "range": 
+                                    [
+                                        -10,
+                                        10
+                                    ],
+                                    "uom":"",
+                                    
+                            }
+                        }
+                    },
+                
+                    {
+                        "name": "GOME2B SO2 Level 2 2D",
+                        "id": "GOME2B_SO2_L2_2D_4326_025",
+                        "date":
+                        [ 
+                            "Sept. 15, 2014",
+                            "Sept. 26, 2014"
+                        ],
+                        "parameters":
+                        {
+                            "Parameter1": 
+                            {
+                                    "range": 
+                                    [
+                                        -5,
+                                        10
+                                    ],
+                                    "uom":"du",
+                                    
+                            }
+                        }
+                    },
+                
+                    {
+                        "name": "OMI SO2 L2 2D",
+                        "id": "OMI_SO2_L2_2D_4326_025",
+                        "date":
+                        [ 
+                            "Sept. 15, 2014",
+                            "Sept. 26, 2014"
+                        ],
+                        "parameters":
+                        {
+                            "Parameter1": 
+                            {
+                                    "range": 
+                                    [
+                                        -5,
+                                        10
+                                    ],
+                                    "uom":"du",
+                                    
+                            }
+                        }
+                    },
+                
+                    {
+                        "name": "FLEXPART SO2 2D DU",
+                        "id": "FLEXPART_SO2_2D_DU_4326_01",
+                        "date":
+                        [ 
+                            "Sept. 16, 2014",
+                            "Sept. 24, 2014"
+                        ],
+                        "parameters":
+                        {
+                            "Parameter1": 
+                            {
+                                    "range": 
+                                    [
+                                        -5,
+                                        10
+                                    ],
+                                    "uom":"du",
+                                    
+                            }
+                        }
+                    },
+                
+                    {
+                        "name": "test_lidar",
+                        "id": "None",
+                        "date":
+                        [ 
+                            "April 25, 2016",
+                            "April 25, 2016"
+                        ],
+                        "parameters":
+                        {
+                            "Parameter1": 
+                            {
+                                    "range": 
+                                    [
+                                        0,
+                                        1
+                                    ],
+                                    "uom":"",
+                                    
+                            }
+                        }
+                    },
+                
+                    {
+                        "name": "Lidar Bira O3",
+                        "id": "LIDAR_BIRA_O3_4326_04",
+                        "date":
+                        [ 
+                            "May 1, 2015",
+                            "July 31, 2015"
+                        ],
+                        "parameters":
+                        {
+                            "Parameter1": 
+                            {
+                                    "range": 
+                                    [
+                                        0,
+                                        1
+                                    ],
+                                    "uom":"",
+                                    
+                            }
+                        }
+                    },
+                
+                    {
+                        "name": "OMI Level 2 AOT 483nm",
+                        "id": "OMI_L2_AOT483_4326_01",
+                        "date":
+                        [ 
+                            "Jan. 1, 2006",
+                            "Feb. 1, 2006"
+                        ],
+                        "parameters":
+                        {
+                            "Parameter1": 
+                            {
+                                    "range": 
+                                    [
+                                        0,
+                                        1
+                                    ],
+                                    "uom":"",
+                                    
+                            }
+                        }
+                    },
+                
+                    {
+                        "name": "BASCOE",
+                        "id": "BASCOE_4326_375",
+                        "date":
+                        [ 
+                            "May 1, 2015",
+                            "July 30, 2015"
+                        ],
+                        "parameters":
+                        {
+                            "Parameter1": 
+                            {
+                                    "range": 
+                                    [
+                                        0,
+                                        1
+                                    ],
+                                    "uom":"vmr",
+                                    
+                            }
+                        }
+                    },
+                
+                    {
+                        "name": "PARASOL L2 AOT - SEA",
+                        "id": "PARASOL_L2_AOT_SEA_4326_015",
+                        "date":
+                        [ 
+                            "Jan. 1, 2006",
+                            "Jan. 31, 2006"
+                        ],
+                        "parameters":
+                        {
+                            "Parameter1": 
+                            {
+                                    "range": 
+                                    [
+                                        0,
+                                        1
+                                    ],
+                                    "uom":"",
+                                    
+                            }
+                        }
+                    },
+                
+                    {
+                        "name": "PARASOL L2 AOT - LAND",
+                        "id": "PARASOL_L2_AOT_LAND_4326_015",
+                        "date":
+                        [ 
+                            "Jan. 1, 2006",
+                            "Jan. 31, 2006"
+                        ],
+                        "parameters":
+                        {
+                            "Parameter1": 
+                            {
+                                    "range": 
+                                    [
+                                        0,
+                                        1
+                                    ],
+                                    "uom":"",
+                                    
+                            }
                         }
                     }
-                }
-            ];
-
-            
+                ];
 
         </script>
 

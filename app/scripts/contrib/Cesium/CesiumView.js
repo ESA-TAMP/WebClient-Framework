@@ -1,7 +1,6 @@
 
 var ELEVATION_EXAGERATION = 70;
 
-CESIUM_BASE_URL = "bower_components/cesium/Build/Cesium/"
 function defaultFor(arg, val) { return typeof arg !== 'undefined' ? arg : val; }
 
 define(['backbone.marionette',
@@ -65,6 +64,7 @@ define(['backbone.marionette',
 
 				// TODO: Need to change this into an object which contais arrays for all different layers/collections
 				this.currentCoverages = [];
+				this.timeseries = [];
 
 				this.selection_x = '';
 				this.selection_y = '';
@@ -1329,6 +1329,8 @@ define(['backbone.marionette',
 
 
 						// Check if we have a multilayered tif
+						// There are two types of multilayered tif: volumes and "columns" (e.g. lidar)
+						// We need to differentiate between them as they are displayed differently 
 						if (rasdata.length > 1){
 
 							var heights;
@@ -1337,28 +1339,44 @@ define(['backbone.marionette',
 								heights = meta.VERTICAL_LEVELS.split(',').map(Number);
 							}
 
-							// TODO: Super dirty hack because data is weird and they dont want it to be visualized like this
-							if(heights[heights.length-1]>99999){
-								heights.pop();
-								rasdata.pop();
-							}
 
-							for (var i = 0; i < rasdata.length; i++) {
-								self.p_plot.addDataset((cov_id+"_"+i), rasdata[i], img.getWidth(), img.getHeight());
-								self.p_plot.setDomain(range);
-								self.p_plot.setNoDataValue(-9999);
-								self.p_plot.setClamp(clamp[0],clamp[1]);
-								self.p_plot.renderDataset((cov_id+"_"+i));
-
-								var height = i*18000;
-								if (i<=heights.length){
-									height = heights[i]*ELEVATION_EXAGERATION;
+							if (img.getWidth()==1 && img.getHeight()==1) {
+								// This is a 1D "column"
+								//var line = [];
+								var time = (_.find(self.currentCoverages, function(item) {
+									return item.identifier == cov_id; 
+								})).starttime;
+								for (var i = 0; i < rasdata.length; i++) {
+									//line.push(rasdata[i][0]);
+									var height = heights[i];
+									self.timeseries.push({time:time, val:rasdata[i][0], height: height});
 								}
-								self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, (cov_id+"_"+i), cur_coll, alpha, height);
+								//self.timeseries.push({id:cov_id, data:line});
+
+							}else{
+								// This is a volume
+								// TODO: Super dirty hack because data is weird and they dont want it to be visualized like this
+								if(heights[heights.length-1]>99999){
+									heights.pop();
+									rasdata.pop();
+								}
+							
+								for (var i = 0; i < rasdata.length; i++) {
+									self.p_plot.addDataset((cov_id+"_"+i), rasdata[i], img.getWidth(), img.getHeight());
+									self.p_plot.setDomain(range);
+									self.p_plot.setNoDataValue(-9999);
+									self.p_plot.setClamp(clamp[0],clamp[1]);
+									self.p_plot.renderDataset((cov_id+"_"+i));
+									var height = i*18000;
+									if (i<=heights.length){
+										height = heights[i]*ELEVATION_EXAGERATION;
+									}
+									self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, (cov_id+"_"+i), cur_coll, alpha, height);
+								}
 							}
 
 						}else{
-
+							// Not a volume so create just one primitive
 							self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
 							self.p_plot.setDomain(range);
 							self.p_plot.setNoDataValue(-9999);
@@ -1389,12 +1407,38 @@ define(['backbone.marionette',
 				.done(function( data ) {
 
 					var gt = GeoTIFF.parse(data);
-					var i = gt.getImage(0);
-					var rasdata = i.readRasters()[0];
+					var img = gt.getImage(0);
+					var rasdata = img.readRasters();
 
-					self.p_plot.addDataset(cov_id, rasdata, i.getWidth(), i.getHeight());
-					//self.p_plot.setClamp(false);
-					self.stackedDataset.push(cov_id);
+					if (img.getWidth()==1 && img.getHeight()==1) {
+						// This is a 1D "column"
+						var meta = img.getGDALMetadata();
+						var heights;
+						if(meta && meta.hasOwnProperty('VERTICAL_LEVELS')){
+							heights = meta.VERTICAL_LEVELS.split(',').map(Number);
+						}
+						// TODO: Super dirty hack because data is weird and they dont want it to be visualized like this
+						if(heights[heights.length-1]>99999){
+							heights.pop();
+							rasdata.pop();
+						}
+
+						//var line = [];
+						//console.log(rasdata.length);
+						var time = (_.find(self.currentCoverages, function(item) {
+							return item.identifier == cov_id; 
+						})).starttime;
+						for (var i = 0; i < rasdata.length; i++) {
+							//line.push(rasdata[i][0]);
+							var height = heights[i];
+							self.timeseries.push({time:time, val:rasdata[i][0], height: height});
+						}
+						//self.timeseries.push({id:cov_id, data:line});
+					}else{
+						// 2D coverage for animation
+						self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
+						self.stackedDataset.push(cov_id);
+					}
 				});
 			},
 
@@ -1652,7 +1696,7 @@ define(['backbone.marionette',
 									deferreds.push(self.loadCoverage(request, bbox, cov_id, range, cur_coll, alpha, [clamp_min, clamp_max], stacked_prim));
 									// We need to add it to the stacked list as it will be compared to to see if part of a stack collection
 									self.stackedDataset.push(cov_id);
-									Communicator.mediator.trigger("date:tick:select", new Date(coverages.data[i].starttime));
+									//Communicator.mediator.trigger("date:tick:select", new Date(coverages.data[i].starttime));
 								}else{
 									// We only request the data if it is not already available
 									if(!self.p_plot.datasetAvailable(cov_id)) {
@@ -1669,76 +1713,100 @@ define(['backbone.marionette',
 						$.when.apply($, deferreds)
 							.then(function(){
 
-								if (stacked){
-									var to_play = coverages.data;
-									var prim_to_render = cur_coll._primitives[0];
-									var play_length = to_play.length;
-									var play_index = play_length-1;
-									var fps = 15;
+								if(self.timeseries.length >0){
+									var h = self.timeseries[0].data.length;
+									var w = self.timeseries.length;
+									var timeseriesdata = new Float32Array(h * w);
+									for (var i=0; i<h; i++){
+										for(var j=0; j<w; j++){
+											timeseriesdata[(i*w)+j] = self.timeseries[j].data[i];
+										}
+									}
+									if(self.p_plot.datasetAvailable("timeseries")){
+										self.p_plot.removeDataset("timeseries");
+									}
+									self.p_plot.addDataset("timeseries", timeseriesdata, w, h);
+									self.p_plot.setDomain([3.792e+16, 4.949e+18]);
+									self.p_plot.setClamp(true,true);
+									self.p_plot.renderDataset("timeseries");
+									var tmp = self.p_plot.canvas.toDataURL();
+									window.open(tmp,'_blank');
 
-									$('#playercontrols').show();
-									
-									// Remove handlers
-									$("#play-button").off();
+									self.timeseries = [];
 
-									$("#play-button").on('click', function () {
+								}else{
 
-											$("#play-button").html('<i class="fa fa-pause"></i>');
-								        	// Create a draw loop using requestAnimationFrame. The
-											// tick callback function is called for every animation frame.
-											function tick() {
-												setTimeout(function() {
-											        if(self.playback){
-											        	Cesium.requestAnimationFrame(tick);
-												        play_index = (play_index+1) % play_length;
-													  	self.p_plot.renderDataset(to_play[play_index].identifier);
-														prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
-														prim_to_render.cov_id = to_play[play_index].identifier;
-														Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
-														$('#timestamp').show();
-														$('#timestamp').text(to_play[play_index].starttime);
-											        }
+									if (stacked){
+										var to_play = coverages.data;
+										var prim_to_render = cur_coll._primitives[0];
+										var play_length = to_play.length;
+										var play_index = play_length-1;
+										var fps = 15;
 
-											    }, 100 / fps);
+										$('#playercontrols').show();
+										
+										// Remove handlers
+										$("#play-button").off();
 
-											}
+										$("#play-button").on('click', function () {
 
-											if (!self.playback){
-												self.playback = true;
-												tick();
-								        	}else{
-								        		self.playback = false;
-								        		$("#play-button").html('<i class="fa fa-play"></i>');
-								        	}
+												$("#play-button").html('<i class="fa fa-pause"></i>');
+									        	// Create a draw loop using requestAnimationFrame. The
+												// tick callback function is called for every animation frame.
+												function tick() {
+													setTimeout(function() {
+												        if(self.playback){
+												        	Cesium.requestAnimationFrame(tick);
+													        play_index = (play_index+1) % play_length;
+														  	self.p_plot.renderDataset(to_play[play_index].identifier);
+															prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+															prim_to_render.cov_id = to_play[play_index].identifier;
+															Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
+															$('#timestamp').show();
+															$('#timestamp').text(to_play[play_index].starttime);
+												        }
 
-								    	}
-								    );
+												    }, 100 / fps);
 
-									// Setup back button
-									$("#step-back-button").off();
+												}
 
-									$("#step-back-button").on('click', function () {
-								        play_index = (play_index-1);
-								        if(play_index<0)
-								        	play_index = play_length-1;
-								        play_index = play_index % play_length;
-									  	self.p_plot.renderDataset(to_play[play_index].identifier);
-										prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
-										prim_to_render.cov_id = to_play[play_index].identifier;
-										Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
-								    });
+												if (!self.playback){
+													self.playback = true;
+													tick();
+									        	}else{
+									        		self.playback = false;
+									        		$("#play-button").html('<i class="fa fa-play"></i>');
+									        	}
 
-								    // Setup forward button
-									$("#step-forward-button").off();
+									    	}
+									    );
 
-									$("#step-forward-button").on('click', function () {
-								        play_index = (play_index+1) % play_length;
-									  	self.p_plot.renderDataset(to_play[play_index].identifier);
-										prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
-										prim_to_render.cov_id = to_play[play_index].identifier;
-										Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
-								    });
+										// Setup back button
+										$("#step-back-button").off();
 
+										$("#step-back-button").on('click', function () {
+									        play_index = (play_index-1);
+									        if(play_index<0)
+									        	play_index = play_length-1;
+									        play_index = play_index % play_length;
+										  	self.p_plot.renderDataset(to_play[play_index].identifier);
+											prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+											prim_to_render.cov_id = to_play[play_index].identifier;
+											Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
+									    });
+
+									    // Setup forward button
+										$("#step-forward-button").off();
+
+										$("#step-forward-button").on('click', function () {
+									        play_index = (play_index+1) % play_length;
+										  	self.p_plot.renderDataset(to_play[play_index].identifier);
+											prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+											prim_to_render.cov_id = to_play[play_index].identifier;
+											Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
+									    });
+
+									}
 								}
 
 							}).fail(function(){

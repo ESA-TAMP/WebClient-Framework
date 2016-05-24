@@ -64,7 +64,7 @@
 			onOptionsOpen: function(event){
 				if (_.isUndefined(App.optionsLayout.isClosed) || App.optionsLayout.isClosed) {
 					App.optionsBar.show(App.optionsLayout);
-					App.optionsLayout.colorramp.show(App.colorRampView);
+//					App.optionsLayout.colorramp.show(App.colorRampView);
 				} else {
 					App.optionsLayout.close();
 				}

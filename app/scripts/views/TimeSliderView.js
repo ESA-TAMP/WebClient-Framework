@@ -30,6 +30,8 @@
         this.listenTo(Communicator.mediator, "map:position:change", this.updateExtent);
         this.listenTo(Communicator.mediator, "date:selection:change", this.onDateSelectionChange);
         this.listenTo(Communicator.mediator, "date:tick:select", this.onTickSelected);
+        this.listenTo(Communicator.mediator, "date:center", this.onDateCenter);
+        
 
         Communicator.reqres.setHandler('get:time', this.returnTime);
 
@@ -101,6 +103,10 @@
           start: evt.originalEvent.detail.start,
           end: evt.originalEvent.detail.end
         };
+      },
+
+      onDateCenter: function(range){;
+        this.slider.center(range[0], range[1]);
       },
 
       onDateSelectionChange: function(opt) {
