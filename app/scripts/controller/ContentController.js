@@ -23,6 +23,7 @@
 				this.listenTo(Communicator.mediator, "layer:open:settings", this.onOpenLayerSettings);
 				this.listenTo(Communicator.mediator, "ui:fullscreen:globe", this.onFullscrenGlobe);
 				this.listenTo(Communicator.mediator, "ui:fullscreen:analytics", this.onFullscrenAnalytics);
+				this.listenTo(Communicator.mediator, "ui:open:processes", this.onProcessesOpen);
 			},
 
 			onFullscrenGlobe: function () {
@@ -32,7 +33,7 @@
 			onFullscrenAnalytics: function () {
 				Communicator.mediator.trigger("layout:switch:singleview");
 				Communicator.mediator.trigger("region:show:view", 'tl','AVViewer');
-				this.listenTo(Communicator.mediator, "ui:open:processes", this.onProcessesOpen);
+				
 			},
 
 			onDialogOpenAbout: function(event){

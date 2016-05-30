@@ -65,6 +65,7 @@ define(['backbone.marionette',
 				// TODO: Need to change this into an object which contais arrays for all different layers/collections
 				this.currentCoverages = [];
 				this.timeseries = [];
+				this.timeseriesRange = [0,1];
 
 				this.selection_x = '';
 				this.selection_y = '';
@@ -551,6 +552,7 @@ define(['backbone.marionette',
 								selection_x: this.selection_x,
 								selection_y: [this.selection_y],
 								showDropDownSelection: false,
+								renderBlocks: false,
 								margin: {top: 45, right: 20, bottom: 10, left: 50}
 							};
 
@@ -572,6 +574,25 @@ define(['backbone.marionette',
 	                		$('#download_button').remove();
 	                		$('#pickingresults').find('#save').attr('style','position: absolute; right: 29px; top: 7px');
 	                		$('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');
+
+	                		$("#pickingresults").append(
+								'<a href="javascript:void(0)" id="enlarge" style="position: absolute;top:5px;left:5px">'+
+									'<i style="font-size:1.5em;" class="fa fa-expand fa-rotate-90"></i></a>'
+								);
+							$('#enlarge').click(function (evt) {
+								if ($('#pickingresults').hasClass("big")){
+									$('#pickingresults').width("30%");
+									$('#pickingresults').height("30%");
+									$('#pickingresults').resize();
+									$('#pickingresults').removeClass("big");
+								}else{
+									$('#pickingresults').addClass( "big" )
+									$('#pickingresults').width("50%");
+									$('#pickingresults').height("70%");
+									$('#pickingresults').resize();
+								}
+								
+							});
 
 						  }
 
@@ -1342,10 +1363,30 @@ define(['backbone.marionette',
 
 							if (img.getWidth()==1 && img.getHeight()==1) {
 								// This is a 1D "column"
+
 								//var line = [];
+								var cov_bb = _.find(self.currentCoverages, function(o){return o.identifier == cov_id;}).bbox;
+								cov_bb = cov_bb.substring(1, cov_bb.length - 1).split(",").map(parseFloat);
+								var pos = new Cesium.Cartesian3.fromDegrees(
+									cov_bb[0] + ((cov_bb[2]-cov_bb[0])/2),
+									cov_bb[1] + ((cov_bb[3]-cov_bb[1])/2)
+								);
+								var bil_coll = cur_coll.add(new Cesium.BillboardCollection());
+								bil_coll.add({
+									position : pos,
+									verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+									image : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAABOFBMVEUAAAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD/AAD+UyAwAAAAZ3RSTlMAAQIDBAUGBwgLDA0PERITFRgZHiAiIyQpKiwtLzEyMzg6QENER0lNT1JUVVZXWFxdXl9iY2RoaWxtcHFzdHh5e3+Ci4yUl5ianquwtbm6xcfKzs/R09fZ2tze4OLm6evt7/P19/v9dPMMEgAAAXlJREFUGBmVwYdC00AABuD/GmlZbcEqIKsMQVRAhotZ9pClICCVUUqb//3fQLxr0nWXXL4PGvGR3WuXLJ59ywjYaFll1U0W4QZLrHMSR4hPbPQ3hUAzbFZoQ4B+6pw7MHIeqZwPxyGSX10qazD6QmVTQErfUmmHgVOmdABPqkxpHQZ9lNxW+D5TuodBjtIhqjqppKF3RGkOVYLKAPT+UJpGDSrj0CtR2kJVgspH6P2mVBDwjVIZg942lSl4YjdUMtB7S8XthSL2WdECvSQ90zE8Sx2z4idM7ugpHSzlzuibh8kKDbphkqHePcweqLUMs+/UegmzLurkEeSCGrMIMkmNdgSJs9kRgu2yyTCCvWajokCIPBssI8wHNkghTIL1ThBuj3WGEO4VaxUELFyxxgJsTLBGK2y8KNO3Azsb9HXDTpKeU9j6wYo3sNVD5RL2flEahb0s/7sTsCfyfPYOUYyTLDqIIvZALiKa93QTiMZ5yiGqxQ5EJWDyD40ZHyAXnwgvAAAAAElFTkSuQmCC'
+								});
+								cur_coll.show = true;
+
 								var time = (_.find(self.currentCoverages, function(item) {
 									return item.identifier == cov_id; 
 								})).starttime;
+
+								if(meta && meta.hasOwnProperty('GLOBAL_MIN') && meta.hasOwnProperty('GLOBAL_MAX')){
+									self.timeseriesRange = [Number(meta.GLOBAL_MIN), Number(meta.GLOBAL_MAX)];
+								}
+
 								for (var i = 0; i < rasdata.length; i++) {
 									//line.push(rasdata[i][0]);
 									var height = heights[i];
@@ -1533,7 +1574,9 @@ define(['backbone.marionette',
 							};
 
 							for (var i = prim_to_remove.length - 1; i >= 0; i--) {
-								self.p_plot.removeDataset(prim_to_remove[i].cov_id);
+								if(prim_to_remove[i].cov_id){
+									self.p_plot.removeDataset(prim_to_remove[i].cov_id);
+								}
 								cur_coll.remove(prim_to_remove[i]);
 							};
 
@@ -1653,6 +1696,25 @@ define(['backbone.marionette',
 					                	$("#pickingresults").empty();
 					                });
 
+					                $("#pickingresults").append(
+										'<a href="javascript:void(0)" id="enlarge" style="position: absolute;top:5px;left:5px">'+
+											'<i style="font-size:1.5em;" class="fa fa-expand fa-rotate-90"></i></a>'
+										);
+									$('#enlarge').click(function (evt) {
+										if ($('#pickingresults').hasClass("big")){
+											$('#pickingresults').width("30%");
+											$('#pickingresults').height("30%");
+											$('#pickingresults').resize();
+											$('#pickingresults').removeClass("big");
+										}else{
+											$('#pickingresults').addClass( "big" )
+											$('#pickingresults').width("50%");
+											$('#pickingresults').height("70%");
+											$('#pickingresults').resize();
+										}
+										
+									});
+
 
 								});
 
@@ -1714,7 +1776,72 @@ define(['backbone.marionette',
 							.then(function(){
 
 								if(self.timeseries.length >0){
-									var h = self.timeseries[0].data.length;
+
+									self.timeseries = _.filter(self.timeseries, function(obj){ return obj.height != 9.99e+29; });
+
+									for (var i = self.timeseries.length - 1; i >= 0; i--) {
+										self.timeseries[i].time = new Date(self.timeseries[i].time);
+									}
+
+									$("#pickingresults").show();
+
+									var args = {
+										scatterEl: $('#pickingresults')[0],
+										selection_x: "time",
+										selection_y: ["height"],
+										showDropDownSelection: false,
+										parsedData: self.timeseries,
+										renderBlocks: true,
+										dataRange: self.timeseriesRange,
+										margin: {top: 45, right: 120, bottom: 10, left: 50}
+									};
+
+									var sp = new scatterPlot(args, function(){
+										},
+										function (values) {
+											//Communicator.mediator.trigger("cesium:highlight:point", [values.Latitude, values.Longitude, values.Radius]);
+										}, 
+										function(){
+											//Communicator.mediator.trigger("cesium:highlight:removeAll");
+										},
+										function(filter){
+											//Communicator.mediator.trigger("download:set:filter", filter);
+										}
+									);
+
+									sp.loadData(args);
+									// Move some things around
+									$('#download_button').remove();
+									$('#pickingresults').find('#save').attr('style','position: absolute; right: 29px; top: 7px');
+									$('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');
+									$("#pickingresults").append(
+										'<a href="javascript:void(0)" id="enlarge" style="position: absolute;top:5px;left:5px">'+
+											'<i style="font-size:1.5em;" class="fa fa-expand fa-rotate-90"></i></a>'
+										);
+									$('#enlarge').click(function (evt) {
+										if ($('#pickingresults').hasClass("big")){
+											$('#pickingresults').width("30%");
+											$('#pickingresults').height("30%");
+											$('#pickingresults').resize();
+											$('#pickingresults').removeClass("big");
+										}else{
+											$('#pickingresults').addClass( "big" )
+											$('#pickingresults').width("50%");
+											$('#pickingresults').height("70%");
+											$('#pickingresults').resize();
+										}
+										
+									});
+
+									$("#pickingresults").prepend('<button type="button" id="pickingresultsClose" class="close" style="position: absolute; right:0px; margin-right:5px; margin-top:5px;"><i class="fa fa-times-circle"></i></button>');
+
+									$('#pickingresultsClose').click(function(){
+										self.special1dData = [];
+					                	$("#pickingresults").hide();
+					                	$("#pickingresults").empty();
+					                });
+
+									/*var h = self.timeseries[0].data.length;
 									var w = self.timeseries.length;
 									var timeseriesdata = new Float32Array(h * w);
 									for (var i=0; i<h; i++){
@@ -1730,7 +1857,7 @@ define(['backbone.marionette',
 									self.p_plot.setClamp(true,true);
 									self.p_plot.renderDataset("timeseries");
 									var tmp = self.p_plot.canvas.toDataURL();
-									window.open(tmp,'_blank');
+									window.open(tmp,'_blank');*/
 
 									self.timeseries = [];
 
