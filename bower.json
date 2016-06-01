@@ -23,7 +23,7 @@
     "d3.Graphs": "ESA-VirES/AnalyticsViewer#~0.3.9",
     "cesium": "http://cesiumjs.org/releases/Cesium-1.20.zip",
     "papaparse": "~4.1.0",
-    "geotiffjs": "constantinius/geotiff.js#~0.0.5",
+    "geotiffjs": "constantinius/geotiff.js#~0.3.2",
     "plotty": "santilland/plotty#^0.1.2",
     "jqueryui-touch-punch": "*",
     "FileSaver.js": "eligrey/FileSaver.js",

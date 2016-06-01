@@ -361,7 +361,7 @@ module.exports = function (grunt) {
                         'bower_components/cesium/Build/Cesium/**',
                         'bower_components/papaparse/papaparse.min.js',
                         'bower_components/plotty/dist/plotty.min.js',
-						'bower_components/geotiffjs/dist/geotiff.min.js',
+						'bower_components/geotiffjs/dist/geotiff.js',
                         'scripts/vendor/**',
                     ]
                 },{

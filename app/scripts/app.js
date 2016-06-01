@@ -203,33 +203,41 @@
 						}
 
 						if (p.id != "None" && p.id != ""){
+							var ground_measurements = false;
+							if(p.id.indexOf("ground_measurements") > -1){
+								ground_measurements = true;
+							}
 							var wcs_id = p.id.split('_').slice(0,-2).join('_');
 
-							globals.products.add(
-								new m.LayerModel({
-									name: p.name,
-									visible: defaultFor(p.visible,false),
-									timeSlider: true,
-									timeSliderProtocol: defaultFor(p.timeSliderProtocol, "WPS"),
-									timeRange: [new Date(p.date[0]), new Date(p.date[1])],
-									color: defaultFor(p.color, autoColor.getColor()),
-									opacity: defaultFor(p.opacity, 1),
-									process_id: p.id,
-									views: defaultFor(p.views, [{
-										"id": wcs_id,
-						                "protocol": "WCS",
-						                "urls": [this.productServer]
-									}]),
-									view: {isBaseLayer: false},
-									download: {
-										id: wcs_id,
-										protocol: "WCS",
-										url: this.productServer
-									},
-									processes: [],
-									parameters: p.parameters
-								})
-							);
+							var args = {
+								name: p.name,
+								visible: defaultFor(p.visible,false),
+								timeSlider: true,
+								timeSliderProtocol: defaultFor(p.timeSliderProtocol, "WPS"),
+								timeRange: [new Date(p.date[0]), new Date(p.date[1])],
+								color: defaultFor(p.color, autoColor.getColor()),
+								opacity: defaultFor(p.opacity, 1),
+								process_id: p.id,
+								views: defaultFor(p.views, [{
+									"id": wcs_id,
+					                "protocol": "WCS",
+					                "urls": [this.productServer]
+								}]),
+								view: {isBaseLayer: false},
+								download: {
+									id: wcs_id,
+									protocol: "WCS",
+									url: this.productServer
+								},
+								processes: [],
+								parameters: p.parameters
+							};
+
+							if(ground_measurements){
+								args['ground_measurements'] = true;
+							}
+
+							globals.products.add(new m.LayerModel(args));
 							console.log("Added user product " + p.name );
 						}
 					}
