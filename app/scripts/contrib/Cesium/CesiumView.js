@@ -54,7 +54,8 @@ define(['backbone.marionette',
 				this.activeModels = [];
 				this.difference_image = null;
 
-				this.selectedEntity = null;
+				this.selectedEntityId = null;
+				this.primitiveMapping = {};
 
 				this.begin_time = null;
 				this.end_time = null;
@@ -239,92 +240,17 @@ define(['backbone.marionette',
 
 				handler.setInputAction(function(click) {
 					var pickedObject = self.map.scene.pick(click.position);
-					if(self.selectedEntity){
-						self.selectedEntity.image = pinimage;
-						self.selectedEntity = null;
+					if(self.selectedEntityId){
+						var ent = self.primitiveMapping[self.selectedEntityId];
+						if (ent){
+							ent.image = pinimage;
+							self.selectedEntityId = null;
+						}
 						$("#pickingresults").empty();
 						$("#pickingresults").hide();
-
 					}
 					if (Cesium.defined(pickedObject)) {
-						pickedObject.primitive.image = pinimage_selected;
-						self.selectedEntity = pickedObject.primitive;
-						var id = pickedObject.id;
-
-						var toplot = _.filter(self.special1dData, function(obj){
-							return id === obj.id;
-						});
-
-						toplot = _.filter(toplot, function(obj){
-							return (obj.timestamp.getTime() > self.begin_time.getTime() && obj.timestamp.getTime() < self.end_time.getTime());
-						}); 
-
-
-						$("#pickingresults").show();
-
-						var unique_params = [];
-						$.each($.unique(toplot), function(i, obj) {
-							if (unique_params.indexOf(obj.field) == -1) {
-								unique_params.push(obj.field);
-							}
-						});
-
-						// Add possible data available in the area
-						var cartographic = Cesium.Ellipsoid.WGS84.cartesianToCartographic(pickedObject.primitive.position);
-						var pos_x = Cesium.Math.toDegrees(cartographic.longitude);
-						var pos_y = Cesium.Math.toDegrees(cartographic.latitude);
-						var additional_data = self.pickScene(pos_x,pos_y);
-
-						for (var i = additional_data.length - 1; i >= 0; i--) {
-							additional_data[i][unique_params[0]] = additional_data[i][self.selection_y];
-							delete additional_data[i][self.selection_y];
-						}
-
-						toplot.push(additional_data);
-						toplot = _.flatten(toplot);
-
-						var args = {
-							scatterEl: $('#pickingresults')[0],
-							selection_x: 'timestamp',
-							selection_y: unique_params,
-							showDropDownSelection: false,
-							margin: {top: 45, right: 20, bottom: 10, left: 50},
-						};
-
-						var sp = new scatterPlot(args, function(){}, function(){}, function(){});
-
-						sp.loadData({parsedData: toplot});
-						// Move some things around
-						$('#download_button').remove();
-						$('#pickingresults').find('#save').attr('style','position: absolute; right: 29px; top: 7px');
-						$('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');
-
-						$("#pickingresults").prepend('<button type="button" id="pickingresultsClose" class="close" style="position: absolute; right:0px; margin-right:5px; margin-top:5px;"><i class="fa fa-times-circle"></i></button>');
-
-						$('#pickingresultsClose').click(function(){
-							self.special1dData = [];
-							$("#pickingresults").hide();
-							$("#pickingresults").empty();
-						});
-
-						$("#pickingresults").append(
-							'<a href="javascript:void(0)" id="enlarge" style="position: absolute;top:5px;left:5px">'+
-								'<i style="font-size:1.5em;" class="fa fa-expand fa-rotate-90"></i></a>'
-							);
-						$('#enlarge').click(function (evt) {
-							if ($('#pickingresults').hasClass("big")){
-								$('#pickingresults').width("30%");
-								$('#pickingresults').height("30%");
-								$('#pickingresults').resize();
-								$('#pickingresults').removeClass("big");
-							}else{
-								$('#pickingresults').addClass( "big" )
-								$('#pickingresults').width("50%");
-								$('#pickingresults').height("70%");
-								$('#pickingresults').resize();
-							}
-							
-						});
+						self.pickEntity(pickedObject);
 					}
 				}, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
@@ -539,6 +465,89 @@ define(['backbone.marionette',
 	                });
 				
 
+			},
+
+			pickEntity: function(pickedObject){
+
+				pickedObject.primitive.image = pinimage_selected;
+				this.selectedEntityId = pickedObject.id;
+				var id = pickedObject.id;
+
+				var toplot = _.filter(this.special1dData, function(obj){
+					return id === obj.id;
+				});
+
+
+				toplot = _.filter(toplot, function(obj){
+					return (obj.timestamp.getTime() > this.begin_time.getTime() && obj.timestamp.getTime() < this.end_time.getTime());
+				},this); 
+
+
+				$("#pickingresults").show();
+
+				var unique_params = [];
+				$.each($.unique(toplot), function(i, obj) {
+					if (unique_params.indexOf(obj.field) == -1) {
+						unique_params.push(obj.field);
+					}
+				});
+
+				// Add possible data available in the area
+				var cartographic = Cesium.Ellipsoid.WGS84.cartesianToCartographic(pickedObject.primitive.position);
+				var pos_x = Cesium.Math.toDegrees(cartographic.longitude);
+				var pos_y = Cesium.Math.toDegrees(cartographic.latitude);
+				var additional_data = this.pickScene(pos_x,pos_y);
+
+				for (var i = additional_data.length - 1; i >= 0; i--) {
+					additional_data[i][unique_params[0]] = additional_data[i][this.selection_y];
+					delete additional_data[i][this.selection_y];
+				}
+
+				toplot.push(additional_data);
+				toplot = _.flatten(toplot);
+
+				var args = {
+					scatterEl: $('#pickingresults')[0],
+					selection_x: 'timestamp',
+					selection_y: unique_params,
+					showDropDownSelection: false,
+					margin: {top: 45, right: 20, bottom: 10, left: 50},
+				};
+
+				var sp = new scatterPlot(args, function(){}, function(){}, function(){});
+
+				sp.loadData({parsedData: toplot});
+				// Move some things around
+				$('#download_button').remove();
+				$('#pickingresults').find('#save').attr('style','position: absolute; right: 29px; top: 7px');
+				$('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');
+
+				$("#pickingresults").prepend('<button type="button" id="pickingresultsClose" class="close" style="position: absolute; right:0px; margin-right:5px; margin-top:5px;"><i class="fa fa-times-circle"></i></button>');
+
+				$('#pickingresultsClose').click(function(){
+					self.special1dData = [];
+					$("#pickingresults").hide();
+					$("#pickingresults").empty();
+				});
+
+				$("#pickingresults").append(
+					'<a href="javascript:void(0)" id="enlarge" style="position: absolute;top:5px;left:5px">'+
+						'<i style="font-size:1.5em;" class="fa fa-expand fa-rotate-90"></i></a>'
+					);
+				$('#enlarge').click(function (evt) {
+					if ($('#pickingresults').hasClass("big")){
+						$('#pickingresults').width("30%");
+						$('#pickingresults').height("30%");
+						$('#pickingresults').resize();
+						$('#pickingresults').removeClass("big");
+					}else{
+						$('#pickingresults').addClass( "big" )
+						$('#pickingresults').width("50%");
+						$('#pickingresults').height("70%");
+						$('#pickingresults').resize();
+					}
+					
+				});
 			},
 
 			pickScene: function(long, lat){
@@ -1670,12 +1679,20 @@ define(['backbone.marionette',
 
 									var pos = new Cesium.Cartesian3.fromDegrees(longitude, latitude);
 									var bil_coll = cur_coll.add(new Cesium.BillboardCollection());
-									bil_coll.add({
+									var icon = pinimage;
+									if(self.selectedEntityId == id){
+										icon = pinimage_selected;
+									}
+									var b = bil_coll.add({
 										id: id,
 										position : pos,
 										verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-										image : pinimage
+										image: icon
 									});
+									self.primitiveMapping[id] = b;
+									if(self.selectedEntityId == id){
+										self.pickEntity({primitive:b, id:id});
+									}
 									cur_coll.show = true;
 
 								});
