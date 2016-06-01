@@ -2289,11 +2289,11 @@ define(['backbone.marionette',
 								w: Cesium.Math.toDegrees(extent.west)
 							}
 							Communicator.mediator.trigger("selection:changed", bbox);
-							$('#bb_selection').html('Clear Selection');
+							//$('#bb_selection').html('Clear Selection');
 	                    }
 	                });
 				} else {
-					//Communicator.mediator.trigger("selection:changed", null);
+					Communicator.mediator.trigger("selection:changed", null);
 					this.drawhelper.stopDrawing();
 					// It seems the drawhelper muted handlers reset to false and 
 					// it creates issues in cesium picking for some reason so
@@ -2317,7 +2317,7 @@ define(['backbone.marionette',
 
 					var material = new Cesium.Material.fromType('Color');
 					material.uniforms.color = new Cesium.Color.fromCssColorString(color);
-					material.uniforms.color.alpha = 0.2;
+					material.uniforms.color.alpha = 0.7;
 
 					var e = new Cesium.Rectangle(
 						Cesium.Math.toRadians(bbox.w),
