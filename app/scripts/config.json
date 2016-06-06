@@ -348,7 +348,7 @@
             "description": "WCS Download Tool",
             "disabledDescription": "Please make sure you have selected a product layer, an area of interest and a time of interest in order to use the download tool",
             "icon": "fa fa-download fa-2x",
-            "enabled": false,
+            "enabled": true,
             "active": false
         }
 
