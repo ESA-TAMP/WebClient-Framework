@@ -154,7 +154,7 @@ var DrawHelper = (function() {
     var defaultShapeOptions = {
         ellipsoid: Cesium.Ellipsoid.WGS84,
         textureRotationAngle: 0.0,
-        height: 0.0,
+        height: 50000.0,
         asynchronous: true,
         show: true,
         debugShowBoundingVolume: false
@@ -360,6 +360,7 @@ var DrawHelper = (function() {
             return new Cesium.RectangleGeometry({
                 rectangle : this.rectangle,
                 height : this.height,
+                //extrudedHeight: 500000,
                 vertexFormat : Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT,
                 stRotation : this.textureRotationAngle,
                 ellipsoid : this.ellipsoid,

@@ -80,10 +80,12 @@
             };
           } //TODO: Check what to set if timeslider not activated
 
-          /*options.subsetCRS = "http://www.opengis.net/def/crs/EPSG/0/4326";
-          var bbox = this.model.get("AoI").getBounds();
-          options.subsetX = [bbox.left, bbox.right];
-          options.subsetY = [bbox.bottom, bbox.top];*/
+          var bbox = this.model.get("AoI");
+          if(bbox){
+            options.subsetCRS = "http://www.opengis.net/def/crs/EPSG/0/4326";
+            options.subsetX = [bbox.w, bbox.e];
+            options.subsetY = [bbox.s, bbox.n];
+          }
 
           // TODO: Check for download protocol !
           set.url = WCS.EO.KVP.describeEOCoverageSetURL(product.get('download').url, key, options);
@@ -151,9 +153,13 @@
         var $downloads = $("#div-downloads"),
             options = {};
 
-        /*var bbox = this.model.get("AoI").getBounds();
-        options.subsetX = [bbox.left, bbox.right];
-        options.subsetY = [bbox.bottom, bbox.top];*/
+
+        var bbox = this.model.get("AoI");
+        if(bbox){
+            options.subsetCRS = "http://www.opengis.net/def/crs/EPSG/0/4326";
+            options.subsetX = [bbox.w, bbox.e];
+            options.subsetY = [bbox.s, bbox.n];
+          }
 
         // format + outputcrs
         options.format = this.$("#select-output-format").val();

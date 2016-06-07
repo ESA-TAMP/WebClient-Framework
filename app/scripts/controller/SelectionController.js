@@ -61,8 +61,10 @@
 	        	var selections = this.model.get('selections');
 	        	selections.push(selection);
 	            this.model.set('selections', selections);
+	            this.geoSelection = selection;
 	        }else{
 	        	this.model.set('selections', []);
+	        	this.geoSelection = null;
 	        }
 		},
 

@@ -66,11 +66,11 @@
 		checkDownload: function() {
 	      	// Check that all necessary selections are available
 	        if(this.model.get('ToI') != null &&
-	           this.model.get('AoI') != null &&
+	           //this.model.get('AoI') != null &&
 	           _.size(this.model.get('products')) > 0){
 	          Communicator.mediator.trigger('selection:enabled', {id:"download", enabled:true} );
 	        }else{
-	          Communicator.mediator.trigger('selection:enabled', {id:"download", enabled:false} );
+	          //Communicator.mediator.trigger('selection:enabled', {id:"download", enabled:false} );
 	        }
 	      },
 
