@@ -190,6 +190,10 @@
 
 				if (typeof USER_PRODUCTS !== 'undefined') {
 
+					USER_PRODUCTS = _.uniq(USER_PRODUCTS, function(p){
+						return p.id;
+					});
+
 					for (var i = USER_PRODUCTS.length - 1; i >= 0; i--) {
 
 						var p = USER_PRODUCTS[i];

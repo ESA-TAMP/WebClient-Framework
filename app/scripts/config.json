@@ -94,33 +94,7 @@
                 "crs": "EPSG:4326"
             }]
         }],
-        "products": [{
-            "name": "LIDAR_BIRA_O3",
-            "visible": false,
-            "timeSlider": true,
-            "timeSliderProtocol": "WPS",
-            "views": [{
-                "id": "LIDAR_BIRA_O3",
-                "protocol": "WCS",
-                "urls": [
-                    "http://vtdas-dave.zamg.ac.at/davprc/ows"
-                ]
-            }],
-            "download": {
-                "id": "LIDAR_BIRA_O3",
-                "protocol": "EOWCS",
-                "url": "http://vtdas-dave.zamg.ac.at/davprc/ows"
-            },
-            "parameters": {
-                "Unknown": {
-                    "range": [0, 5],
-                    "uom":"Unknown",
-                    "colorscale": "viridis",
-                    "name": "Unknown",
-                    "selected": true
-                }
-            }
-        }],
+        "products": [],
         "overlays": [{
             "name": "Coastline",
             "id": "coastline",

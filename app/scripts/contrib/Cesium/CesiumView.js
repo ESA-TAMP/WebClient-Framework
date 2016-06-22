@@ -1389,9 +1389,11 @@ define(['backbone.marionette',
 								});
 								cur_coll.show = true;
 
-								var time = (_.find(self.currentCoverages, function(item) {
+								var cov_item = (_.find(self.currentCoverages, function(item) {
 									return item.identifier == cov_id; 
-								})).starttime;
+								}));
+								var starttime = cov_item.starttime;
+								var endtime = cov_item.endtime;
 
 								if(meta && meta.hasOwnProperty('GLOBAL_MIN') && meta.hasOwnProperty('GLOBAL_MAX')){
 									self.timeseriesRange = [Number(meta.GLOBAL_MIN), Number(meta.GLOBAL_MAX)];
@@ -1400,7 +1402,12 @@ define(['backbone.marionette',
 								for (var i = 0; i < rasdata.length; i++) {
 									//line.push(rasdata[i][0]);
 									var height = heights[i];
-									self.timeseries.push({time:time, val:rasdata[i][0], height: height});
+									self.timeseries.push({
+										starttime:starttime,
+										endtime: endtime,
+										val:rasdata[i][0],
+										height: height
+									});
 								}
 								//self.timeseries.push({id:cov_id, data:line});
 
@@ -1476,13 +1483,21 @@ define(['backbone.marionette',
 
 						//var line = [];
 						//console.log(rasdata.length);
-						var time = (_.find(self.currentCoverages, function(item) {
+						var cov_item = (_.find(self.currentCoverages, function(item) {
 							return item.identifier == cov_id; 
-						})).starttime;
+						}));
+						var starttime = cov_item.starttime;
+						var endtime = cov_item.endtime;
+
 						for (var i = 0; i < rasdata.length; i++) {
 							//line.push(rasdata[i][0]);
 							var height = heights[i];
-							self.timeseries.push({time:time, val:rasdata[i][0], height: height});
+							self.timeseries.push({
+								starttime:starttime,
+								endtime: endtime,
+								val:rasdata[i][0],
+								height: height
+							});
 						}
 						//self.timeseries.push({id:cov_id, data:line});
 					}else{
@@ -1746,14 +1761,15 @@ define(['backbone.marionette',
 									self.timeseries = _.filter(self.timeseries, function(obj){ return obj.height != 9.99e+29; });
 
 									for (var i = self.timeseries.length - 1; i >= 0; i--) {
-										self.timeseries[i].time = new Date(self.timeseries[i].time);
+										self.timeseries[i].starttime = new Date(self.timeseries[i].starttime);
+										self.timeseries[i].endtime = new Date(self.timeseries[i].endtime);
 									}
 
 									$("#pickingresults").show();
 
 									var args = {
 										scatterEl: $('#pickingresults')[0],
-										selection_x: "time",
+										selection_x: "starttime",
 										selection_y: ["height"],
 										showDropDownSelection: false,
 										parsedData: self.timeseries,
