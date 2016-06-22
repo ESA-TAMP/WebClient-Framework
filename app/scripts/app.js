@@ -212,13 +212,16 @@
 								ground_measurements = true;
 							}
 							var wcs_id = p.id.split('_').slice(0,-2).join('_');
+							var c_start_date = new Date(p.date[0]);
+							var c_end_date = new Date(p.date[1]);
+							c_end_date.setHours(23,59,59,999);
 
 							var args = {
 								name: p.name,
 								visible: defaultFor(p.visible,false),
 								timeSlider: true,
 								timeSliderProtocol: defaultFor(p.timeSliderProtocol, "WPS"),
-								timeRange: [new Date(p.date[0]), new Date(p.date[1])],
+								timeRange: [c_start_date, c_end_date],
 								color: defaultFor(p.color, autoColor.getColor()),
 								opacity: defaultFor(p.opacity, 1),
 								process_id: p.id,
