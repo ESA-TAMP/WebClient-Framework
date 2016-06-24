@@ -1793,7 +1793,7 @@ define(['backbone.marionette',
 
 									if(!stacked){
 										// If not stacked just request and create primitves for all coverages
-
+										// Check if selection active
 										if(self.bboxsel){
 											if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
 												deferreds.push(self.loadCoverage(request, bbox, cov_id, range, cur_coll, alpha, [clamp_min, clamp_max], null));
@@ -1808,16 +1808,30 @@ define(['backbone.marionette',
 										if(self.p_plot.datasetAvailable(cov_id)) {
 											self.p_plot.removeDataset(cov_id);
 										}
-										deferreds.push(self.loadCoverage(request, bbox, cov_id, range, cur_coll, alpha, [clamp_min, clamp_max], stacked_prim));
-										// We need to add it to the stacked list as it will be compared to to see if part of a stack collection
-										self.stackedDataset.push(cov_id);
-										//Communicator.mediator.trigger("date:tick:select", new Date(coverages.data[i].starttime));
+										// Check if selection active
+										if(self.bboxsel){
+											if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
+												deferreds.push(self.loadCoverage(request, bbox, cov_id, range, cur_coll, alpha, [clamp_min, clamp_max], stacked_prim));
+												// We need to add it to the stacked list as it will be compared to to see if part of a stack collection
+												self.stackedDataset.push(cov_id);
+											}
+										}else{
+											deferreds.push(self.loadCoverage(request, bbox, cov_id, range, cur_coll, alpha, [clamp_min, clamp_max], stacked_prim));
+											// We need to add it to the stacked list as it will be compared to to see if part of a stack collection
+											self.stackedDataset.push(cov_id);
+										}
 									}else{
 										// We only request the data if it is not already available
 										if(!self.p_plot.datasetAvailable(cov_id)) {
 											// It is stacked but this is any other coverage where for now we only need the data
 											// but do not actually visualize it, so we do not need to create a primitive
-											deferreds.push(self.addCoverage(request, cov_id));
+											if(self.bboxsel){
+												if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
+													deferreds.push(self.addCoverage(request, cov_id));
+												}
+											}else{
+												deferreds.push(self.addCoverage(request, cov_id));
+											}
 										}
 									}
 								}
