@@ -6,6 +6,60 @@ var pinimage_selected = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC4AAABAC
 
 function defaultFor(arg, val) { return typeof arg !== 'undefined' ? arg : val; }
 
+
+function doBoundingBoxesIntersect(bb1, bb2) {
+
+	// First check if coverage is touching current bbox
+	var boxsel = {
+		TopLeftLatLong: {
+			Longitude: bb1[1],
+			Latitude: bb1[2]
+		},
+		BottomRightLatLong: {
+			Longitude: bb1[3],
+			Latitude: bb1[0]
+		}
+	};
+
+	var boxcov = {
+		TopLeftLatLong: {
+			Longitude: bb2[0],
+			Latitude: bb2[3]
+		},
+		BottomRightLatLong: {
+			Longitude: bb2[2],
+			Latitude: bb2[1]
+		}
+	};
+
+	//First bounding box, top left corner, bottom right corner
+	var ATLx = boxsel.TopLeftLatLong.Longitude;
+	var ATLy = boxsel.TopLeftLatLong.Latitude;
+	var ABRx = boxsel.BottomRightLatLong.Longitude;
+	var ABRy = boxsel.BottomRightLatLong.Latitude;
+
+	//Second bounding box, top left corner, bottom right corner
+	var BTLx = boxcov.TopLeftLatLong.Longitude;
+	var BTLy = boxcov.TopLeftLatLong.Latitude;
+	var BBRx = boxcov.BottomRightLatLong.Longitude;
+	var BBRy = boxcov.BottomRightLatLong.Latitude;
+
+	var rabx = Math.abs(ATLx + ABRx - BTLx - BBRx);
+	var raby = Math.abs(ATLy + ABRy - BTLy - BBRy);
+
+	//rAx + rBx
+	var raxPrbx = ABRx - ATLx + BBRx - BTLx;
+
+	//rAy + rBy
+	var rayPrby = ATLy - ABRy + BTLy - BBRy;
+
+	if(rabx <= raxPrbx && raby <= rayPrby)
+	{
+		return true;
+	}
+	return false;
+}
+
 define(['backbone.marionette',
 		'communicator',
 		'app',
@@ -240,6 +294,17 @@ define(['backbone.marionette',
 
 				handler.setInputAction(function(click) {
 					var pickedObject = self.map.scene.pick(click.position);
+
+					
+					 //hide the selectionIndicator
+					self.map.selectionIndicator.viewModel.selectionIndicatorElement.style.visibility = 'hidden'; 
+
+					if(pickedObject && pickedObject.id && 
+					  (pickedObject.id.id == 'selectionrectangle' || 
+					   pickedObject.id.id == 'needle')){
+						return;
+					}
+
 					if(self.selectedEntityId){
 						var ent = self.primitiveMapping[self.selectedEntityId];
 						if (ent){
@@ -1728,7 +1793,14 @@ define(['backbone.marionette',
 
 									if(!stacked){
 										// If not stacked just request and create primitves for all coverages
-										deferreds.push(self.loadCoverage(request, bbox, cov_id, range, cur_coll, alpha, [clamp_min, clamp_max], null));
+
+										if(self.bboxsel){
+											if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
+												deferreds.push(self.loadCoverage(request, bbox, cov_id, range, cur_coll, alpha, [clamp_min, clamp_max], null));
+											}
+										}else{
+											deferreds.push(self.loadCoverage(request, bbox, cov_id, range, cur_coll, alpha, [clamp_min, clamp_max], null));
+										}
 									}else if(stacked && i == coverages.data.length-1){
 										// If the collection is stacked and this is the last element (in time)
 										// of the list it means the primitive is not available already and needs to be created
@@ -2329,11 +2401,11 @@ define(['backbone.marionette',
 				
 				if(bbox){
 					//this.map.scene.primitives.removeAll();
-					var color = "#6699FF";
+					/*var color = "#6699FF";
 
 					var material = new Cesium.Material.fromType('Color');
 					material.uniforms.color = new Cesium.Color.fromCssColorString(color);
-					material.uniforms.color.alpha = 0.7;
+					material.uniforms.color.alpha = 0.7;*/
 
 					var e = new Cesium.Rectangle(
 						Cesium.Math.toRadians(bbox.w),
@@ -2344,17 +2416,25 @@ define(['backbone.marionette',
 
 			        this.bboxsel = [bbox.s, bbox.w, bbox.n, bbox.e ];
 
-		            this.extentPrimitive = new DrawHelper.RectanglePrimitive({
-		                rectangle: e,
-		                material: material
-		            });
-
-		            this.map.scene.primitives.add(this.extentPrimitive);
+					var rectangle = Cesium.Rectangle.fromDegrees(bbox.w, bbox.s, bbox.e, bbox.n);
+					this.extentPrimitive = this.map.entities.add({
+						id: 'selectionrectangle',
+						rectangle : {
+							coordinates : rectangle,
+							height: 100,
+							fill : false,
+							outline : true,
+							outlineColor : Cesium.Color.BLUE,
+							outlineWidth: 3
+						}
+					});
 
 				}else{
 					this.bboxsel = null;
-					if(this.extentPrimitive)
-						this.map.scene.primitives.remove(this.extentPrimitive);
+					if(this.extentPrimitive){
+						this.map.entities.remove(this.extentPrimitive);
+					}
+					
 				}
 
 

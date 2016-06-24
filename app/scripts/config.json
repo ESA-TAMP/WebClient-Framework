@@ -197,18 +197,6 @@
             "eventToRaise": "ui:open:toolselection",
             "template": "ToolSelection"
         }, {
-            "name": "Tutorials",
-            "icon": "fa-book",
-            "subitems": [{
-                "name": "Placeholder 1",
-                "eventToRaise": "ui:open:storybanner",
-                "template": "UseCase_Placeholder"
-            }, {
-                "name": "Placeholder 2",
-                "eventToRaise": "ui:open:storybanner",
-                "template": "UseCase_Placeholder"
-            }]
-        }, {
             "name": "About",
             "icon": "fa-info-circle",
             "eventToRaise": "dialog:open:about"
