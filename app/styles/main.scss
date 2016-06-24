@@ -53,6 +53,17 @@ hr {
   user-select: none;
 }
 
+#prototype{
+  position: absolute;
+  top: 5px;
+  right: 20px;
+  color: red;
+  z-index: 1050;
+  font-size: 2em;
+  cursor: help;
+}
+
+
 
 /*
  * Color legend attributes 
