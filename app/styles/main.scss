@@ -201,7 +201,17 @@ div#preload {
   display: none;
 }
 
-
+#loadingcontrols{
+  position: absolute;
+  z-index: $layer-gui;
+  margin:0px auto;
+  left:0;
+  right:0;
+  bottom: 180px;
+  //opacity: 0.8;
+  text-align: center;
+  display: none;
+}
 
 
 /*

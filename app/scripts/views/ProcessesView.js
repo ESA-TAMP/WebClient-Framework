@@ -149,7 +149,8 @@
                 //dataType: "xml",
                 data: req_data,
                 success: function(resp_data) {
-                  $("#pickingresults").show();
+                  Communicator.mediator.trigger("map:show:result", resp_data);
+                  /*$("#pickingresults").show();
                   $("#pickingresults").empty();
                   
                   $("#pickingresults").append('<div style="width: 100%; height: 100%; margin:20px;" id="prcontainer"></div>');
@@ -201,6 +202,7 @@
                     $("#pickingresults").hide();
                     $("#pickingresults").empty();
                   });
+                  */
                 }
               });
 

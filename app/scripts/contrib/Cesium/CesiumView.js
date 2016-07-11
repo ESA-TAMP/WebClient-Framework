@@ -122,6 +122,9 @@ define(['backbone.marionette',
 
 				this.special1dData = [];
 
+				this.currentDownload = 0;
+				this.downloadTotal = 0;
+
 				// TODO: Need to change this into an object which contais arrays for all different layers/collections
 				this.currentCoverages = [];
 				this.timeseries = [];
@@ -1196,6 +1199,20 @@ define(['backbone.marionette',
 
             },
 
+            onMapShowResult: function (data) {
+
+            	var gt = GeoTIFF.parse(data);
+				var img = gt.getImage(0);
+				var rasdata = img.readRasters();
+				var meta = img.getGDALMetadata();
+
+				self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
+				self.p_plot.setDomain(range);
+				self.p_plot.setNoDataValue(-9999);
+				self.p_plot.setClamp(clamp[0],clamp[1]);
+				self.p_plot.renderDataset(cov_id);
+            },
+
 
             checkShc: function(product, visible){
             	if(visible){
@@ -1515,6 +1532,15 @@ define(['backbone.marionette',
 						}
 					}
 
+					self.currentDownload++;
+					if(self.currentDownload == self.downloadTotal){
+						$('#loadingcontrols').empty();
+						$('#loadingcontrols').hide();
+					}
+
+					$('#progressindicator').text(self.currentDownload +' / '+ self.downloadTotal);
+					$('#progressindicator').css('width', Math.round(((self.currentDownload-1)/self.downloadTotal)*100)+'%');
+
 				});
 			},
 
@@ -1570,6 +1596,16 @@ define(['backbone.marionette',
 						self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
 						self.stackedDataset.push(cov_id);
 					}
+
+					self.currentDownload++;
+					if(self.currentDownload == self.downloadTotal){
+						$('#loadingcontrols').empty();
+						$('#loadingcontrols').hide();
+					}
+
+					$('#progressindicator').text(self.currentDownload +' / '+ self.downloadTotal);
+					$('#progressindicator').css('width', Math.round(((self.currentDownload-1)/self.downloadTotal)*100)+'%');
+
 				});
 			},
 
@@ -1702,6 +1738,7 @@ define(['backbone.marionette',
 						}
 
 						var deferreds = [];
+						self.currentDownload = 0;
 
 						// Let us sort them by start date
 						coverages.data = _.sortBy(coverages.data, function(c){ return Date.parse(c.starttime); });
@@ -1838,6 +1875,8 @@ define(['backbone.marionette',
 							}
 
 						};
+
+						self.downloadTotal = deferreds.length;
 
 						$.when.apply($, deferreds)
 							.then(function(){
@@ -2011,11 +2050,37 @@ define(['backbone.marionette',
 							    // whether the call succeeds or fails
 						});
 
+						if (deferreds.length > 0){
+							$('#loadingcontrols').show();
+							$('#loadingcontrols').empty();
+							$('#loadingcontrols').append(
+								'<div class="progress" style="width:30%; margin: auto; margin-bottom:10px;">'+
+								  '<div id="progressindicator" class="progress-bar" role="progressbar" aria-valuenow="0"'+
+								  'aria-valuemin="0" aria-valuemax="100" style="width:0%;">'+
+								  '</div>'+
+								'</div>'
+							);
+							$('#loadingcontrols').append('<button type="button" class="btn btn-default" id="cancel_loading" style="pointer-events: all;">Cancel</button>');
+							
+							$('#progressindicator').text('0 / '+ deferreds.length);
+							$("#cancel_loading").click(function () {
+								for (var i = deferreds.length - 1; i >= 0; i--) {
+									console.log('Aborting: '+i);
+									deferreds[i].abort();
+								}
+								$('#loadingcontrols').empty();
+								$('#loadingcontrols').hide();
+							});
+						}
+
 					}, product); // End of done
+
 				}else{
 					//this.map.scene.primitives.remove(this.coverages_collections[product.get("views")[0].id]);
 					cur_coll.show = false;
 				}
+
+
 
             },
 

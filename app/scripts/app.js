@@ -545,7 +545,7 @@
                 });
 
                 $(document).ajaxError(function( event, request, settings ) {
-                	if(settings.suppressErrors) {
+                	if(settings.suppressErrors || request.statusText == 'abort') {
 				        return;
 				    }
 
