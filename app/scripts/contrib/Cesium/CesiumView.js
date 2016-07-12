@@ -1013,7 +1013,8 @@ define(['backbone.marionette',
 										for (var p=0; p<cur_coll._primitives.length; p++){
 											var prim = cur_coll._primitives[p];
 
-											prim.appearance.material.uniforms.alpha = options.value;
+											//prim.appearance.material.uniforms.alpha = options.value;
+											prim.appearance.material.uniforms.color.alpha = options.value;
 
 										}
 									}
@@ -1206,11 +1207,30 @@ define(['backbone.marionette',
 				var rasdata = img.readRasters();
 				var meta = img.getGDALMetadata();
 
-				self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
-				self.p_plot.setDomain(range);
-				self.p_plot.setNoDataValue(-9999);
-				self.p_plot.setClamp(clamp[0],clamp[1]);
-				self.p_plot.renderDataset(cov_id);
+				if(this.p_plot.datasetAvailable("process_result")){
+					this.p_plot.removeDataset("process_result");
+				}
+				this.p_plot.addDataset("process_result", rasdata[0], img.getWidth(), img.getHeight());
+				var max = Math.max.apply(null, rasdata[0]);
+				var min = Math.min.apply(null, rasdata[0]);
+				this.p_plot.setDomain([min, max]);
+				this.p_plot.setNoDataValue(-9999);
+				this.p_plot.setClamp(false,true);
+				this.p_plot.renderDataset("process_result");
+
+				var bbox = [
+					this.bboxsel[1],
+					this.bboxsel[0],
+					this.bboxsel[3],
+					this.bboxsel[2]
+				]
+				var tmp_collection = new Cesium.PrimitiveCollection();
+				this.createPrimitive(this.p_plot.canvas.toDataURL(), bbox, "process_result", tmp_collection, 1, 400);
+
+				this.map.scene.primitives.add(tmp_collection);
+
+
+
             },
 
 
@@ -1358,34 +1378,17 @@ define(['backbone.marionette',
 				  })
 				});
 
+				var newmat = new Cesium.Material.fromType('Image', {
+					image : image,
+					color: new Cesium.Color(1, 1, 1, alpha),
+				});
 
-				var newmat = new Cesium.Material({
-			        fabric : {
-			            uniforms : {
-			                image : image,
-							repeat : new Cesium.Cartesian2(1.0, 1.0),
-			                alpha : alpha
-			            },
-			            components : {
-			                diffuse : 'texture2D(image, fract(repeat * materialInput.st)).rgb',
-			                alpha : 'texture2D(image, fract(repeat * materialInput.st)).a * alpha'
-			            }
-			        },
-					flat: true,
-			        translucent : true
-			    });
-
-
-
-				/*var newmat = new Cesium.Material.fromType('Image');
-				newmat.uniforms.image = image;*/
 
 				var prim = new Cesium.Primitive({
 				  geometryInstances : [instance],
 				  appearance : new Cesium.MaterialAppearance({
-				  	translucent : true,
-				  	flat: true,
-				    material : newmat
+				    material : newmat,
+				    flat: true
 				  }),
 				  releaseGeometryInstances: false
 				});

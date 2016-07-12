@@ -10,6 +10,7 @@
     'hbs!tmpl/wps_pep_execute',
     'underscore',
     'plotty',
+    'geotiff',
     'libcoverage'
   ],
   function( Backbone, Communicator, globals, TmplProcesses, Tmpl_wps_pep_execute ) {
@@ -143,12 +144,15 @@
               });
 
 
+
               $.ajax({
                 type: "POST",
                 url: that.wps_url,
-                //dataType: "xml",
+                dataType:'arraybuffer',
                 data: req_data,
+                
                 success: function(resp_data) {
+
                   Communicator.mediator.trigger("map:show:result", resp_data);
                   /*$("#pickingresults").show();
                   $("#pickingresults").empty();
