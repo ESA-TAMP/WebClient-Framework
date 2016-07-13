@@ -64,6 +64,7 @@ define(['backbone.marionette',
 		'communicator',
 		'app',
 		'models/MapModel',
+		'models/LayerModel',
 		'globals',
 		'papaparse',
 		'hbs!tmpl/wps_get_time_data',
@@ -75,7 +76,7 @@ define(['backbone.marionette',
 		'plotty',
 		'analytics'
 	],
-	function(Marionette, Communicator, App, MapModel, globals, Papa,
+	function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
 			 Tmpl_get_time_data, Tmpl_wcs_get_coverage) {
 
 		var CesiumView = Marionette.View.extend({
@@ -110,6 +111,8 @@ define(['backbone.marionette',
 
 				this.selectedEntityId = null;
 				this.primitiveMapping = {};
+				this.process_result_collection = new Cesium.PrimitiveCollection();
+				this.result_model = null;
 
 				this.begin_time = null;
 				this.end_time = null;
@@ -290,6 +293,9 @@ define(['backbone.marionette',
 			    if(this.map.scene.hasOwnProperty('fog')){
 			      this.map.scene.fog.enabled = false;  
 			    }
+
+			    // Add collection that handles rendering of resutls
+			    this.map.scene.primitives.add(this.process_result_collection);
 
 			    var self = this;
 
@@ -1004,6 +1010,10 @@ define(['backbone.marionette',
 			},
 
 			onUpdateOpacity: function(options) {
+
+				// Cesium has some issue ordering things when alpha is equal to 1
+				if(options.value==1){options.value=0.999;}
+
 				globals.products.each(function(product) {
                 	if(product.get("name")==options.model.get("name")){
 
@@ -1040,6 +1050,16 @@ define(['backbone.marionette',
 							ces_layer.alpha = options.value;
 						}
 					}
+
+					if(options.model.get("name") == "Processing results"){
+						for (var p=0; p<this.process_result_collection._primitives.length; p++){
+
+							var prim = this.process_result_collection._primitives[p];
+							prim.appearance.material.uniforms.color.alpha = options.value;
+
+						}
+	            	}
+
 				}, this);
             },
 
@@ -1224,12 +1244,45 @@ define(['backbone.marionette',
 					this.bboxsel[3],
 					this.bboxsel[2]
 				]
-				var tmp_collection = new Cesium.PrimitiveCollection();
-				this.createPrimitive(this.p_plot.canvas.toDataURL(), bbox, "process_result", tmp_collection, 1, 400);
 
-				this.map.scene.primitives.add(tmp_collection);
+				this.createPrimitive(this.p_plot.canvas.toDataURL(), bbox, "process_result", this.process_result_collection, 1, 400);
+
+				this.result_model = new LayerModel.LayerModel({
+					name: 'Processing results',
+					visible: false,
+					timeSlider: false,
+					opacity: 1,
+					views: [{
+						"id": "process_result",
+						"protocol": "none",
+						"urls": ["none"]
+					}],
+					view: {isBaseLayer: false},
+					download: {
+						id: 'process_result',
+						protocol: 'empty',
+						url: 'empty'
+					},
+					"parameters": {
+						"Parameter1": {
+							"colorscale": "viridis",
+							"range": [min, max],
+							"uom":"du",
+							"selected": true
+						}
+					}
+				});
 
 
+				if (_.isUndefined(App.layerSettings.isClosed) || App.layerSettings.isClosed) {
+					App.layerSettings.setModel(this.result_model);
+					App.optionsBar.show(App.layerSettings);
+				} else {
+					if(!App.layerSettings.sameModel(this.result_model)){
+						App.layerSettings.setModel(this.result_model);
+						App.optionsBar.show(App.layerSettings);
+					}
+				}
 
             },
 
@@ -1301,7 +1354,7 @@ define(['backbone.marionette',
 
             createCurtain: function(image, positions, cov_id, cur_coll, alpha, height){
 
-				var newmat = new Cesium.Material({
+				/*var newmat = new Cesium.Material({
 			        fabric : {
 			            uniforms : {
 			                image : image,
@@ -1315,7 +1368,12 @@ define(['backbone.marionette',
 			        },
 					flat: true,
 			        translucent : true
-			    });
+			    });*/
+
+			    var newmat = new Cesium.Material.fromType('Image', {
+					image : image,
+					color: new Cesium.Color(1, 1, 1, alpha),
+				});
 
 			    var max_heights = [];
 			    var min_heights = [];
@@ -1369,7 +1427,11 @@ define(['backbone.marionette',
 
             createPrimitive: function(image, bbox, cov_id, cur_coll, alpha, height){
 				height = defaultFor(height, 0);
-				alpha = defaultFor(alpha, 1.0);
+				alpha = defaultFor(alpha, 0.99);
+
+				// Cesium has some issue ordering things when alpha is equal to 1
+				//if(alpha==1){alpha=0.999;}
+
 				var instance = new Cesium.GeometryInstance({
 				  geometry : new Cesium.RectangleGeometry({
 				    rectangle : Cesium.Rectangle.fromDegrees(bbox[0],bbox[1],bbox[2],bbox[3]),
@@ -2245,6 +2307,7 @@ define(['backbone.marionette',
 
             onLayerRangeChanged: function(layer, range, colorscale){
             	var self = this;
+
             	globals.products.each(function(product) {
 
             		if(product.get("name")==layer){
@@ -2264,6 +2327,18 @@ define(['backbone.marionette',
             			}
             		}
             	});
+
+            	if(layer == "Processing results"){
+            		for (var p=0; p<self.process_result_collection._primitives.length; p++){
+
+						var prim = self.process_result_collection._primitives[p];
+						var plot = self.p_plot;
+						plot.setDomain(range);
+						plot.renderDataset(prim.cov_id);
+						prim.appearance.material._textures.image.copyFrom(plot.canvas);
+
+					}
+            	}
             },
 
             OnLayerParametersChanged: function(layer){
@@ -2366,6 +2441,33 @@ define(['backbone.marionette',
 							this.checkShc(product, product.get("visible"));
 						}
 				    }
+
+				    if(layer == "Processing results"){
+				    	
+            			var parameters = this.result_model.get("parameters");
+            			var band;
+            			var keys = _.keys(parameters);
+						_.each(keys, function(key){
+							if(parameters[key].selected)
+								band = key;
+						});
+						var style = parameters[band].colorscale;
+						var range = parameters[band].range;
+						var clamp_min = defaultFor(parameters[band].clamp_min, false);
+						var clamp_max = defaultFor(parameters[band].clamp_max, false);
+
+	            		for (var p=0; p<self.process_result_collection._primitives.length; p++){
+
+							var prim = self.process_result_collection._primitives[p];
+							var plot = self.p_plot;
+							plot.setColorScale(style);
+							plot.setClamp(clamp_min, clamp_max);
+							plot.setDomain(range);
+							plot.renderDataset(prim.cov_id);
+							prim.appearance.material._textures.image.copyFrom(plot.canvas);
+
+						}
+	            	}
                     
 	            }, this);
             },
@@ -2515,6 +2617,7 @@ define(['backbone.marionette',
 					this.bboxsel = null;
 					if(this.extentPrimitive){
 						this.map.entities.remove(this.extentPrimitive);
+						this.process_result_collection.removeAll();
 					}
 					
 				}
