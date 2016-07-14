@@ -154,7 +154,7 @@ var DrawHelper = (function() {
     var defaultShapeOptions = {
         ellipsoid: Cesium.Ellipsoid.WGS84,
         textureRotationAngle: 0.0,
-        height: 300.0,
+        height: 8000.0,
         asynchronous: true,
         show: true,
         debugShowBoundingVolume: false

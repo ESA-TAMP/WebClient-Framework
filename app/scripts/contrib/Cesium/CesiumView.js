@@ -128,6 +128,8 @@ define(['backbone.marionette',
 				this.currentDownload = 0;
 				this.downloadTotal = 0;
 
+				this.global_product_height = 0;
+
 				// TODO: Need to change this into an object which contais arrays for all different layers/collections
 				this.currentCoverages = [];
 				this.timeseries = [];
@@ -1231,8 +1233,19 @@ define(['backbone.marionette',
 					this.p_plot.removeDataset("process_result");
 				}
 				this.p_plot.addDataset("process_result", rasdata[0], img.getWidth(), img.getHeight());
-				var max = Math.max.apply(null, rasdata[0]);
-				var min = Math.min.apply(null, rasdata[0]);
+				var min = Number.MAX_VALUE;
+				var max = Number.MIN_VALUE;
+
+				var d = rasdata[0];
+				for (var i=0; i<d.length;i++){
+					if(d[i]!=-9999 && min > d[i]){
+						min = d[i];
+					}else if(max < d[i]){
+						max = d[i];
+					}
+				}
+				/*var max = Math.max.apply(null, rasdata[0]);
+				var min = Math.min.apply(null, rasdata[0]);*/
 				this.p_plot.setDomain([min, max]);
 				this.p_plot.setNoDataValue(-9999);
 				this.p_plot.setClamp(false,true);
@@ -1245,7 +1258,7 @@ define(['backbone.marionette',
 					this.bboxsel[2]
 				]
 
-				this.createPrimitive(this.p_plot.canvas.toDataURL(), bbox, "process_result", this.process_result_collection, 1, 400);
+				this.createPrimitive(this.p_plot.canvas.toDataURL(), bbox, "process_result", this.process_result_collection, 1, 8000);
 
 				this.result_model = new LayerModel.LayerModel({
 					name: 'Processing results',
@@ -1426,7 +1439,7 @@ define(['backbone.marionette',
             },
 
             createPrimitive: function(image, bbox, cov_id, cur_coll, alpha, height){
-				height = defaultFor(height, 0);
+				height = defaultFor(height, (this.global_product_height));
 				alpha = defaultFor(alpha, 0.99);
 
 				// Cesium has some issue ordering things when alpha is equal to 1
@@ -1450,7 +1463,9 @@ define(['backbone.marionette',
 				  geometryInstances : [instance],
 				  appearance : new Cesium.MaterialAppearance({
 				    material : newmat,
-				    flat: true
+				    flat: true,
+				    translucent: true,
+				    /*closed: true*/
 				  }),
 				  releaseGeometryInstances: false
 				});
@@ -2130,7 +2145,7 @@ define(['backbone.marionette',
 							$('#progressindicator').text('0 / '+ deferreds.length);
 							$("#cancel_loading").click(function () {
 								for (var i = deferreds.length - 1; i >= 0; i--) {
-									console.log('Aborting: '+i);
+									//console.log('Aborting: '+i);
 									deferreds[i].abort();
 								}
 								$('#loadingcontrols').empty();
@@ -2605,7 +2620,7 @@ define(['backbone.marionette',
 						id: 'selectionrectangle',
 						rectangle : {
 							coordinates : rectangle,
-							height: 100,
+							height: 8000,
 							fill : false,
 							outline : true,
 							outlineColor : Cesium.Color.BLUE,
