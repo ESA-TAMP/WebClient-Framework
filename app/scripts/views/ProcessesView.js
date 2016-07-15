@@ -52,6 +52,8 @@
         this.$el.find(".panel-body").append('<div style="width:100%; font-weight: bold;">Processing tools</div>');
         this.$el.find(".panel-body").append('<button type="button" id="calculateSpatialAverage" class="btn btn-success" style="width:100%;">Calculate Spatial Average</button>');
         this.$el.find(".panel-body").append('<button type="button" id="calculateTemporalAverage" class="btn btn-success" style="width:100%;">Calculate Temporal Average</button>');
+        this.$el.find(".panel-body").append('<button type="button" id="bandCombination_subtract" class="btn btn-success" style="width:100%;">Calculate Difference</button>');
+        this.$el.find(".panel-body").append('<button type="button" id="bandCombination_add" class="btn btn-success" style="width:100%;">Calculate Sum</button>');
         this.$el.find(".panel-body").append('<div style="width:100%;">Create new Collection<br/>(based on selected collection) by: </div>');
         this.$el.find(".panel-body").append('<button type="button" id="verticalIntegration" class="btn btn-success" style="width:100%;">Vertical Integration</button>');
         this.$el.find(".panel-body").append('<button type="button" id="unitConversion" class="btn btn-success" style="width:100%;">Unit Conversion</button>');
@@ -178,6 +180,126 @@
               '<div class="alert alert-warning alert-danger">'+
                 '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>'+
                 '<strong>Info:</strong> Please make sure an appropiate collection has been selected from the Layers menu before executing this process.' +
+              '</div>'
+            );
+          }
+        });
+
+        $('#bandCombination_subtract').click(function(){
+          var sels = Communicator.reqres.request('selections:get:all');
+
+          if(sels.actProd.length == 2){
+            if (sels.geo){
+
+              var current_products = [];
+
+              globals.products.each(function(product) {
+                if($.inArray(product.get('download').id, sels.actProd)!=-1){
+                  current_products.push(product.get('process_id'));
+                }
+              });
+
+              var collection_id = current_products[0];
+              var o_collection_id = current_products[1];
+
+              var req_data = Tmpl_wps_pep_execute({
+                wps_process: 'execute',
+                process: 'subtract',
+                collection: collection_id,
+                o_collection: o_collection_id,
+                left: sels.geo.w,
+                right: sels.geo.e,
+                top: sels.geo.n,
+                bottom: sels.geo.s,
+                start_time: Math.round(sels.time.start.getTime()/1000),
+                end_time: Math.round(sels.time.end.getTime()/1000)
+              });
+
+              $.ajax({
+                type: "POST",
+                url: that.wps_url,
+                dataType:'arraybuffer',
+                data: req_data,
+                
+                success: function(resp_data) {
+
+                  Communicator.mediator.trigger("map:show:result", resp_data);
+                }
+              });
+
+            }else{
+              $("#error-messages").append(
+                '<div class="alert alert-warning alert-danger">'+
+                  '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>'+
+                  '<strong>Info:</strong> Please make sure an area of interest has been selected with the bounding box tool.' +
+                '</div>'
+              );
+            }
+          }else{
+            $("#error-messages").append(
+              '<div class="alert alert-warning alert-danger">'+
+                '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>'+
+                '<strong>Info:</strong> Please make sure two appropiate collections have been selected from the Layers menu before executing this process.' +
+              '</div>'
+            );
+          }
+        });
+
+        $('#bandCombination_add').click(function(){
+          var sels = Communicator.reqres.request('selections:get:all');
+
+          if(sels.actProd.length == 2){
+            if (sels.geo){
+
+              var current_products = [];
+
+              globals.products.each(function(product) {
+                if($.inArray(product.get('download').id, sels.actProd)!=-1){
+                  current_products.push(product.get('process_id'));
+                }
+              });
+
+              var collection_id = current_products[0];
+              var o_collection_id = current_products[1];
+
+              var req_data = Tmpl_wps_pep_execute({
+                wps_process: 'execute',
+                process: 'add',
+                collection: collection_id,
+                o_collection: o_collection_id,
+                left: sels.geo.w,
+                right: sels.geo.e,
+                top: sels.geo.n,
+                bottom: sels.geo.s,
+                start_time: Math.round(sels.time.start.getTime()/1000),
+                end_time: Math.round(sels.time.end.getTime()/1000)
+              });
+
+              $.ajax({
+                type: "POST",
+                url: that.wps_url,
+                dataType:'arraybuffer',
+                data: req_data,
+                
+                success: function(resp_data) {
+
+                  Communicator.mediator.trigger("map:show:result", resp_data);
+                }
+              });
+
+            }else{
+              $("#error-messages").append(
+                '<div class="alert alert-warning alert-danger">'+
+                  '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>'+
+                  '<strong>Info:</strong> Please make sure an area of interest has been selected with the bounding box tool.' +
+                '</div>'
+              );
+            }
+          }else{
+            $("#error-messages").append(
+              '<div class="alert alert-warning alert-danger">'+
+                '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>'+
+                '<strong>Info:</strong> Please make sure two appropiate collections have been selected from the Layers menu before executing this process.' +
               '</div>'
             );
           }
