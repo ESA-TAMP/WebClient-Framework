@@ -1233,9 +1233,22 @@ define(['backbone.marionette',
 
             },
 
-            onMapShowResult: function (data) {
+			onMapShowResult: function (data) {
 
-            	var gt = GeoTIFF.parse(data);
+				var gt;
+				try {
+					gt = GeoTIFF.parse(data);
+				}
+				catch(err) {
+					$("#error-messages").append(
+						'<div class="alert alert-warning alert-danger">'+
+						'<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>'+
+						'<strong>Error:</strong> The was a problem during processing.' +
+						'</div>'
+					);
+					return;
+				}
+				
 				var img = gt.getImage(0);
 				var rasdata = img.readRasters();
 				var meta = img.getGDALMetadata();
