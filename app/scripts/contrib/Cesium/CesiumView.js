@@ -489,8 +489,18 @@ define(['backbone.marionette',
 
 	                		$("#pickingresults").show();
 
+	                		$("#pickingresults").append('<button type="button" id="pickingresultsClose" class="close" style="position: absolute; right:0px; margin-right:5px; margin-top:5px;"><i class="fa fa-times-circle"></i></button>');
+							$("#pickingresults").append('<div id="pickingresultcontainer"></div>');
+
+							$('#pickingresultsClose').click(function(){
+								self.special1dData = [];
+			                	$("#pickingresults").hide();
+			                	$("#pickingresults").empty();
+			                });
+
+
 	                		var args = {
-								scatterEl: $('#pickingresults')[0],
+								scatterEl: $('#pickingresultcontainer')[0],
 								selection_x: that.selection_x,
 								selection_y: [that.selection_y],
 								showDropDownSelection: false,
@@ -513,9 +523,9 @@ define(['backbone.marionette',
 
 	                		sp.loadData({parsedData: renderdata});
 	                		// Move some things around
-	                		//$('#download_button').remove();
+	                		/*$('#download_button').remove();
 	                		$('#pickingresults').find('#save').attr('style','position: absolute; right: 29px; top: 7px');
-	                		$('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');
+	                		$('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');*/
 
 	                		$("#pickingresults").append(
 								'<a href="javascript:void(0)" id="enlarge" style="position: absolute;top:5px;left:5px">'+
@@ -595,8 +605,11 @@ define(['backbone.marionette',
 				toplot.push(additional_data);
 				toplot = _.flatten(toplot);
 
+				$("#pickingresults").append('<button type="button" id="pickingresultsClose" class="close" style="position: absolute; right:0px; margin-right:5px; margin-top:5px;"><i class="fa fa-times-circle"></i></button>');
+				$("#pickingresults").append('<div id="pickingresultcontainer"></div>');
+
 				var args = {
-					scatterEl: $('#pickingresults')[0],
+					scatterEl: $('#pickingresultcontainer')[0],
 					selection_x: 'timestamp',
 					selection_y: unique_params,
 					showDropDownSelection: false,
@@ -607,11 +620,11 @@ define(['backbone.marionette',
 
 				sp.loadData({parsedData: toplot});
 				// Move some things around
-				//$('#download_button').remove();
+				/*$('#download_button').remove();
 				$('#pickingresults').find('#save').attr('style','position: absolute; right: 29px; top: 7px');
-				$('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');
+				$('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');*/
 
-				$("#pickingresults").prepend('<button type="button" id="pickingresultsClose" class="close" style="position: absolute; right:0px; margin-right:5px; margin-top:5px;"><i class="fa fa-times-circle"></i></button>');
+
 
 				$('#pickingresultsClose').click(function(){
 					self.special1dData = [];
@@ -2015,8 +2028,17 @@ define(['backbone.marionette',
 
 										$("#pickingresults").show();
 
+										$("#pickingresults").append('<button type="button" id="pickingresultsClose" class="close" style="position: absolute; right:0px; margin-right:5px; margin-top:5px;"><i class="fa fa-times-circle"></i></button>');
+										$("#pickingresults").append('<div id="pickingresultcontainer"></div>');
+
+										$('#pickingresultsClose').click(function(){
+											self.special1dData = [];
+						                	$("#pickingresults").hide();
+						                	$("#pickingresults").empty();
+						                });
+
 										var args = {
-											scatterEl: $('#pickingresults')[0],
+											scatterEl: $('#pickingresultcontainer')[0],
 											selection_x: "starttime",
 											selection_y: ["height"],
 											showDropDownSelection: false,
@@ -2041,9 +2063,10 @@ define(['backbone.marionette',
 
 										sp.loadData(args);
 										// Move some things around
-										//$('#download_button').remove();
+										/*$('#download_button').remove();
 										$('#pickingresults').find('#save').attr('style','position: absolute; right: 29px; top: 7px');
-										$('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');
+										$('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');*/
+
 										$("#pickingresults").append(
 											'<a href="javascript:void(0)" id="enlarge" style="position: absolute;top:5px;left:5px">'+
 												'<i style="font-size:1.5em;" class="fa fa-expand fa-rotate-90"></i></a>'

@@ -565,8 +565,10 @@
 
                     $("#pickingresults").show();
 
+                    $("#pickingresults").append('<div id="pickingresultcontainer"></div>');
+
                     var args = {
-                      scatterEl: $('#pickingresults')[0],
+                      scatterEl: $('#pickingresultcontainer')[0],
                       selection_x: "start_date",
                       selection_y: ["average_bias", "rms", "min_diff", "max_diff"],
                       showDropDownSelection: true,
@@ -582,16 +584,15 @@
                     );
 
                     sp.loadData({parsedData: parsed_data});
-                    // Move some things around
-                    $('#download_button').remove();
-                    $('#pickingresults').find('#save').attr('style','position: absolute; right: 29px; top: 7px');
-                    $('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');
+                    
 
                     $("#pickingresults").append('<button type="button" id="pickingresultsClose" class="close" style="margin-right:5px; margin-top:5px;top: 0px;position: absolute;right: 0px;"><i class="fa fa-times-circle"></i></button>');
                     $('#pickingresultsClose').click(function(){
                       $("#pickingresults").hide();
                       $("#pickingresults").empty();
                     });
+
+
 
                     $("#pickingresults").append(
                       '<a href="javascript:void(0)" id="enlarge" style="position: absolute;top:5px;left:5px">'+
