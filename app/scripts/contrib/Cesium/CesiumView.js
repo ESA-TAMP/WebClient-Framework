@@ -513,7 +513,7 @@ define(['backbone.marionette',
 
 	                		sp.loadData({parsedData: renderdata});
 	                		// Move some things around
-	                		$('#download_button').remove();
+	                		//$('#download_button').remove();
 	                		$('#pickingresults').find('#save').attr('style','position: absolute; right: 29px; top: 7px');
 	                		$('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');
 
@@ -607,7 +607,7 @@ define(['backbone.marionette',
 
 				sp.loadData({parsedData: toplot});
 				// Move some things around
-				$('#download_button').remove();
+				//$('#download_button').remove();
 				$('#pickingresults').find('#save').attr('style','position: absolute; right: 29px; top: 7px');
 				$('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');
 
@@ -2041,7 +2041,7 @@ define(['backbone.marionette',
 
 										sp.loadData(args);
 										// Move some things around
-										$('#download_button').remove();
+										//$('#download_button').remove();
 										$('#pickingresults').find('#save').attr('style','position: absolute; right: 29px; top: 7px');
 										$('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');
 										$("#pickingresults").append(

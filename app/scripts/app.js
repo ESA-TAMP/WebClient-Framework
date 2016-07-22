@@ -212,8 +212,8 @@
 								ground_measurements = true;
 							}
 							var wcs_id = p.id.split('_').slice(0,-2).join('_');
-							var c_start_date = new Date(p.date[0]);
-							var c_end_date = new Date(p.date[1]);
+							var c_start_date = new Date(p.date[0].replace(/\./g,' '));
+							var c_end_date = new Date(p.date[1].replace(/\./g,' '));
 							c_end_date.setHours(23,59,59,999);
 
 							var args = {

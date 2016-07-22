@@ -118,7 +118,7 @@
             keypress: '../bower_components/Keypress/keypress',
 
             papaparse: '../bower_components/papaparse/papaparse.min',
-			geotiff: '../bower_components/geotiffjs/dist/geotiff',
+			geotiff: '../bower_components/geotiffjs/dist/geotiff.min',
             plotty: '../bower_components/plotty/dist/plotty.min'
 
         },
