@@ -1246,7 +1246,7 @@ define(['backbone.marionette',
 
             },
 
-			onMapShowResult: function (data) {
+			onMapShowResult: function (data, collection_id, o_collection_id, type) {
 
 				var gt;
 				try {
@@ -1333,6 +1333,10 @@ define(['backbone.marionette',
 						App.optionsBar.show(App.layerSettings);
 					}
 				}
+
+				$(App.optionsBar.el).find(".panel-title")[1].textContent = "Processing results Settings: "+
+				                     collection_id+" "+type+" "+
+				                     o_collection_id;
 
             },
 

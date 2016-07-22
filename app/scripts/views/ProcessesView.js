@@ -222,8 +222,7 @@
                 data: req_data,
                 
                 success: function(resp_data) {
-
-                  Communicator.mediator.trigger("map:show:result", resp_data);
+                  Communicator.mediator.trigger("map:show:result", resp_data, collection_id, o_collection_id, "-");
                 }
               });
 
@@ -283,7 +282,7 @@
                 
                 success: function(resp_data) {
 
-                  Communicator.mediator.trigger("map:show:result", resp_data);
+                  Communicator.mediator.trigger("map:show:result", resp_data, collection_id, o_collection_id, "+");
                 }
               });
 
