@@ -564,6 +564,7 @@
 
                     $("#pickingresults").show();
 
+                    $("#pickingresults").append('<div id="collections" style="white-space: pre;position: absolute;bottom: 2px; left: 60px;">'+collection_id+';\n'+o_collection_id+'</div>');
                     $("#pickingresults").append('<div id="pickingresultcontainer"></div>');
 
                     var args = {
