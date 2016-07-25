@@ -1334,10 +1334,12 @@ define(['backbone.marionette',
 					}
 				}
 
-				$(App.optionsBar.el).find(".panel-title")[1].textContent = "Processing results Settings: "+
+				if(!_.isUndefined(collection_id)){
+					$(App.optionsBar.el).find(".panel-title")[1].textContent = "Processing results Settings: "+
 				                     collection_id+" "+type+" "+
 				                     o_collection_id;
 
+				}
             },
 
 
