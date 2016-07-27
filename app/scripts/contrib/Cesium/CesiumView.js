@@ -471,11 +471,14 @@ define(['backbone.marionette',
 	                	$("#pickingresults").empty();
 	                	$("#pickingresults").hide();
 
+						$("#pickingresults").append('<div id="positionvalues" style="position:absolute;top:5px;left:50px"> Lat:'+pos_y.toFixed(5)+'; Lon:'+pos_x.toFixed(5)+'</div>');
+
+
 	                	if (renderdata.length == 1){
 	                		$("#pickingresults").show();
-	                		$("#pickingresults").empty();
+	                		
 
-	                		$("#pickingresults").append('<div style="margin: 0 auto" id="prcontainer"></div>');
+	                		$("#pickingresults").append('<div style="margin: 0 auto; margin-top: 40px;" id="prcontainer"></div>');
 	                		$("#prcontainer").append('<ul id="listdisplay"></ul>');
 	                		var cur_obj = renderdata[0];
 
@@ -566,7 +569,7 @@ define(['backbone.marionette',
 
 			},
 
-			pickEntity: function(pickedObject){
+			pickEntity: function(pickedObject, lat, lon){
 
 				pickedObject.primitive.image = pinimage_selected;
 				this.selectedEntityId = pickedObject.id;
@@ -1952,7 +1955,7 @@ define(['backbone.marionette',
 										});
 										self.primitiveMapping[id] = b;
 										if(self.selectedEntityId == id){
-											self.pickEntity({primitive:b, id:id});
+											self.pickEntity({primitive:b, id:id}, latitude, longitude);
 										}
 										cur_coll.show = true;
 
