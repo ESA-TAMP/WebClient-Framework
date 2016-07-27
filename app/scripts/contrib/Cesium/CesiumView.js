@@ -600,6 +600,8 @@ define(['backbone.marionette',
 				var pos_y = Cesium.Math.toDegrees(cartographic.latitude);
 				var additional_data = this.pickScene(pos_x,pos_y);
 
+				$("#pickingresults").append('<div id="positionvalues" style="position:absolute;top:5px;left:50px"> Lat:'+pos_y.toFixed(5)+'; Lon:'+pos_x.toFixed(5)+'</div>');
+
 				for (var i = additional_data.length - 1; i >= 0; i--) {
 					additional_data[i][unique_params[0]] = additional_data[i][this.selection_y];
 					delete additional_data[i][this.selection_y];
@@ -607,6 +609,16 @@ define(['backbone.marionette',
 
 				toplot.push(additional_data);
 				toplot = _.flatten(toplot);
+
+				for (var i = toplot.length-1; i >= 0 ; i--) {
+					for (var j = 0; j < unique_params.length; j++) {
+						if(toplot[i][unique_params[j]]==-9999999){
+							//delete toplot[i];
+							toplot.splice(i, 1);
+						}
+					}
+					
+				}
 
 				$("#pickingresults").append('<button type="button" id="pickingresultsClose" class="close" style="position: absolute; right:0px; margin-right:5px; margin-top:5px;"><i class="fa fa-times-circle"></i></button>');
 				$("#pickingresults").append('<div id="pickingresultcontainer"></div>');
