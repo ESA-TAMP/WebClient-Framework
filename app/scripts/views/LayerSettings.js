@@ -221,7 +221,7 @@
 					this.$("#centertime").empty();
 
 					this.$("#centertime").append(
-					'<button style="width:100%;" type="button" class="btn btn-default">Show time extent</button>'
+					'<button style="width:100%;" type="button" class="btn btn-default">Show Time Covered by Data Collection</button>'
 					);
 					var timerange = this.model.get("timeRange");
 

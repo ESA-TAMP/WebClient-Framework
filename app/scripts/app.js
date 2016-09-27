@@ -194,6 +194,8 @@
 						return p.id;
 					});
 
+					USER_PRODUCTS = _.sortBy(USER_PRODUCTS, function(i){return i.name.toLowerCase();}).reverse();
+
 					for (var i = USER_PRODUCTS.length - 1; i >= 0; i--) {
 
 						var p = USER_PRODUCTS[i];
