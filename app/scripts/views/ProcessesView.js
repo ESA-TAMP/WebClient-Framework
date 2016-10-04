@@ -437,7 +437,7 @@
 
               var collection_id = current_product.get('process_id');
 
-              var ground_product = prompt("(Required) Please provide a ground product name (for search in database) to be used in correlation");
+              /*var ground_product = prompt("(Required) Please provide a ground product name (for search in database) to be used in correlation");
               if (!ground_product) {
                 $("#error-messages").append(
                 '<div class="alert alert-warning alert-danger">'+
@@ -446,7 +446,7 @@
                 '</div>'
               );
                 return;
-              }
+              }*/
               var spatialtolerance = prompt("Please provide a value for spatial tolerance, if none provided the default of 1 (deegree) will be used");
               var temporaltolerance = prompt("Please provide a value for temporal tolerance, if none provided the default of 60 (mins) will be used");
 
@@ -454,7 +454,7 @@
                 wps_process: 'execute_assessment',
                 process: 'correlation',
                 collection: collection_id,
-                ground_product: ground_product,
+                //ground_product: ground_product,
                 left: sels.geo.w,
                 right: sels.geo.e,
                 top: sels.geo.n,
@@ -479,7 +479,74 @@
                 //dataType: "xml",
                 data: req_data,
                 success: function(resp_data) {
-                  console.log(resp_data);
+                  var data = resp_data.replace(/[&\/\,+()\[\]\n']/g, '').split(" ");
+                  if(data[0]!=""){
+                    var parsed_data = [];
+
+                    for (var i = 0; i < data.length; i+=4) {
+                      var obj = {
+                        id: '',
+                        timestamp: new Date(data[i]),
+                        station_value: Number(data[i+1]),
+                        raster_value: Number(data[i+2]),
+                        difference: Number(data[i+3])
+                      };
+                      parsed_data.push(obj);
+                    }
+                    parsed_data = _.sortBy(parsed_data, function(i){return i.timestamp;});
+
+                    $("#pickingresults").show();
+
+                    $("#pickingresults").append('<div id="collections" style="white-space: pre;position: absolute;bottom: 2px; left: 60px;">'+collection_id+'</div>');
+                    $("#pickingresults").append('<div id="pickingresultcontainer"></div>');
+
+                    var args = {
+                      scatterEl: $('#pickingresultcontainer')[0],
+                      selection_x: "timestamp",
+                      selection_y: ["difference"],
+                      showDropDownSelection: true,
+                      renderBlocks: false,
+                      lineConnections: true,
+                      margin: {top: 45, right: 20, bottom: 30, left: 60}
+                    };
+
+                    var sp = new scatterPlot(args, function(){},
+                      function (values) {}, 
+                      function(){},
+                      function(filter){}
+                    );
+
+                    sp.loadData({parsedData: parsed_data});
+                    
+
+                    $("#pickingresults").append('<button type="button" id="pickingresultsClose" class="close" style="margin-right:5px; margin-top:5px;top: 0px;position: absolute;right: 0px;"><i class="fa fa-times-circle"></i></button>');
+                    $('#pickingresultsClose').click(function(){
+                      $("#pickingresults").hide();
+                      $("#pickingresults").empty();
+                    });
+
+
+
+                    $("#pickingresults").append(
+                      '<a href="javascript:void(0)" id="enlarge" style="position: absolute;top:5px;left:5px">'+
+                        '<i style="font-size:1.5em;" class="fa fa-expand fa-rotate-90"></i></a>'
+                      );
+
+                    $('#enlarge').click(function (evt) {
+                      if ($('#pickingresults').hasClass("big")){
+                        $('#pickingresults').width("30%");
+                        $('#pickingresults').height("30%");
+                        $('#pickingresults').resize();
+                        $('#pickingresults').removeClass("big");
+                      }else{
+                        $('#pickingresults').addClass( "big" )
+                        $('#pickingresults').width("50%");
+                        $('#pickingresults').height("70%");
+                        $('#pickingresults').resize();
+                      }
+                      
+                    });
+                  }
                 }
               });
 
