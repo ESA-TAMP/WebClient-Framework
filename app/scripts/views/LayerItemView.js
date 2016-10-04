@@ -87,11 +87,11 @@
                 if (this.model.get('view').isBaseLayer)
                 	isBaseLayer = true;
 
-                var options = { name: this.model.get('name'), isBaseLayer: isBaseLayer, visible: evt.target.checked };
+                var options = { id: this.model.get("download").id, name: this.model.get('name'), isBaseLayer: isBaseLayer, visible: evt.target.checked };
 
                 if( !isBaseLayer && evt.target.checked ){
 
-                	var layer = globals.products.find(function(model) { return model.get('name') == options.name; });
+                	var layer = globals.products.find(function(model) { return model.get('download').id == options.id; });
                     if (layer != -1  && !(typeof layer === 'undefined')) {
 
                     	if(options.visible)
@@ -105,7 +105,7 @@
 
                     	if (url.indexOf('https') > -1){
 
-                    		var layer = layer.get('views')[0].id;
+                    		var layer = layer.get('download').id;
 							var req = "LAYERS=" + layer + "&TRANSPARENT=true&FORMAT=image%2Fpng&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&SRS=EPSG%3A4326";
 							req += "&BBOX=33.75,56.25,33.80,56.50&WIDTH=2&HEIGHT=2";
 							req = url + req;

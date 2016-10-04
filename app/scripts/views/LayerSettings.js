@@ -104,14 +104,14 @@
 					var options = that.model.get("parameters");
 					options[that.selected]['clamp_min'] = $("#clamp_min").prop('checked');
 					that.model.set("parameters", options);
-					Communicator.mediator.trigger("layer:parameters:changed", that.model.get("name"));
+					Communicator.mediator.trigger("layer:parameters:changed", that.model.get("download").id);
 				});
 
 				this.$("#clamp_max").on("input change", function(evt){
 					var options = that.model.get("parameters");
 					options[that.selected]['clamp_max'] = $("#clamp_max").prop('checked');
 					that.model.set("parameters", options);
-					Communicator.mediator.trigger("layer:parameters:changed", that.model.get("name"));
+					Communicator.mediator.trigger("layer:parameters:changed", that.model.get("download").id);
 				});
 
 
@@ -126,14 +126,14 @@
 				this.$("#range_min_slider").on("input change", function(){
 					var newrange = [parseFloat(this.value), options[that.selected].range[1]];
 					options[that.selected].range = newrange;
-					Communicator.mediator.trigger("layer:range:changed", that.model.get("name"), newrange, options[that.selected].colorscale);
+					Communicator.mediator.trigger("layer:range:changed", that.model.get("download").id, newrange, options[that.selected].colorscale);
 					that.updateRange(options);
 				});
 
 				this.$("#range_max_slider").on("input change", function(){
 					var newrange = [options[that.selected].range[0], parseFloat(this.value)];
 					options[that.selected].range = newrange;
-					Communicator.mediator.trigger("layer:range:changed", that.model.get("name"), newrange, options[that.selected].colorscale);
+					Communicator.mediator.trigger("layer:range:changed", that.model.get("download").id, newrange, options[that.selected].colorscale);
 					that.updateRange(options);
 				});
 
@@ -166,7 +166,7 @@
 
 					that.updateRange(options);
 
-					Communicator.mediator.trigger("layer:parameters:changed", that.model.get("name"));
+					Communicator.mediator.trigger("layer:parameters:changed", that.model.get("download").id);
 				});
 
 
@@ -292,7 +292,7 @@
 				this.model.set("parameters", options);
 				//that.updateRange(options);
 
-				Communicator.mediator.trigger("layer:parameters:changed", this.model.get("name"));
+				Communicator.mediator.trigger("layer:parameters:changed", this.model.get("download").id);
 			},
 
 			registerKeyEvents: function(el){
@@ -395,7 +395,7 @@
 
 					//Apply changes
 					this.model.set("parameters", options);
-					Communicator.mediator.trigger("layer:parameters:changed", this.model.get("name"));
+					Communicator.mediator.trigger("layer:parameters:changed", this.model.get("download").id);
 				}
 			},
 
@@ -414,7 +414,7 @@
 			},
 
 			sameModel: function(model){
-				return this.model.get("name") == model.get("name");
+				return this.model.get("download").id == model.get("download").id;
 			},
 
 			onUploadSelectionChanged: function(evt) {
@@ -429,7 +429,7 @@
 					that.$("#shc").append('<p id="filename" style="font-size:.9em;">Selected File: '+filename+'</p>');
 					Communicator.mediator.trigger("file:shc:loaded", evt.target.result);
 
-					var params = { name: that.model.get("name"), isBaseLayer: false, visible: false };
+					var params = { name: that.model.get("download").id, isBaseLayer: false, visible: false };
 					Communicator.mediator.trigger('map:layer:change', params);
 					Communicator.mediator.trigger("layer:activate", that.model.get("views")[0].id);
 
@@ -460,7 +460,7 @@
 						options[that.selected].logarithmic = !options[that.selected].logarithmic;
 						
 						that.model.set("parameters", options);
-						Communicator.mediator.trigger("layer:parameters:changed", that.model.get("name"));
+						Communicator.mediator.trigger("layer:parameters:changed", that.model.get("download").id);
 
 						if(options[that.selected].hasOwnProperty("logarithmic"))
 							that.createScale(options[that.selected].logarithmic);

@@ -1056,7 +1056,7 @@ define(['backbone.marionette',
 				if(options.value==1){options.value=0.999;}
 
 				globals.products.each(function(product) {
-                	if(product.get("name")==options.model.get("name")){
+                	if(product.get("download").id==options.model.get("download").id){
 
 		            			if(product.get("views")[0].protocol == "WCS"){
 		            				var cur_coll = this.coverages_collections[product.get("views")[0].id];
@@ -1158,7 +1158,7 @@ define(['backbone.marionette',
 					}, this);
 
 					globals.products.each(function(product) {
-                    	if(product.get("name")==options.name){
+                    	if(product.get("download").id==options.id){
                     		// TODO: This if method is only for testing and has to be reviewed
                     		if(product.get("views")[0].protocol == "CZML"){
 
@@ -1185,9 +1185,9 @@ define(['backbone.marionette',
 
 									if (band == "Fieldlines"){
 										if(options.visible){
-			                    			this.activeFL.push(product.get("name"));
+			                    			this.activeFL.push(product.get("download").id);
 			                    		}else{
-			                    			if (this.activeFL.indexOf(product.get('name'))!=-1){
+			                    			if (this.activeFL.indexOf(product.get('download').id)!=-1){
 		                						this.activeFL.splice(this.activeFL.indexOf(product.get('name')), 1);
 		                					}
 			                    		}
@@ -1226,9 +1226,9 @@ define(['backbone.marionette',
 								$("#"+product.get("name")).remove();
 							}
 						}
-						if(product.get("model") && product.get("name") == options.name){
+						if(product.get("model") && product.get("download").id == options.id){
 							if(options.visible){
-								this.activeModels.push(product.get("name"));
+								this.activeModels.push(product.get("download").id);
 								// Iterate over active Swarm products
 								globals.products.each(function(product) {
 									//if(product.get("satellite") == "Swarm")
@@ -2413,7 +2413,7 @@ define(['backbone.marionette',
 
             	globals.products.each(function(product) {
 
-            		if(product.get("name")==layer){
+            		if(product.get("download").id==layer){
             			if(product.get("views")[0].protocol == "WCS"){
             				var cur_coll = self.coverages_collections[product.get("views")[0].id];
             				if(cur_coll){
@@ -2448,7 +2448,7 @@ define(['backbone.marionette',
             	var self = this;
             	globals.products.each(function(product) {
 
-            		if(product.get("name")==layer){
+            		if(product.get("download").id==layer){
 
             			var hexcolor = product.get("color");
 	                		hexcolor = hexcolor.substring(1, hexcolor.length);
@@ -2502,10 +2502,10 @@ define(['backbone.marionette',
 									// model would be added multiple times, need to check if model already
 									// marked as active and avoid adding it to list
 									if (this.activeFL.indexOf(product.get('name'))==-1)
-	                    				this.activeFL.push(product.get("name"));
+	                    				this.activeFL.push(product.get("download").id);
 
 	                    		}else{
-	                    			if (this.activeFL.indexOf(product.get('name'))!=-1){
+	                    			if (this.activeFL.indexOf(product.get('download').id)!=-1){
                 						this.activeFL.splice(this.activeFL.indexOf(product.get('name')), 1);
                 					}
 	                    		}
@@ -2515,7 +2515,7 @@ define(['backbone.marionette',
             						this.activeFL.splice(this.activeFL.indexOf(product.get('name')), 1);
             					}
             					this.checkFieldLines();
-								if(product.get("name")==layer){
+								if(product.get("download").id==layer){
 				                	var ces_layer = product.get("ces_layer");
 
 				                	if(product.get("visible")){
