@@ -33,11 +33,587 @@
             };
 
                 var PRODUCT_URL = "http://vtdas-dave.zamg.ac.at/davprc/ows";
+                
                 var USER_PRODUCTS = [
-
-                {
-                            "name": "WRFCHEM - EYJA - VASH AL -D01",
-                            "id": "WRFCHEM_EYJA_VASH_AL_D01_4326_01",
+                    
+                        {
+                            "name": "MOD04 Oct - Dec. 2013 AOD MOD04_Image_Optical_Depth_Land_And_Ocean",
+                            "id": "MOD04_Image_Optical_Depth_Land_And_Ocean_4326_005",
+                            "date":
+                            [ 
+                                "Oct. 1, 2013",
+                                "Dec. 31, 2013"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"AOD",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "MOD04 Oct - Dec. 2013 AOD MOD04_Land_Ocean_Quality_Flag",
+                            "id": "MOD04_Land_Ocean_Quality_Flag_4326_005",
+                            "date":
+                            [ 
+                                "Oct. 1, 2013",
+                                "Dec. 31, 2013"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"AOD",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "MOD04 Jul - Dec. 2014 AOD MOD04_Land_Ocean_Quality_Flag",
+                            "id": "MOD04_Land_Ocean_Quality_Flag_4326_005",
+                            "date":
+                            [ 
+                                "July 1, 2014",
+                                "Dec. 31, 2014"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"AOD",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "MOD04 Jul - Dec. 2014 AOD MOD04_Image_Optical_Depth_Land_And_Ocean",
+                            "id": "MOD04_Image_Optical_Depth_Land_And_Ocean_4326_005",
+                            "date":
+                            [ 
+                                "July 1, 2014",
+                                "Dec. 31, 2014"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"AOD",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "MOD04 Jan - Mar 2013 AOD MOD04_Image_Optical_Depth_Land_And_Ocean",
+                            "id": "MOD04_Image_Optical_Depth_Land_And_Ocean_4326_005",
+                            "date":
+                            [ 
+                                "Jan. 1, 2013",
+                                "March 31, 2013"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"AOD",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "MOD04 Jan - Mar 2013 AOD MOD04_Land_Ocean_Quality_Flag",
+                            "id": "MOD04_Land_Ocean_Quality_Flag_4326_005",
+                            "date":
+                            [ 
+                                "Jan. 1, 2013",
+                                "March 31, 2013"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"AOD",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "MOD04 Jan - Jun 2014 AOD MOD04_Image_Optical_Depth_Land_And_Ocean",
+                            "id": "MOD04_Image_Optical_Depth_Land_And_Ocean_4326_005",
+                            "date":
+                            [ 
+                                "Jan. 1, 2014",
+                                "June 30, 2014"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"AOD",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "MOD04 Jan - Jun 2014 AOD MOD04_Land_Ocean_Quality_Flag",
+                            "id": "MOD04_Land_Ocean_Quality_Flag_4326_005",
+                            "date":
+                            [ 
+                                "Jan. 1, 2014",
+                                "June 30, 2014"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"AOD",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "MOD04 Jul - Sep 2013 AOD MOD04_Land_Ocean_Quality_Flag",
+                            "id": "MOD04_Land_Ocean_Quality_Flag_4326_005",
+                            "date":
+                            [ 
+                                "July 1, 2013",
+                                "Sept. 30, 2013"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"AOD",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "MOD04 Jul - Sep 2013 AOD MOD04_Image_Optical_Depth_Land_And_Ocean",
+                            "id": "MOD04_Image_Optical_Depth_Land_And_Ocean_4326_005",
+                            "date":
+                            [ 
+                                "July 1, 2013",
+                                "Sept. 30, 2013"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"AOD",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "MOD04 Apr - Jun 2013 AOD",
+                            "id": "MOD04_Image_Optical_Depth_Land_And_Ocean_4326_005",
+                            "date":
+                            [ 
+                                "April 1, 2013",
+                                "June 30, 2014"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"AOD",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "LIDAR_Bucharest_EXTINCTION_Integrated",
+                            "id": "LIDAR_EXTINCTION_ground_measurements",
+                            "date":
+                            [ 
+                                "June 8, 2012",
+                                "May 8, 2015"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            10
+                                        ],
+                                        "uom":"mug/m3",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "FLEXPART SO2 Integrated Column DU",
+                            "id": "FLEXPART_SO2__2D_175__DU_176_4326_01",
+                            "date":
+                            [ 
+                                "Sept. 16, 2014",
+                                "Sept. 24, 2014"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            1,
+                                            200
+                                        ],
+                                        "uom":"DU",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "FLEXPART SO2 Integrated Column",
+                            "id": "FLEXPART_SO2__2D_175_4326_01",
+                            "date":
+                            [ 
+                                "Sept. 16, 2014",
+                                "Sept. 24, 2014"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            1,
+                                            100000000
+                                        ],
+                                        "uom":"ng/m2",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "EVDC SO2 paramaribo complete",
+                            "id": "EVDC_SO2_paramaribo_complete_ground_measurements",
+                            "date":
+                            [ 
+                                "Jan. 1, 2002",
+                                "Dec. 31, 2012"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"DU",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "SO2 Vertical Test",
+                            "id": "OMI_SO2_L2_3D_SO2_Vert_Test_TF_171_4326_01",
+                            "date":
+                            [ 
+                                "Sept. 15, 2014",
+                                "Sept. 26, 2014"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            2
+                                        ],
+                                        "uom":"testunit",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "OMI L2 AOT - EYJA case OMI_L2_AOT451",
+                            "id": "OMI_L2_AOT451_4326_01",
+                            "date":
+                            [ 
+                                "May 1, 2010",
+                                "May 21, 2010"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "OMI L2 AOT - EYJA case OMI_L2_AOT483",
+                            "id": "OMI_L2_AOT483_4326_01",
+                            "date":
+                            [ 
+                                "May 10, 2010",
+                                "May 21, 2010"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "OMI L2 AOT - EYJA case OMI_L2_AOT388",
+                            "id": "OMI_L2_AOT388_4326_01",
+                            "date":
+                            [ 
+                                "May 1, 2010",
+                                "May 21, 2010"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "OMI L2 AOT - EYJA case OMI_L2_AOT367",
+                            "id": "OMI_L2_AOT367_4326_01",
+                            "date":
+                            [ 
+                                "May 1, 2010",
+                                "May 21, 2010"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "PARASOL L2 AOT - LAND - EYJA case",
+                            "id": "PARASOL_L2_AOT_LAND_4326_015",
+                            "date":
+                            [ 
+                                "May 1, 2010",
+                                "May 31, 2010"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "PARASOL L2 AOT - SEA - EYJA Case",
+                            "id": "PARASOL_L2_AOT_SEA_4326_015",
+                            "date":
+                            [ 
+                                "May 1, 2010",
+                                "May 24, 2010"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "LIDAR EARLINET LIDAR_Bucharest_Romania_532nm",
+                            "id": "LIDAR_Bucharest_Romania_532nm_4326_04",
+                            "date":
+                            [ 
+                                "June 8, 2012",
+                                "May 8, 2015"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            10
+                                        ],
+                                        "uom":"mug/m3",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "LIDAR EARLINET LIDAR_Bucharest_Romania_355nm",
+                            "id": "LIDAR_Bucharest_Romania_355nm_4326_04",
+                            "date":
+                            [ 
+                                "June 8, 2012",
+                                "May 8, 2015"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            10
+                                        ],
+                                        "uom":"mug/m3",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "LIDAR EARLINET LIDAR_Bucharest_Romania_1064nm",
+                            "id": "LIDAR_Bucharest_Romania_1064nm_4326_04",
+                            "date":
+                            [ 
+                                "June 8, 2012",
+                                "May 8, 2015"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            10
+                                        ],
+                                        "uom":"mug/m3",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "WRFCHEM - EYJA - 2D",
+                            "id": "WRFCHEM_EYJA_VASH_AL_D01__2D_103_4326_01",
                             "date":
                             [ 
                                 "May 4, 2010",
@@ -50,20 +626,21 @@
                                         "range": 
                                         [
                                             0,
-                                            1000
+                                            10000000
                                         ],
-                                        "uom":"µg/m3",
+                                        "uom":"microg/m2",
                                         
                                 }
                             }
-                        },                    
+                        },
+                    
                         {
-                            "name": "LIDAR EARLINET",
-                            "id": "None",
+                            "name": "BASCOE vertical column",
+                            "id": "BASCOE__integr_102_4326_375",
                             "date":
                             [ 
-                                "Aug. 18, 2014",
-                                "Aug. 18, 2014"
+                                "May 1, 2015",
+                                "July 30, 2015"
                             ],
                             "parameters":
                             {
@@ -72,9 +649,55 @@
                                         "range": 
                                         [
                                             0,
-                                            10
+                                            1
                                         ],
-                                        "uom":"mug/m3",
+                                        "uom":"smr",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "PARASOL L2 AOT - SEA",
+                            "id": "PARASOL_L2_AOT_SEA_4326_015",
+                            "date":
+                            [ 
+                                "Jan. 1, 2006",
+                                "Jan. 31, 2006"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "PARASOL L2 AOT - LAND",
+                            "id": "PARASOL_L2_AOT_LAND_4326_015",
+                            "date":
+                            [ 
+                                "Jan. 1, 2006",
+                                "Jan. 31, 2006"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"",
                                         
                                 }
                             }
@@ -150,29 +773,6 @@
                         },
                     
                         {
-                            "name": "WRFCHEM - EYJA VASHCOL - SAT D01",
-                            "id": "eyjafjallajökull",
-                            "date":
-                            [ 
-                                "May 4, 2010",
-                                "May 22, 2010"
-                            ],
-                            "parameters":
-                            {
-                                "Parameter1": 
-                                {
-                                        "range": 
-                                        [
-                                            0,
-                                            1000
-                                        ],
-                                        "uom":"mg/m2",
-                                        
-                                }
-                            }
-                        },
-                    
-                        {
                             "name": "GOME2B SO2 Level 2 3D",
                             "id": "GOME2B_SO2_L2_3D_4326_025",
                             "date":
@@ -212,7 +812,7 @@
                                             0,
                                             10
                                         ],
-                                        "uom":"du",
+                                        "uom":"DU",
                                         
                                 }
                             }
@@ -220,7 +820,7 @@
                     
                         {
                             "name": "OMI SO2 Level 2 3D",
-                            "id": "OMI_SO2_L2_3D_4326_025",
+                            "id": "OMI_SO2_L2_3D_4326_01",
                             "date":
                             [ 
                                 "Sept. 15, 2014",
@@ -243,7 +843,7 @@
                     
                         {
                             "name": "OMI SO2 L2 2D",
-                            "id": "OMI_SO2_L2_2D_4326_025",
+                            "id": "OMI_SO2_L2_2D_4326_01",
                             "date":
                             [ 
                                 "Sept. 15, 2014",
@@ -259,121 +859,6 @@
                                             10
                                         ],
                                         "uom":"DU",
-                                        
-                                }
-                            }
-                        },
-                    
-                        {
-                            "name": "FLEXPART SO2 2D DU",
-                            "id": "FLEXPART_SO2_2D_DU_4326_01",
-                            "date":
-                            [ 
-                                "Sept. 16, 2014",
-                                "Sept. 24, 2014"
-                            ],
-                            "parameters":
-                            {
-                                "Parameter1": 
-                                {
-                                        "range": 
-                                        [
-                                            0,
-                                            100
-                                        ],
-                                        "uom":"DU",
-                                        
-                                }
-                            }
-                        },
-                    
-                        {
-                            "name": "Aerosol optical profiles 2015",
-                            "id": "LIDAR_Bucharest_Romania_1064nm_4326_04",
-                            "date":
-                            [ 
-                                "Jan. 1, 2015",
-                                "Dec. 31, 2015"
-                            ],
-                            "parameters":
-                            {
-                                "Parameter1": 
-                                {
-                                        "range": 
-                                        [
-                                            0,
-                                            1
-                                        ],
-                                        "uom":"variable",
-                                        
-                                }
-                            }
-                        },
-                    
-                        {
-                            "name": "Aerosol optical profiles 2014",
-                            "id": "LIDAR_Bucharest_Romania_532nm_4326_04",
-                            "date":
-                            [ 
-                                "Jan. 1, 2014",
-                                "Dec. 31, 2014"
-                            ],
-                            "parameters":
-                            {
-                                "Parameter1": 
-                                {
-                                        "range": 
-                                        [
-                                            0,
-                                            1
-                                        ],
-                                        "uom":"variable",
-                                        
-                                }
-                            }
-                        },
-                    
-                        {
-                            "name": "Aerosol optical profiles 2013",
-                            "id": "LIDAR_Bucharest_Romania_355nm_4326_04",
-                            "date":
-                            [ 
-                                "Jan. 1, 2013",
-                                "Dec. 31, 2013"
-                            ],
-                            "parameters":
-                            {
-                                "Parameter1": 
-                                {
-                                        "range": 
-                                        [
-                                            0,
-                                            1
-                                        ],
-                                        "uom":"variable",
-                                        
-                                }
-                            }
-                        },
-                    
-                        {
-                            "name": "Aerosol optical profiles 2012",
-                            "id": "None",
-                            "date":
-                            [ 
-                                "Jan. 1, 2012",
-                                "Dec. 31, 2012"
-                            ],
-                            "parameters":
-                            {
-                                "Parameter1": 
-                                {
-                                        "range": 
-                                        [
-                                            0,
-                                            1
-                                        ],
-                                        "uom":"variable",
                                         
                                 }
                             }
@@ -472,144 +957,6 @@
                         },
                     
                         {
-                            "name": "PARASOL L2 AOT - SEA",
-                            "id": "PARASOL_L2_AOT_SEA_4326_015",
-                            "date":
-                            [ 
-                                "Jan. 1, 2006",
-                                "Jan. 31, 2006"
-                            ],
-                            "parameters":
-                            {
-                                "Parameter1": 
-                                {
-                                        "range": 
-                                        [
-                                            0,
-                                            1
-                                        ],
-                                        "uom":"",
-                                        
-                                }
-                            }
-                        },
-                    
-                        {
-                            "name": "PARASOL L2 AOT - LAND",
-                            "id": "PARASOL_L2_AOT_LAND_4326_015",
-                            "date":
-                            [ 
-                                "Jan. 1, 2006",
-                                "Jan. 31, 2006"
-                            ],
-                            "parameters":
-                            {
-                                "Parameter1": 
-                                {
-                                        "range": 
-                                        [
-                                            0,
-                                            1
-                                        ],
-                                        "uom":"",
-                                        
-                                }
-                            }
-                        },
-                    
-                        {
-                            "name": "WRF-CHEM Holu - integrated total column - alpine region",
-                            "id": "WRFCHEM_D02_2D_4326_0015",
-                            "date":
-                            [ 
-                                "Sept. 15, 2014",
-                                "Sept. 23, 2014"
-                            ],
-                            "parameters":
-                            {
-                                "Parameter1": 
-                                {
-                                        "range": 
-                                        [
-                                            0,
-                                            1000
-                                        ],
-                                        "uom":"ppms",
-                                        
-                                }
-                            }
-                        },
-                    
-                        {
-                            "name": "GOME 2 METOPB - SO2 total column",
-                            "id": "GOME_M01_L02_SO2_4326_025",
-                            "date":
-                            [ 
-                                "Sept. 15, 2014",
-                                "Oct. 1, 2014"
-                            ],
-                            "parameters":
-                            {
-                                "Parameter1": 
-                                {
-                                        "range": 
-                                        [
-                                            0,
-                                            10
-                                        ],
-                                        "uom":"DU",
-                                        
-                                }
-                            }
-                        },
-                    
-                        {
-                            "name": "GOME 2 METOPA - SO2 total column",
-                            "id": "GOME_M02_L02_SO2_4326_025",
-                            "date":
-                            [ 
-                                "Sept. 15, 2014",
-                                "Sept. 30, 2014"
-                            ],
-                            "parameters":
-                            {
-                                "Parameter1": 
-                                {
-                                        "range": 
-                                        [
-                                            0,
-                                            10
-                                        ],
-                                        "uom":"DU",
-                                        
-                                }
-                            }
-                        },
-                    
-                        {
-                            "name": "WRF-CHEM Holu - integrated total column - extended europe",
-                            "id": "WRFCHEM_D01_2D_4326_0015",
-                            "date":
-                            [ 
-                                "Sept. 15, 2014",
-                                "Sept. 23, 2014"
-                            ],
-                            "parameters":
-                            {
-                                "Parameter1": 
-                                {
-                                        "range": 
-                                        [
-                                            0,
-                                            1000
-                                        ],
-                                        "uom":"ppms",
-                                        
-                                }
-                            }
-                        },
-                    
-                        {
                             "name": "EVDC_SO2",
                             "id": "EVDC_SO2_ground_measurements",
                             "date":
@@ -626,7 +973,7 @@
                                             0,
                                             1
                                         ],
-                                        "uom":"",
+                                        "uom":"DU",
                                         
                                 }
                             }
@@ -649,30 +996,7 @@
                                             0,
                                             1
                                         ],
-                                        "uom":"",
-                                        
-                                }
-                            }
-                        },
-                    
-                        {
-                            "name": "FLEXPART SO2 Holu - Integrated Column",
-                            "id": "FLEXPART_SO2_2D_4326_01",
-                            "date":
-                            [ 
-                                "Sept. 16, 2014",
-                                "Sept. 24, 2014"
-                            ],
-                            "parameters":
-                            {
-                                "Parameter1": 
-                                {
-                                        "range": 
-                                        [
-                                            0,
-                                            1000
-                                        ],
-                                        "uom":"micro g / m2",
+                                        "uom":"micro g / m3",
                                         
                                 }
                             }
@@ -693,7 +1017,7 @@
                                         "range": 
                                         [
                                             0,
-                                            1
+                                            5000
                                         ],
                                         "uom":"ng/m3",
                                         
@@ -768,7 +1092,7 @@
                                         
                                 }
                             }
-                        }
+                        },
                     
               ];
 
