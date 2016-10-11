@@ -100,6 +100,13 @@
 					Communicator.mediator.trigger('productCollection:updateOpacity', {model:that.model, value:opacity});
 				});
 
+				if(options[that.selected]['clamp_min']){
+					this.$("#clamp_min").attr('checked','checked');
+				}
+				if(options[that.selected]['clamp_max']){
+					this.$("#clamp_max").attr('checked','checked');
+				}
+
 				this.$("#clamp_min").on("input change", function(evt){
 					var options = that.model.get("parameters");
 					options[that.selected]['clamp_min'] = $("#clamp_min").prop('checked');
