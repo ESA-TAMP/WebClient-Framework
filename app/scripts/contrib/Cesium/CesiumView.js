@@ -343,6 +343,21 @@ define(['backbone.marionette',
 					}
 				}, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
+
+				handler.setInputAction(function(evt) {
+					var ellipsoid = self.map.scene.globe.ellipsoid;
+	            	var mousepos = new Cesium.Cartesian2(evt.endPosition.x, evt.endPosition.x);
+				    var mappos = self.map.scene.camera.pickEllipsoid(mousepos, ellipsoid);
+				    
+				    if (mappos != null ) { 
+				        mappos = ellipsoid.cartesianToCartographic(mappos);
+				        var lat = Cesium.Math.toDegrees(mappos.latitude);
+				        var lon = Cesium.Math.toDegrees(mappos.longitude);
+				        console.log(lon, lat);
+			        }
+
+				}, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
 			    // Remove gazetteer field
 			    $('.cesium-viewer-geocoderContainer').remove();
 
@@ -2150,34 +2165,91 @@ define(['backbone.marionette',
 											$("#play-button").off();
 
 											$("#play-button").on('click', function () {
+													fps = 15;
+													if( $("#fast-play-button").find('i').hasClass("fa-pause") ){
+														
+														$("#fast-play-button").html('<i class="fa fa-forward"></i>');
+														$("#play-button").html('<i class="fa fa-pause"></i>');
+													}else{
 
-													$("#play-button").html('<i class="fa fa-pause"></i>');
-										        	// Create a draw loop using requestAnimationFrame. The
-													// tick callback function is called for every animation frame.
-													function tick() {
-														setTimeout(function() {
-													        if(self.playback){
-													        	Cesium.requestAnimationFrame(tick);
-														        play_index = (play_index+1) % play_length;
-															  	self.p_plot.renderDataset(to_play[play_index].identifier);
-																prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
-																prim_to_render.cov_id = to_play[play_index].identifier;
-																Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
-																$('#timestamp').show();
-																$('#timestamp').text(to_play[play_index].starttime);
-													        }
+														$("#play-button").html('<i class="fa fa-pause"></i>');
+											        	// Create a draw loop using requestAnimationFrame. The
+														// tick callback function is called for every animation frame.
+														function tick() {
+															setTimeout(function() {
+														        if(self.playback){
+														        	Cesium.requestAnimationFrame(tick);
+															        play_index = (play_index+1) % play_length;
+																  	self.p_plot.renderDataset(to_play[play_index].identifier);
+																	prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+																	prim_to_render.cov_id = to_play[play_index].identifier;
+																	Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
+																	$('#timestamp').show();
+																	$('#timestamp').text(to_play[play_index].starttime);
+														        }
 
-													    }, 100 / fps);
+														    }, 1000 / fps);
 
+														}
+
+														if (!self.playback){
+															self.playback = true;
+															tick();
+											        	}else{
+											        		self.playback = false;
+											        		$("#play-button").html('<i class="fa fa-play"></i>');
+											        	}
+											        }
+
+										    	}
+										    );
+
+										    // Remove handlers
+											$("#fast-play-button").off();
+
+											$("#fast-play-button").on('click', function () {
+													fps = 125;
+													if( $("#play-button").find('i').hasClass("fa-pause") ){
+														
+														$("#play-button").html('<i class="fa fa-play"></i>');
+														$("#fast-play-button").html('<i class="fa fa-pause"></i>');
+													}else{
+
+														$("#fast-play-button").html('<i class="fa fa-pause"></i>');
+											        	// Create a draw loop using requestAnimationFrame. The
+														// tick callback function is called for every animation frame.
+														function tick() {
+															setTimeout(function() {
+														        if(self.playback){
+														        	Cesium.requestAnimationFrame(tick);
+															        play_index = (play_index+1) % play_length;
+																  	self.p_plot.renderDataset(to_play[play_index].identifier);
+																	prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+																	prim_to_render.cov_id = to_play[play_index].identifier;
+																	Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
+																	$('#timestamp').show();
+																	$('#timestamp').text(to_play[play_index].starttime);
+														        }
+
+														    }, 1000 / fps);
+
+														}
+														if (!self.playback){
+															self.playback = true;
+															tick();
+											        	}else{
+											        		self.playback = false;
+											        		$("#fast-play-button").html('<i class="fa fa-forward"></i>');
+											        	}
 													}
 
-													if (!self.playback){
+													/*if (!self.playback){
 														self.playback = true;
 														tick();
 										        	}else{
 										        		self.playback = false;
 										        		$("#play-button").html('<i class="fa fa-play"></i>');
-										        	}
+										        	}*/
 
 										    	}
 										    );
