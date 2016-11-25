@@ -108,6 +108,7 @@ define(['backbone.marionette',
 				this.extentPrimitive = null;
 				this.activeModels = [];
 				this.difference_image = null;
+				this.volumeVisualization = false;
 
 				this.selectedEntityId = null;
 				this.primitiveMapping = {};
@@ -353,7 +354,7 @@ define(['backbone.marionette',
 				        mappos = ellipsoid.cartesianToCartographic(mappos);
 				        var lat = Cesium.Math.toDegrees(mappos.latitude);
 				        var lon = Cesium.Math.toDegrees(mappos.longitude);
-				        console.log(lon, lat);
+				        //console.log(lon, lat);
 			        }
 
 				}, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
@@ -1456,22 +1457,28 @@ define(['backbone.marionette',
 			        translucent : true
 			    });*/
 
+
 			    var newmat = new Cesium.Material.fromType('Image', {
 					image : image,
 					color: new Cesium.Color(1, 1, 1, alpha),
 				});
 
-			    var max_heights = [];
-			    var min_heights = [];
+			    var heights = [];
 			    for (var i = (positions.length/2) - 1; i >= 0; i--) {
-			    	max_heights.push(height);
-			    	min_heights.push(0.0);
+			    	heights.push(height);
 			    };
+
+			    /*this.map.entities.add({
+				    wall : {
+				        positions : Cesium.Cartesian3.fromDegreesArray(positions),
+				        maximumHeights : heights,
+				        material : newmat
+				    }
+				});*/
 
 			    var wall = new Cesium.WallGeometry({
 					positions : Cesium.Cartesian3.fromDegreesArray(positions),
-					minimumHeights : max_heights,
-					maximumHeights : min_heights,
+				    maximumHeights : heights,
 				});
 
 				var wallGeometry = Cesium.WallGeometry.createGeometry(wall);
@@ -1494,20 +1501,6 @@ define(['backbone.marionette',
 
 				cur_coll.add(prim);
 
-
-			   //this.map.entities.add(wall);
-
-			   /*var wall_1 = this.map.entities.add({
-				    id: 'wall_1',
-				    name: 'Two-position wall',
-				    wall: {
-				        positions: Cesium.Cartesian3.fromDegreesArray(positions),
-				        maximumHeights: max_heights,
-				        minimumHeights: min_heights,
-				        material: material
-				        //material: newmat
-				    }
-				});*/
 
             },
 
@@ -1656,18 +1649,65 @@ define(['backbone.marionette',
 									heights.pop();
 									rasdata.pop();
 								}
-							
-								for (var i = 0; i < rasdata.length; i++) {
-									self.p_plot.addDataset((cov_id+"_"+i), rasdata[i], img.getWidth(), img.getHeight());
+
+								var zSelection = 5;
+								var xSelection = 40;
+								var ySelection = 40;
+
+								if(self.volumeVisualization){
+									for (var i = 0; i < rasdata.length; i++) {
+										self.p_plot.addDataset((cov_id+"_"+i), rasdata[i], img.getWidth(), img.getHeight());
+										self.p_plot.setDomain(range);
+										self.p_plot.setNoDataValue(-9999);
+										self.p_plot.setClamp(clamp[0],clamp[1]);
+										self.p_plot.renderDataset((cov_id+"_"+i));
+										var height = i*18000;
+										if (i<=heights.length){
+											height = heights[i]*ELEVATION_EXAGERATION;
+										}
+										self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, (cov_id+"_"+i), cur_coll, alpha, height);
+									}
+								}else{
+
+									// Creation of height slice
+									/*self.p_plot.addDataset((cov_id+"_"+zSelection), rasdata[zSelection], img.getWidth(), img.getHeight());
 									self.p_plot.setDomain(range);
 									self.p_plot.setNoDataValue(-9999);
 									self.p_plot.setClamp(clamp[0],clamp[1]);
-									self.p_plot.renderDataset((cov_id+"_"+i));
-									var height = i*18000;
-									if (i<=heights.length){
-										height = heights[i]*ELEVATION_EXAGERATION;
+									self.p_plot.renderDataset((cov_id+"_"+zSelection));
+									var height = zSelection*18000;
+									if (zSelection<=heights.length){
+										height = heights[zSelection]*ELEVATION_EXAGERATION;
 									}
-									self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, (cov_id+"_"+i), cur_coll, alpha, height);
+									self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, (cov_id+"_"+'sliceZ'), cur_coll, alpha, height);*/
+
+
+
+
+									// Creation of "curtains" for X and Y axis
+									
+									var latStep = Math.abs(bbox[3]-bbox[1])/img.getHeight();
+									var lonStep = Math.abs(bbox[2]-bbox[0])/img.getWidth();
+
+									var positions = [
+										(bbox[0] + lonStep*xSelection) , bbox[1],
+										(bbox[0] + lonStep*xSelection) , bbox[3],
+									];
+									
+									var height = heights[heights.length-1]*ELEVATION_EXAGERATION;
+
+									self.p_plot.addDataset(cov_id+"_"+'sliceX', rasdata[0], img.getWidth(), img.getHeight());
+									self.p_plot.setDomain(range);
+									self.p_plot.setNoDataValue(-9999);
+									self.p_plot.setClamp(clamp[0],clamp[1]);
+									self.p_plot.renderDataset(cov_id+"_"+'sliceX');
+
+									self.createCurtain(self.p_plot.canvas.toDataURL(),
+										positions, (cov_id+"_"+'sliceX'),
+										cur_coll, alpha,
+										height
+									);
+
 								}
 							}
 
