@@ -1439,7 +1439,7 @@ define(['backbone.marionette',
     			}
             },
 
-            createCurtain: function(image, positions, cov_id, cur_coll, alpha, height){
+            createCurtain: function(appearance, positions, cov_id, cur_coll, alpha, height){
 
 				/*var newmat = new Cesium.Material({
 			        fabric : {
@@ -1458,23 +1458,13 @@ define(['backbone.marionette',
 			    });*/
 
 
-			    var newmat = new Cesium.Material.fromType('Image', {
-					image : image,
-					color: new Cesium.Color(1, 1, 1, alpha),
-				});
+			    ;
 
 			    var heights = [];
 			    for (var i = (positions.length/2) - 1; i >= 0; i--) {
 			    	heights.push(height);
 			    };
 
-			    /*this.map.entities.add({
-				    wall : {
-				        positions : Cesium.Cartesian3.fromDegreesArray(positions),
-				        maximumHeights : heights,
-				        material : newmat
-				    }
-				});*/
 
 			    var wall = new Cesium.WallGeometry({
 					positions : Cesium.Cartesian3.fromDegreesArray(positions),
@@ -1489,12 +1479,9 @@ define(['backbone.marionette',
 
 				var prim = new Cesium.Primitive({
 				  geometryInstances : [instance],
-				  appearance : new Cesium.MaterialAppearance({
-				  	translucent : true,
-				  	flat: true,
-				    material : newmat
-				  }),
-				  releaseGeometryInstances: false
+				  appearance : appearance,
+				  releaseGeometryInstances: false,
+				  asynchronous: false
 				});
 
 				prim["cov_id"] = cov_id;
@@ -1583,7 +1570,18 @@ define(['backbone.marionette',
 							prim["cov_id"] = cov_id;
 							prim.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
 						}else{
-							self.createCurtain(self.p_plot.canvas.toDataURL(), positions, cov_id, cur_coll, alpha, height);
+							var newmat = new Cesium.Material.fromType('Image', {
+								image : self.p_plot.canvas.toDataURL(),
+								color: new Cesium.Color(1, 1, 1, alpha)
+							});
+
+							var imageAppeareance = new Cesium.MaterialAppearance({
+							  	translucent : true,
+							  	flat: true,
+							    material : newmat
+							});
+
+							self.createCurtain(imageAppeareance, positions, cov_id, cur_coll, alpha, height);
 							
 						}
 
@@ -1650,9 +1648,7 @@ define(['backbone.marionette',
 									rasdata.pop();
 								}
 
-								var zSelection = 5;
-								var xSelection = 40;
-								var ySelection = 40;
+								//self.volumeVisualization = true;
 
 								if(self.volumeVisualization){
 									for (var i = 0; i < rasdata.length; i++) {
@@ -1682,7 +1678,10 @@ define(['backbone.marionette',
 									self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, (cov_id+"_"+'sliceZ'), cur_coll, alpha, height);*/
 
 
-
+									
+									var xSelection = 0;
+									var ySelection = 40;
+									var zSelection = 5;
 
 									// Creation of "curtains" for X and Y axis
 									
@@ -1696,16 +1695,101 @@ define(['backbone.marionette',
 									
 									var height = heights[heights.length-1]*ELEVATION_EXAGERATION;
 
-									self.p_plot.addDataset(cov_id+"_"+'sliceX', rasdata[0], img.getWidth(), img.getHeight());
+									var imgX = img.getWidth();
+									var imgY = img.getHeight();
+									var imgZ = rasdata.length;
+
+									var slice = new Float32Array(imgY*imgZ);
+
+									for (var z = 0; z < imgZ; z++) {
+										for (var y = 0; y < imgY; y++) {
+											slice[((imgZ-z) * imgY) + (imgY-y)] = rasdata[z][(y * imgX) + xSelection];
+										}
+									}
+
+									self.p_plot.addDataset(cov_id+"_"+'sliceX', slice, imgY, imgZ);
 									self.p_plot.setDomain(range);
 									self.p_plot.setNoDataValue(-9999);
 									self.p_plot.setClamp(clamp[0],clamp[1]);
 									self.p_plot.renderDataset(cov_id+"_"+'sliceX');
 
-									self.createCurtain(self.p_plot.canvas.toDataURL(),
+									var newmat = new Cesium.Material.fromType('Image', {
+										image : self.p_plot.canvas.toDataURL(),
+										color: new Cesium.Color(1, 1, 1, alpha)
+									})
+
+									var imageAppeareance = new Cesium.MaterialAppearance({
+									  	translucent : true,
+									  	flat: true,
+									    material : newmat
+									  })
+
+									self.createCurtain(imageAppeareance,
 										positions, (cov_id+"_"+'sliceX'),
 										cur_coll, alpha,
 										height
+									);
+
+
+									var label = $("<label>").attr('for', 'xSelectionRange');
+									$('body').append('<input type="range" id="xSelectionRange">');
+									$('body').append(label);
+									$("#xSelectionRange").attr("max", imgX-1);
+									$("#xSelectionRange").attr("min", 0);
+									$("#xSelectionRange").attr("value", xSelection);
+									$("#xSelectionRange").attr("step", 1);
+
+									$("#xSelectionRange").on("input change", 
+										{
+											id: (cov_id+"_"+'sliceX'),
+											lonStep: lonStep,
+											cur_coll: cur_coll,
+											plot: self.p_plot,
+											imgX: imgX,
+											imgY: imgY,
+											imgZ: imgZ,
+											rasdata: rasdata,
+											height: height,
+											alpha: alpha,
+											bbox: bbox,
+											imageAppeareance: imageAppeareance/*,
+											xSliceEntity: xSliceEntity*/
+										},
+										function(evt){
+											var d = evt.data;
+
+											var xSelection = Number($(this).val());
+											var slice = new Float32Array(d.imgY*d.imgZ);
+
+											for (var z = 0; z < d.imgZ; z++) {
+												for (var y = 0; y < d.imgY; y++) {
+													slice[((d.imgZ-z) * d.imgY) + (d.imgY-y)] = d.rasdata[z][(y * d.imgX) + xSelection];
+												}
+											}
+
+											var prim = d.cur_coll._primitives[0];
+											d.cur_coll.removeAll();
+
+											var latStep = Math.abs(bbox[3]-bbox[1])/imgY;
+											var lonStep = Math.abs(bbox[2]-bbox[0])/imgX;
+
+											var positions = [
+												(bbox[0] + lonStep*xSelection) , bbox[1],
+												(bbox[0] + lonStep*xSelection) , bbox[3],
+											];
+
+											d.plot.removeDataset(d.id);
+											d.plot.addDataset(d.id, slice, d.imgY, d.imgZ);
+											d.plot.renderDataset(d.id);
+											d.imageAppeareance.material._textures.image.copyFrom(d.plot.canvas);
+
+											self.createCurtain(d.imageAppeareance,
+												positions, d.id,
+												d.cur_coll, d.alpha,
+												d.height
+											);
+
+										}
 									);
 
 								}
