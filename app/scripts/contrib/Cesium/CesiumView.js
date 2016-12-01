@@ -1532,6 +1532,32 @@ define(['backbone.marionette',
             	
 			},
 
+			createAppereancePrimitive: function(appearance, bbox, cov_id, cur_coll, alpha, height){
+
+        		height = defaultFor(height, (this.global_product_height));
+				
+				var instance = new Cesium.GeometryInstance({
+				  geometry : new Cesium.RectangleGeometry({
+				    rectangle : Cesium.Rectangle.fromDegrees(bbox[0],bbox[1],bbox[2],bbox[3]),
+				    vertexFormat : Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT,
+						height: height
+				  })
+				});
+
+				var prim = new Cesium.Primitive({
+				  geometryInstances : [instance],
+				  appearance : appearance,
+				  releaseGeometryInstances: false,
+				  asynchronous: false
+				});
+
+				prim["cov_id"] = cov_id;
+				prim["height"] = height/ELEVATION_EXAGERATION;
+
+				cur_coll.add(prim);
+            	
+			},
+
 			loadCoverage: function(request, bbox, cov_id, range, cur_coll, alpha, clamp, prim){
 
 				var self = this;
@@ -1665,79 +1691,88 @@ define(['backbone.marionette',
 									}
 								}else{
 
-									// Creation of height slice
-									/*self.p_plot.addDataset((cov_id+"_"+zSelection), rasdata[zSelection], img.getWidth(), img.getHeight());
-									self.p_plot.setDomain(range);
-									self.p_plot.setNoDataValue(-9999);
-									self.p_plot.setClamp(clamp[0],clamp[1]);
-									self.p_plot.renderDataset((cov_id+"_"+zSelection));
-									var height = zSelection*18000;
-									if (zSelection<=heights.length){
-										height = heights[zSelection]*ELEVATION_EXAGERATION;
-									}
-									self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, (cov_id+"_"+'sliceZ'), cur_coll, alpha, height);*/
+
+									var imgX = img.getWidth();
+									var imgY = img.getHeight();
+									var imgZ = rasdata.length;
 
 
-									
-									var xSelection = 0;
-									var ySelection = 40;
-									var zSelection = 5;
+									var xSelection = Math.floor(imgX/2);
+									var ySelection = Math.floor(imgY/2);
+									var zSelection = Math.floor(imgZ/2);
 
 									// Creation of "curtains" for X and Y axis
 									
-									var latStep = Math.abs(bbox[3]-bbox[1])/img.getHeight();
-									var lonStep = Math.abs(bbox[2]-bbox[0])/img.getWidth();
+									var latStep = Math.abs(bbox[3]-bbox[1])/imgY;
+									var lonStep = Math.abs(bbox[2]-bbox[0])/imgX;
 
-									var positions = [
+									var xSlicePositions = [
 										(bbox[0] + lonStep*xSelection) , bbox[1],
 										(bbox[0] + lonStep*xSelection) , bbox[3],
 									];
 									
 									var height = heights[heights.length-1]*ELEVATION_EXAGERATION;
 
-									var imgX = img.getWidth();
-									var imgY = img.getHeight();
-									var imgZ = rasdata.length;
-
-									var slice = new Float32Array(imgY*imgZ);
+									var sliceX = new Float32Array(imgY*imgZ);
 
 									for (var z = 0; z < imgZ; z++) {
 										for (var y = 0; y < imgY; y++) {
-											slice[((imgZ-z) * imgY) + (imgY-y)] = rasdata[z][(y * imgX) + xSelection];
+											sliceX[((imgZ-z) * imgY) + (imgY-y)] = rasdata[z][(y * imgX) + xSelection];
 										}
 									}
 
-									self.p_plot.addDataset(cov_id+"_"+'sliceX', slice, imgY, imgZ);
+									self.p_plot.addDataset(cov_id+"_"+'sliceX', sliceX, imgY, imgZ);
 									self.p_plot.setDomain(range);
 									self.p_plot.setNoDataValue(-9999);
 									self.p_plot.setClamp(clamp[0],clamp[1]);
 									self.p_plot.renderDataset(cov_id+"_"+'sliceX');
 
-									var newmat = new Cesium.Material.fromType('Image', {
+									var xMaterial = new Cesium.Material.fromType('Image', {
 										image : self.p_plot.canvas.toDataURL(),
 										color: new Cesium.Color(1, 1, 1, alpha)
 									})
 
-									var imageAppeareance = new Cesium.MaterialAppearance({
+									var xSliceAppeareance = new Cesium.MaterialAppearance({
 									  	translucent : true,
 									  	flat: true,
-									    material : newmat
+									    material : xMaterial
 									  })
 
-									self.createCurtain(imageAppeareance,
-										positions, (cov_id+"_"+'sliceX'),
+									self.createCurtain(xSliceAppeareance,
+										xSlicePositions, (cov_id+"_"+'sliceX'),
 										cur_coll, alpha,
 										height
 									);
 
+									$("#xSelectionRange").off();
+									$("#ySelectionRange").off();
+									$('#volumecontrols').empty();
+									$('#volumecontrols').show();
+									$('#volumecontrols').append('<div>Volume visualization</div>');
 
 									var label = $("<label>").attr('for', 'xSelectionRange');
-									$('body').append('<input type="range" id="xSelectionRange">');
-									$('body').append(label);
+									label.text((bbox[0] + lonStep*xSelection).toFixed(2)+' Longitude');
+									$('#volumecontrols').append('<input type="range" id="xSelectionRange">');
+									$('#volumecontrols').append(label);
+									$("#xSelectionRange").addClass("volumeSlider");
 									$("#xSelectionRange").attr("max", imgX-1);
 									$("#xSelectionRange").attr("min", 0);
 									$("#xSelectionRange").attr("value", xSelection);
 									$("#xSelectionRange").attr("step", 1);
+
+									$('#volumecontrols').append('<input type="checkbox" id="showXSlice" class="sliceCheckbox" checked/>');
+
+									$("#showXSlice").on("input change", {
+										cur_coll: cur_coll,
+										id: (cov_id+"_"+'sliceX')
+									}, function(evt){
+										var d = evt.data;
+										for (var i = d.cur_coll._primitives.length - 1; i >= 0; i--) {
+											if(d.cur_coll._primitives[i].cov_id === d.id){
+												d.cur_coll.get(i).show = $("#showXSlice").is(':checked');
+											}
+										}
+									});
 
 									$("#xSelectionRange").on("input change", 
 										{
@@ -1752,8 +1787,8 @@ define(['backbone.marionette',
 											height: height,
 											alpha: alpha,
 											bbox: bbox,
-											imageAppeareance: imageAppeareance/*,
-											xSliceEntity: xSliceEntity*/
+											imageAppeareance: xSliceAppeareance,
+											label: label
 										},
 										function(evt){
 											var d = evt.data;
@@ -1767,16 +1802,19 @@ define(['backbone.marionette',
 												}
 											}
 
-											var prim = d.cur_coll._primitives[0];
-											d.cur_coll.removeAll();
-
-											var latStep = Math.abs(bbox[3]-bbox[1])/imgY;
-											var lonStep = Math.abs(bbox[2]-bbox[0])/imgX;
+											for (var i = d.cur_coll._primitives.length - 1; i >= 0; i--) {
+												if(d.cur_coll._primitives[i].cov_id === d.id){
+													d.cur_coll.remove(d.cur_coll.get(i));
+												}
+											}
+											
 
 											var positions = [
 												(bbox[0] + lonStep*xSelection) , bbox[1],
 												(bbox[0] + lonStep*xSelection) , bbox[3],
 											];
+
+											d.label.text((bbox[0] + lonStep*xSelection).toFixed(2)+' Longitude');
 
 											d.plot.removeDataset(d.id);
 											d.plot.addDataset(d.id, slice, d.imgY, d.imgZ);
@@ -1788,6 +1826,219 @@ define(['backbone.marionette',
 												d.cur_coll, d.alpha,
 												d.height
 											);
+
+										}
+									);
+
+
+									var lat = (bbox[1] + latStep*ySelection);
+
+									var ySlicePositions = [];
+									for (var x = 0; x < imgX; x++) {
+										ySlicePositions.push(bbox[0]+x*lonStep, lat);
+									}
+
+									var sliceY = new Float32Array(imgX*imgZ);
+
+									for (var z = 0; z < imgZ; z++) {
+										for (var x = 0; x < imgX; x++) {
+											sliceY[((imgZ-z) * imgX) + (imgX-x)] = rasdata[z][(ySelection * imgX) + x];
+										}
+									}
+
+									self.p_plot.addDataset(cov_id+"_"+'sliceY', sliceY, imgX, imgZ);
+									self.p_plot.setDomain(range);
+									self.p_plot.setNoDataValue(-9999);
+									self.p_plot.setClamp(clamp[0],clamp[1]);
+									self.p_plot.renderDataset(cov_id+"_"+'sliceY');
+
+									var yMaterial = new Cesium.Material.fromType('Image', {
+										image : self.p_plot.canvas.toDataURL(),
+										color: new Cesium.Color(1, 1, 1, alpha)
+									})
+
+									var ySliceAppeareance = new Cesium.MaterialAppearance({
+									  	translucent : true,
+									  	flat: true,
+									    material : yMaterial
+									  })
+
+									self.createCurtain(ySliceAppeareance,
+										ySlicePositions, (cov_id+"_"+'sliceY'),
+										cur_coll, alpha,
+										height
+									);
+
+									var yLabel = $("<label>").attr('for', 'ySelectionRange');
+									yLabel.text((bbox[1] + lonStep*xSelection).toFixed(2)+' Latitude');
+									$('#volumecontrols').append('<input type="range" id="ySelectionRange">');
+									$('#volumecontrols').append(yLabel);
+									$("#ySelectionRange").addClass("volumeSlider");
+									$("#ySelectionRange").attr("max", imgY-1);
+									$("#ySelectionRange").attr("min", 0);
+									$("#ySelectionRange").attr("value", ySelection);
+									$("#ySelectionRange").attr("step", 1);
+
+									$('#volumecontrols').append('<input type="checkbox" id="showYSlice" class="sliceCheckbox" checked/>');
+									$("#showYSlice").on("input change", {
+										cur_coll: cur_coll,
+										id: (cov_id+"_"+'sliceY')
+									}, function(evt){
+										var d = evt.data;
+										for (var i = d.cur_coll._primitives.length - 1; i >= 0; i--) {
+											if(d.cur_coll._primitives[i].cov_id === d.id){
+												d.cur_coll.get(i).show = $("#showYSlice").is(':checked');
+											}
+										}
+									});
+
+									$("#ySelectionRange").on("input change", 
+										{
+											id: (cov_id+"_"+'sliceY'),
+											latStep: latStep,
+											cur_coll: cur_coll,
+											plot: self.p_plot,
+											imgX: imgX,
+											imgY: imgY,
+											imgZ: imgZ,
+											rasdata: rasdata,
+											height: height,
+											alpha: alpha,
+											bbox: bbox,
+											imageAppeareance: ySliceAppeareance,
+											label: yLabel
+										},
+										function(evt){
+											var d = evt.data;
+
+											var ySelection = Number($(this).val());
+											
+											for (var i = d.cur_coll._primitives.length - 1; i >= 0; i--) {
+												if(d.cur_coll._primitives[i].cov_id === d.id){
+													d.cur_coll.remove(d.cur_coll.get(i));
+												}
+											}
+											var lat = (bbox[1] + latStep*ySelection);
+
+											var ySlicePositions = [];
+											for (var x = 0; x < imgX; x++) {
+												ySlicePositions.push(bbox[0]+x*lonStep, lat);
+											}
+
+											var sliceY = new Float32Array(imgX*imgZ);
+
+											for (var z = 0; z < imgZ; z++) {
+												for (var x = 0; x < imgX; x++) {
+													sliceY[((imgZ-z) * imgX) + x] = rasdata[z][((imgY-ySelection) * imgX) + x];
+												}
+											}
+
+											d.label.text((bbox[1] + latStep*ySelection).toFixed(2)+' Latitude');
+
+											d.plot.removeDataset(d.id);
+											d.plot.addDataset(d.id, sliceY, d.imgX, d.imgZ);
+											d.plot.renderDataset(d.id);
+											d.imageAppeareance.material._textures.image.copyFrom(d.plot.canvas);
+
+											self.createCurtain(d.imageAppeareance,
+												ySlicePositions, d.id,
+												d.cur_coll, d.alpha,
+												d.height
+											);
+
+										}
+									);
+
+									// Creation of height slice
+									self.p_plot.addDataset((cov_id+'_sliceZ'), rasdata[zSelection], imgX, imgY);
+									self.p_plot.setDomain(range);
+									self.p_plot.setNoDataValue(-9999);
+									self.p_plot.setClamp(clamp[0],clamp[1]);
+									self.p_plot.renderDataset((cov_id+'_sliceZ'));
+
+									var heightZ = 0;
+
+									if (zSelection<=heights.length){
+										heightZ = heights[zSelection]*ELEVATION_EXAGERATION;
+									}
+
+									var zMaterial = new Cesium.Material.fromType('Image', {
+										image : self.p_plot.canvas.toDataURL(),
+										color: new Cesium.Color(1, 1, 1, alpha)
+									})
+
+									var zSliceAppeareance = new Cesium.MaterialAppearance({
+									  	translucent : true,
+									  	flat: true,
+									    material : zMaterial
+									  })
+
+									self.createAppereancePrimitive(zSliceAppeareance, bbox, (cov_id+'_sliceZ'), cur_coll, alpha, heightZ);
+
+									var zLabel = $("<label>").attr('for', 'zSelectionRange');
+									zLabel.text((height).toFixed(2)+' Height');
+									$('#volumecontrols').append('<input type="range" id="zSelectionRange">');
+									$('#volumecontrols').append(zLabel);
+									$("#zSelectionRange").addClass("volumeSlider");
+									$("#zSelectionRange").attr("max", imgZ-1);
+									$("#zSelectionRange").attr("min", 0);
+									$("#zSelectionRange").attr("value", zSelection);
+									$("#zSelectionRange").attr("step", 1);
+
+									$('#volumecontrols').append('<input type="checkbox" id="showZSlice" class="sliceCheckbox" checked/>');
+									$("#showZSlice").on("input change", {
+										cur_coll: cur_coll,
+										id: (cov_id+"_"+'sliceZ')
+									}, function(evt){
+										var d = evt.data;
+										for (var i = d.cur_coll._primitives.length - 1; i >= 0; i--) {
+											if(d.cur_coll._primitives[i].cov_id === d.id){
+												d.cur_coll.get(i).show = $("#showZSlice").is(':checked');
+											}
+										}
+									});
+
+									$("#zSelectionRange").on("input change", 
+										{
+											id: (cov_id+'_sliceZ'),
+											heights: heights,
+											cur_coll: cur_coll,
+											plot: self.p_plot,
+											imgX: imgX,
+											imgY: imgY,
+											imgZ: imgZ,
+											rasdata: rasdata,
+											height: height,
+											alpha: alpha,
+											bbox: bbox,
+											imageAppeareance: zSliceAppeareance,
+											label: zLabel
+										},
+										function(evt){
+											var d = evt.data;
+
+											var zSelection = Number($(this).val());
+											
+											for (var i = d.cur_coll._primitives.length - 1; i >= 0; i--) {
+												if(d.cur_coll._primitives[i].cov_id === d.id){
+													d.cur_coll.remove(d.cur_coll.get(i));
+												}
+											}
+											
+											d.plot.removeDataset(d.id);
+											d.plot.addDataset(d.id, rasdata[zSelection], d.imgX, d.imgY);
+											d.plot.renderDataset(d.id);
+											d.imageAppeareance.material._textures.image.copyFrom(d.plot.canvas);
+
+											var heightZ = 0;
+
+											if (zSelection<=heights.length){
+												heightZ = heights[zSelection]*ELEVATION_EXAGERATION;
+											}
+
+											d.label.text((heightZ).toFixed(2)+' Height');
+
+											self.createAppereancePrimitive(zSliceAppeareance, bbox, (cov_id+'_sliceZ'), cur_coll, alpha, heightZ);
 
 										}
 									);

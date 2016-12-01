@@ -51,6 +51,9 @@
 					show:{ effect: false, delay: 700}
 			    });
 
+			    $("body").append('<div id="volumecontrols">');
+			    $('#volumecontrols').hide();
+
 
 				var v = {}; //views
 				var m = {};	//models
