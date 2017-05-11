@@ -1509,6 +1509,11 @@ define(['backbone.marionette',
 				// Cesium has some issue ordering things when alpha is equal to 1
 				if(alpha==1){alpha=0.98;}
 
+				// Check for antimeridian crossing if there is do some wrapping
+				if(bbox[0]>=0 && bbox[2]<0){
+					bbox[2] += 360;
+				}
+
 				var instance = new Cesium.GeometryInstance({
 				  geometry : new Cesium.RectangleGeometry({
 				    rectangle : Cesium.Rectangle.fromDegrees(bbox[0],bbox[1],bbox[2],bbox[3]),
