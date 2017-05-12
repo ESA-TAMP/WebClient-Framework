@@ -1510,8 +1510,10 @@ define(['backbone.marionette',
 				if(alpha==1){alpha=0.98;}
 
 				// Check for antimeridian crossing if there is do some wrapping
-				if(bbox[0]>=0 && bbox[2]<0){
-					bbox[2] += 360;
+				if(bbox[2] - bbox[0] > 180){
+					var tmp = bbox[0] + 360;
+					bbox[0] = bbox[2];
+					bbox[2] = tmp;
 				}
 
 				var instance = new Cesium.GeometryInstance({
