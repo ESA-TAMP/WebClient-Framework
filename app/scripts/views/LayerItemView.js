@@ -103,7 +103,7 @@
                     	var url = layer.get('views')[0].urls[0]+"?";
                     	
 
-                    	if (url.indexOf('https') > -1){
+                    	/*if (url.indexOf('https') > -1){
 
                     		var layer = layer.get('download').id;
 							var req = "LAYERS=" + layer + "&TRANSPARENT=true&FORMAT=image%2Fpng&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&SRS=EPSG%3A4326";
@@ -139,7 +139,7 @@
 							    	}
 							    }
 							});
-	                    }else if(this.model.get('views')[0].protocol == "WPS"){
+	                    }else */if(this.model.get('views')[0].protocol == "WPS"){
 	                    	if(this.model.get('shc')){
 	                    		// If an shc file was loaded acticate layer as normal
 	                    		Communicator.mediator.trigger('map:layer:change', options);

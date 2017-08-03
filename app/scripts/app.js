@@ -189,7 +189,7 @@
 					console.log("Added product " + product.name );
 				}, this);
 
-				this.productServer = defaultFor(PRODUCT_URL, "http://vtdas-dave.zamg.ac.at/davprc/ows");
+				this.productServer = defaultFor(PRODUCT_URL, "https://oda.dlr.de/geoserver/ows");
 				var additional_products = [];
 
 				if (typeof USER_PRODUCTS !== 'undefined') {
@@ -219,7 +219,7 @@
 							if(p.id.indexOf("ground_measurements") > -1){
 								ground_measurements = true;
 							}
-							var wcs_id = p.id.split('_').slice(0,-2).join('_');
+							var wcs_id = p.id/*.split('_').slice(0,-2).join('_')*/;
 							var c_start_date = new Date(p.date[0].replace(/\./g,' '));
 							var c_end_date = new Date(p.date[1].replace(/\./g,' '));
 							c_end_date.setHours(23,59,59,999);

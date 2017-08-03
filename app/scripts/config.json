@@ -179,7 +179,7 @@
     }],
 
     "navBarConfig": {
-        "title": "TAMP",
+        "title": "OGC Testbed",
         "url": "http://vtpip.zamg.ac.at/",
         "items": [{
             "name": "Layers",
@@ -187,19 +187,10 @@
             "eventToRaise": "ui:open:layercontrol",
             "template": "LayerControl"
         }, {
-            "name": "Processes",
-            "icon": "fa-gears",
-            "eventToRaise": "ui:open:processes",
-            "template": "LayerControl"
-        }, {
             "name": "Tools",
             "icon": "fa-wrench",
             "eventToRaise": "ui:open:toolselection",
             "template": "ToolSelection"
-        }, {
-            "name": "About",
-            "icon": "fa-info-circle",
-            "eventToRaise": "dialog:open:about"
         }]
     },
 
@@ -213,8 +204,8 @@
             "end": "2014-07-15T01:30:00Z"
         },
         "display": {
-            "start": "2015-01-13T01:00:00Z",
-            "end": "2016-01-20T01:00:00Z"
+            "start": "2016-09-20T01:00:00Z",
+            "end": "2016-09-29T01:00:00Z"
         }
     },
 

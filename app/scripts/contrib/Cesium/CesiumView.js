@@ -74,7 +74,7 @@ define(['backbone.marionette',
 		'FileSaver',
 		'geotiff',
 		'plotty',
-		'analytics'
+		'analytics',
 	],
 	function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
 			 Tmpl_get_time_data, Tmpl_wcs_get_coverage) {
@@ -2268,7 +2268,10 @@ define(['backbone.marionette',
 
 		    			this.p_plot.setColorScale(colorscale);
 
-	        			$.post( url, Tmpl_get_time_data({
+		    			var request = "https://oda.dlr.de/geoserver/ows" + '?service=WCS&version=2.0.1&request=DescribeCoverage&coverageid='+collection;
+
+
+	        			/*$.post( url, Tmpl_get_time_data({
 							"collection": collection,
 							"begin_time": getISODateTimeString(this.begin_time),
 							"end_time": getISODateTimeString(this.end_time),
@@ -2276,43 +2279,47 @@ define(['backbone.marionette',
 
 
 						.done(function( data ) {
+
 							var coverages = Papa.parse(data, {
 								header: true,
 								skipEmptyLines: true
-							});
+							});*/
 
-							// Add old coverages to current selection to check 
-							// later possible things that have to bee freed
-							/*var tmp_current_covs = coverages.data;
-							for (var i = 0; i < self.currentCoverages.length; i++) {
-								if(!_.find(coverages.data, function(c){
-										return c.identifier == self.currentCoverages[i].identifier;
-									})
-								){
-									tmp_current_covs.push(self.currentCoverages[i]);
-								}
-							}
-							self.currentCoverages = tmp_current_covs;*/
+						$.get(request)
 
-							self.currentCoverages = coverages.data;
+							.done(function( data ) {
+
+			                  var timedata = [].map.call(
+			                    data.querySelectorAll("TimeInstant"), function(timeinstant) {
+			                      return  [new Date(timeinstant.querySelector("timePosition").textContent)];
+
+			                  });
+
+			                  var heightdata = [].map.call(
+			                    data.querySelectorAll("SingleValue"), function(heightpoint) {
+			                      return +heightpoint.textContent;
+			                  });
+
+			                  var object = {
+			                    id: data.querySelector('CoverageId').textContent,
+			                    heights: heightdata,
+			                    bbox: [-3, 42, 20, 60]
+			                  };
 
 
-							function identicalBbox(array) {
-								if (array.length == 1 || array.length == 0)
-									return false;
-							    for(var i = 0; i < array.length - 1; i++) {
-							        if(array[i].bbox != array[i+1].bbox) {
-							            return false;
-							        }
-							    }
-							    return true;
-							}
+			                  for (var i = 0; i < timedata.length; i++) {
+			                    timedata[i].push(object);
+			                  }
 
-							// Now we have a list of all currently selected coverages
-							// We check if the coverages are stacked (one over the other)
-							// i.e. same bounding box
-							var stacked = identicalBbox(coverages.data);
+			                  var stacked = true;
+
 							var stacked_prim = null;
+
+
+
+							/*for (var i = 0; i < heightdata.length; i++) {
+								//heightdata[i]
+							//}*/
 
 
 							if(!stacked){
@@ -2371,142 +2378,73 @@ define(['backbone.marionette',
 
 							var deferreds = [];
 							self.currentDownload = 0;
+							var coverages = {}
+							coverages.data = [];
 
-							// Let us sort them by start date
-							coverages.data = _.sortBy(coverages.data, function(c){ return Date.parse(c.starttime); });
 
-							for (var i = coverages.data.length - 1; i >= 0; i--) {
-
-								var bbox = coverages.data[i].bbox;
-								bbox = bbox.substring(1, bbox.length - 1).split(",").map(parseFloat);
+							for (var i = 0; i < timedata.length; i++) {
+								var cov_id = timedata[i][1].id + i;
 								//var request = url + "?service=WCS&request=GetCoverage&version=2.0.1&coverageid="+coverages.data[i].identifier;
+								var request = 
+								'https://oda.dlr.de/geoserver/ows?service=WCS&version=2.0.1&request=GetCoverage&coverageid='+timedata[i][1].id+
+								'&SUBSET=elevation(0)'+
+								'&SUBSET=time("'+getISODateTimeString(timedata[i][0])+'")'+
+								'&SUBSET=Lat(42,60)&SUBSET=Long(-3,20)&SUBSETCRS=http://www.opengis.net/def/crs/EPSG/0/4326';
 
-								//var request = url.substring(0,url.length-11) + "/coverage/"+coverages.data[i].identifier+".tif";
-								var request = url.substring(0,url.length-11) + "/davprc/coverage/"+coverages.data[i].identifier;
-								//console.log(request);
+								var bbox = timedata[i][1].bbox;
+
+								//deferreds.push(self.addCoverage(request, cov_id));
+
+								var obj = {
+									identifier:cov_id,
+									starttime: getISODateTimeString(timedata[i][0]),
+									request: request
+								};
+
+								coverages.data.push(obj);
+
+							}
 
 
-								///////////////////////////////////////////////////////////////////////////////////////////////////////////
-								// TODO: Remove
-								// Testing overwrite
-								/*
+							for (var i = 0; i < coverages.data.length; i++) {
+								cov_id = coverages.data[i].identifier;
+								request = coverages.data[i].request;
 
-								if (collection == "Cloudsat"){
-									request = "http://demo.v-manip.eox.at/Cloudsat_Reflectivity_2013137113720_0005.tif";
-								}
-
-								*/
-								///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-								//if(self.current_product.get("ground_measurements")){
-								if(product.get("ground_measurements")){
-
-									$.ajax({
-										dataType:'arraybuffer',
-										type:'GET',
-										dataType: 'xml',
-										url: request
-									})
-									.done(function( xmldata ) {
-
-										var data = xmldata.getElementsByTagName("data");
-										var id = xmldata.getElementsByTagName("siteName")[0].textContent;
-										var latitude = Number(xmldata.getElementsByTagName("siteLatitude")[0].textContent);
-										var longitude = Number(xmldata.getElementsByTagName("siteLongitude")[0].textContent);
-										
-										var field = xmldata.getElementsByTagName("field")[0].textContent.replace(/ /g,"_");
-										//console.log(id, field);
-										for (var i = data.length - 1; i >= 0; i--) {
-											//console.log(data[i].getElementsByTagName("timeStart")[0].textContent);
-											//console.log(data[i].getElementsByTagName("value")[0].textContent);
-											
-											var obj = {};
-											obj['id'] = id;
-											obj[field] = Number(data[i].getElementsByTagName("value")[0].textContent);
-											obj['timestamp'] = new Date(data[i].getElementsByTagName("timeStart")[0].textContent);
-											obj['field'] = field;
-											self.special1dData.push(obj);
+								if(stacked && i == coverages.data.length-1){
+									// If the collection is stacked and this is the last element (in time)
+									// of the list it means the primitive is not available already and needs to be created
+									// or we have found an already created primite and saved it to stacked primitive
+									if(self.p_plot.datasetAvailable(cov_id)) {
+										self.p_plot.removeDataset(cov_id);
+									}
+									// Check if selection active
+									if(self.bboxsel){
+										if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
+											deferreds.push(self.loadCoverage(request, bbox, cov_id, cur_coll, product, stacked_prim));
+											// We need to add it to the stacked list as it will be compared to to see if part of a stack collection
+											self.stackedDataset.push(cov_id);
 										}
-
-										var pos = new Cesium.Cartesian3.fromDegrees(longitude, latitude);
-										var bil_coll = cur_coll.add(new Cesium.BillboardCollection());
-										var icon = pinimage;
-										if(self.selectedEntityId == id){
-											icon = pinimage_selected;
-										}
-										var b = bil_coll.add({
-											id: id,
-											position : pos,
-											verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-											image: icon
-										});
-										self.primitiveMapping[id] = b;
-										if(self.selectedEntityId == id){
-											self.pickEntity({primitive:b, id:id}, latitude, longitude);
-										}
-										cur_coll.show = true;
-
-									});
+									}else{
+										deferreds.push(self.loadCoverage(request, bbox, cov_id, cur_coll, product, stacked_prim));
+										// We need to add it to the stacked list as it will be compared to to see if part of a stack collection
+										self.stackedDataset.push(cov_id);
+									}
 								}else{
-
-									// Check if coverage is already in collection, if not add them
-									if(
-										!_.find(cur_coll._primitives, function(p){
-											return p.cov_id == coverages.data[i].identifier;
-										})
-									){
-
-										var bbox = bbox;
-										var cov_id = coverages.data[i].identifier;
-										var plot = self.p_plot;
-
-										if(!stacked){
-											// If not stacked just request and create primitves for all coverages
-											// Check if selection active
-											if(self.bboxsel){
-												if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
-													deferreds.push(self.loadCoverage(request, bbox, cov_id, cur_coll, product, null));
-												}
-											}else{
-												deferreds.push(self.loadCoverage(request, bbox, cov_id, cur_coll, product, null));
-											}
-										}else if(stacked && i == coverages.data.length-1){
-											// If the collection is stacked and this is the last element (in time)
-											// of the list it means the primitive is not available already and needs to be created
-											// or we have found an already created primite and saved it to stacked primitive
-											if(self.p_plot.datasetAvailable(cov_id)) {
-												self.p_plot.removeDataset(cov_id);
-											}
-											// Check if selection active
-											if(self.bboxsel){
-												if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
-													deferreds.push(self.loadCoverage(request, bbox, cov_id, cur_coll, product, stacked_prim));
-													// We need to add it to the stacked list as it will be compared to to see if part of a stack collection
-													self.stackedDataset.push(cov_id);
-												}
-											}else{
-												deferreds.push(self.loadCoverage(request, bbox, cov_id, cur_coll, product, stacked_prim));
-												// We need to add it to the stacked list as it will be compared to to see if part of a stack collection
-												self.stackedDataset.push(cov_id);
+									// We only request the data if it is not already available
+									if(!self.p_plot.datasetAvailable(cov_id)) {
+										// It is stacked but this is any other coverage where for now we only need the data
+										// but do not actually visualize it, so we do not need to create a primitive
+										if(self.bboxsel){
+											if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
+												deferreds.push(self.addCoverage(request, cov_id));
 											}
 										}else{
-											// We only request the data if it is not already available
-											if(!self.p_plot.datasetAvailable(cov_id)) {
-												// It is stacked but this is any other coverage where for now we only need the data
-												// but do not actually visualize it, so we do not need to create a primitive
-												if(self.bboxsel){
-													if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
-														deferreds.push(self.addCoverage(request, cov_id));
-													}
-												}else{
-													deferreds.push(self.addCoverage(request, cov_id));
-												}
-											}
+											deferreds.push(self.addCoverage(request, cov_id));
 										}
 									}
 								}
+							}
 
-							};
 
 							self.downloadTotal = deferreds.length;
 
@@ -2589,24 +2527,6 @@ define(['backbone.marionette',
 						                	$("#pickingresults").hide();
 						                	$("#pickingresults").empty();
 						                });
-
-										/*var h = self.timeseries[0].data.length;
-										var w = self.timeseries.length;
-										var timeseriesdata = new Float32Array(h * w);
-										for (var i=0; i<h; i++){
-											for(var j=0; j<w; j++){
-												timeseriesdata[(i*w)+j] = self.timeseries[j].data[i];
-											}
-										}
-										if(self.p_plot.datasetAvailable("timeseries")){
-											self.p_plot.removeDataset("timeseries");
-										}
-										self.p_plot.addDataset("timeseries", timeseriesdata, w, h);
-										self.p_plot.setDomain([3.792e+16, 4.949e+18]);
-										self.p_plot.setClamp(true,true);
-										self.p_plot.renderDataset("timeseries");
-										var tmp = self.p_plot.canvas.toDataURL();
-										window.open(tmp,'_blank');*/
 
 										self.timeseries = [];
 
@@ -2702,14 +2622,6 @@ define(['backbone.marionette',
 											        		$("#fast-play-button").html('<i class="fa fa-forward"></i>');
 											        	}
 													}
-
-													/*if (!self.playback){
-														self.playback = true;
-														tick();
-										        	}else{
-										        		self.playback = false;
-										        		$("#play-button").html('<i class="fa fa-play"></i>');
-										        	}*/
 
 										    	}
 										    );

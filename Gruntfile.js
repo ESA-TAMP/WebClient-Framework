@@ -72,18 +72,6 @@ module.exports = function (grunt) {
                 // change this to '0.0.0.0' to access the server from outside
                 hostname: '0.0.0.0'
             },
-            proxies: [{
-                context: '/vires00',
-                host: 'vires2.eox.at',
-                /*host: 'localhost',
-                port: 8001,
-                rewrite: {
-                    '^/vires00': ''
-                },*/
-                https: false,
-                changeOrigin: true,
-                xforward: false
-            }],            
             livereload: {
                 options: {
                     middleware: function (connect) {
