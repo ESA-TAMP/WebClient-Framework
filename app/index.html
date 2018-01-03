@@ -32,8 +32,16 @@
                 baseUrl : "scripts/"
             };
 
-                //var PRODUCT_URL = "https://oda.dlr.de/geoserver/ows";
-                var PRODUCT_URL = undefined;
+                var PRODUCT_URL = "https://oda.dlr.de/geoserver/wcs";
+
+                // [minlong, minlat, maxlong, maxlat]
+                var COLLECTION_BBOX = [-3, 42, 20, 60];
+
+                // Time shown in timeslider
+                var COLLECTION_TIME = [ 
+                    new Date("Sep. 20, 2016"),
+                    new Date("Sep. 24, 2016")
+                ];
                 
                 var USER_PRODUCTS = [
                     
@@ -53,7 +61,7 @@
                                         "range": 
                                         [
                                             0.0000000001,
-                                            0.005
+                                            0.0002
                                         ],
                                         "uom":"AOD",
                                         

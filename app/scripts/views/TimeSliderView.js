@@ -72,8 +72,8 @@
                 var selectionstart = new Date(this.options.brush.start);
                 var selectionend = new Date(this.options.brush.end);
 
-                var displaystart = new Date(this.options.display.start);
-                var displayend = new Date(this.options.display.end);
+                var displaystart = defaultFor(COLLECTION_TIME[0], new Date(this.options.display.start));
+                var displayend = defaultFor(COLLECTION_TIME[1], new Date(this.options.display.end));
                 /*var selectionstart, selectionend;
 
                 if(localStorage.getItem('timeSelection')){
