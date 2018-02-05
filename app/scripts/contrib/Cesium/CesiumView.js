@@ -318,13 +318,13 @@ define(['backbone.marionette',
 				this.map.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
 				handler.setInputAction(function(click) {
-					//var pickedObject = self.map.scene.pick(click.position);
+					var pickedObject = self.map.scene.pick(click.position);
 
 					
 					 //hide the selectionIndicator
 					self.map.selectionIndicator.viewModel.selectionIndicatorElement.style.visibility = 'hidden'; 
 
-					/*if(pickedObject && pickedObject.id && 
+					if(pickedObject && pickedObject.id && 
 					  (pickedObject.id.id == 'selectionrectangle' || 
 					   pickedObject.id.id == 'needle')){
 						return;
@@ -343,7 +343,7 @@ define(['backbone.marionette',
 						if(pickedObject.id){
 							self.pickEntity(pickedObject);
 						}
-					}*/
+					}
 					
 				    if (that.pickingActive) {
 				      	/*var offset = $(this).offset()
