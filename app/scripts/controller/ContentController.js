@@ -16,6 +16,7 @@
             initialize: function(options){
             	this.listenTo(Communicator.mediator, "dialog:open:about", this.onDialogOpenAbout);
             	this.listenTo(Communicator.mediator, "ui:open:layercontrol", this.onLayerControlOpen);
+            	this.listenTo(Communicator.mediator, "ui:open:dataManagement", this.onDataManagementOpen);
             	this.listenTo(Communicator.mediator, "ui:open:toolselection", this.onToolSelectionOpen);
 				this.listenTo(Communicator.mediator, "ui:open:options", this.onOptionsOpen);
 				this.listenTo(Communicator.mediator, "ui:open:storybanner", this.StoryBannerOpen);
@@ -45,10 +46,21 @@
                 if (_.isUndefined(App.layout.isClosed) || App.layout.isClosed) {
 				  	App.leftSideBar.show(App.layout);
 	                App.layout.baseLayers.show(App.baseLayerView);
-	                App.layout.products.show(App.productsView);
+	                App.layout.products.show(App.favouritesView);
 	                App.layout.overlays.show(App.overlaysView);
 				} else {
 					App.layout.close();
+                }
+               
+			},
+			onDataManagementOpen: function(event){
+				//We have to render the layout before we can
+                //call show() on the layout's regions
+                if (_.isUndefined(App.dataManagementLayout.isClosed) || App.dataManagementLayout.isClosed) {
+				  	App.rightSideBar.show(App.dataManagementLayout);
+	                App.dataManagementLayout.products.show(App.productsView);
+				} else {
+					App.dataManagementLayout.close();
                 }
                
 			},

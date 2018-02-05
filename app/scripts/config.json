@@ -187,6 +187,11 @@
             "eventToRaise": "ui:open:layercontrol",
             "template": "LayerControl"
         }, {
+            "name": "Data Management",
+            "icon": "fa-book",
+            "eventToRaise": "ui:open:dataManagement",
+            "template": "DataManagement"
+        }, {
             "name": "Processes",
             "icon": "fa-gears",
             "eventToRaise": "ui:open:processes",
@@ -290,6 +295,12 @@
     }, {
         "id": "UseCase_MagneticModels",
         "template": "hbs!tmpl/UseCase_MagneticModels"
+    }, {
+        "id": "DataManagement",
+        "template": "hbs!tmpl/DataManagement"
+    }, {
+        "id": "DataItem",
+        "template": "hbs!tmpl/DataItem"
     }],
 
     "selectionTools": [{
