@@ -19,6 +19,8 @@
 				'drop' : 'drop',
 				'change': 'onChange',
 				'click .fa-adjust': 'onOpenSlider',
+				'click .favouriteContainer.active': 'onDeactivateProduct',
+				'click .favouriteContainer.inactive': 'onActivateProduct',
 				'slide .ui-slider': 'onOpacityAdjust'
 			},
 
@@ -202,6 +204,41 @@
 		            this.$('.fa-adjust').popover('hide');
 		        }
 		    },
+		    onActivateProduct: function(evt){
+		    	this.model.set('favourite', true);
+		    	globals.favouritesView.collection = globals.products.favourites();
+		    	var favs = [];
+		    	for (var i = 0; i < globals.favouritesView.collection.models.length; i++) {
+		    		favs.push(globals.favouritesView.collection.models[i].get('download').id);
+		    	}
+                localStorage.setItem('favourite', JSON.stringify(favs));
+
+		    	$(this.el).find('.favouriteIcon').removeClass('fa-star-o');
+		    	$(this.el).find('.favouriteIcon').addClass('fa-star');
+		    	$(this.el).find('.favouriteIcon').parent().removeClass('inactive');
+		    	$(this.el).find('.favouriteIcon').parent().addClass('active');
+		    	globals.favouritesView.render();
+		    },
+		    onDeactivateProduct: function(evt){
+		    	$(this.el).find('.favouriteIcon').removeClass('fa-star');
+		    	$(this.el).find('.favouriteIcon').addClass('fa-star-o');
+		    	$(this.el).find('.favouriteIcon').parent().removeClass('active');
+		    	$(this.el).find('.favouriteIcon').parent().addClass('inactive');
+		    	this.model.set('favourite', false);
+		    	this.model.set('display', false);
+		    	var options = { id: this.model.get("download").id, name: this.model.get('name'), isBaseLayer: false, visible: false };
+		    	Communicator.mediator.trigger('map:layer:change', options);
+		    	globals.favouritesView.collection = globals.products.favourites();
+		    	var favs = [];
+		    	for (var i = 0; i < globals.favouritesView.collection.models.length; i++) {
+		    		favs.push(globals.favouritesView.collection.models[i].get('download').id);
+		    	}
+                localStorage.setItem('favourite', JSON.stringify(favs));
+                globals.favouritesView.render();
+		    },
+
+		    
+
 
 		    onOpacityAdjust: function(evt, ui) {
 		    	this.model.set("opacity", ui.value/100);

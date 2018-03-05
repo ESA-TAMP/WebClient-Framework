@@ -8,6 +8,7 @@
 			'globals',
 			'regions/DialogRegion', 'regions/UIRegion',
 			'layouts/LayerControlLayout',
+            'layouts/DataManagementLayout',
 			'layouts/ToolControlLayout',
 			'layouts/OptionsLayout',
 			'core/SplitView/WindowView',
@@ -23,7 +24,7 @@
 		],
 
 		function(Backbone, globals, DialogRegion,
-			UIRegion, LayerControlLayout, ToolControlLayout, OptionsLayout, WindowView, Communicator) {
+			UIRegion, LayerControlLayout, DataManagementLayout, ToolControlLayout, OptionsLayout, WindowView, Communicator) {
 
 		var Application = Backbone.Marionette.Application.extend({
 			initialize: function(options) {
@@ -149,8 +150,22 @@
                 var domain = [];
                 var range = [];
 
+                if (localStorage.getItem('favourite') === null) {
+
+                    localStorage.setItem('favourite', JSON.stringify([
+                        'FLEXPART_SO2__2D_175__DU_176_4326_01',
+                        'WRFCHEM_EYJA_VASH_AL_D01__2D_103_4326_01'
+                    ]));
+                }
+
+                var favourites = JSON.parse(localStorage.getItem('favourite'));
+
 				_.each(config.mapConfig.products, function(product) {
 					var p_color = product.color ? product.color : autoColor.getColor();
+                    var favourite = false;
+                    if(favourites.indexOf(product.download.id)!=-1){
+                        favourite = true;
+                    }
 					globals.products.add(
 						new m.LayerModel({
 							name: product.name,
@@ -177,7 +192,8 @@
 							model: product.model,
 							coefficients_range: product.coefficients_range,
 							satellite: product.satellite,
-							clamps: Cesium.defaultFor(product.clamps, [false, false])
+							clamps: Cesium.defaultFor(product.clamps, [false, false]),
+                            favourite: favourite
 						})
 					);
 
@@ -224,6 +240,11 @@
 							var c_end_date = new Date(p.date[1].replace(/\./g,' '));
 							c_end_date.setHours(23,59,59,999);
 
+                            var favourite = false;
+                            if(favourites.indexOf(wcs_id)!=-1){
+                                favourite = true;
+                            }
+
 							var args = {
 								name: p.name,
 								visible: defaultFor(p.visible,false),
@@ -245,7 +266,8 @@
 									url: this.productServer
 								},
 								processes: [],
-								parameters: p.parameters
+								parameters: p.parameters,
+                                favourite: favourite
 							};
 
 							if(ground_measurements){
@@ -369,11 +391,36 @@
                 	itemView: v.LayerItemView.extend({
                 		template: {
                 			type:'handlebars',
-                			template: t.CheckBoxLayer},
+                			template: t.DataItem},
                 		className: "sortable-layer"
                 	}),
+                    
                 	className: "sortable"
                 });
+
+                /*this.productsView.setFilter(function (child, index, collection) {
+                  return false;
+                });*/
+
+                this.favouritesView = new v.LayerSelectionView({
+                    collection:globals.products.favourites(),
+                    itemView: v.LayerItemView.extend({
+                        template: {
+                            type:'handlebars',
+                            template: t.CheckBoxLayer},
+                        className: "sortable-layer"
+                    }),
+                    filter: function (child, index, collection) {
+                      return child.get('favourite');
+                    },
+                    className: "sortable"
+                });
+
+                globals.favouritesView = this.favouritesView;
+
+                /*this.favouritesView.setFilter(function (child, index, collection) {
+                  return false;
+                });*/
 
                 this.overlaysView = new v.BaseLayerSelectionView({
                 	collection: globals.overlays,
@@ -390,6 +437,9 @@
 
                 // Create layout that will hold the child views
                 this.layout = new LayerControlLayout();
+
+                // Create layout that will hold the child views
+                this.dataManagementLayout = new DataManagementLayout();
 
 
                 // Define collection of selection tools
@@ -484,6 +534,9 @@
 
 
                 this.processesView = new v.ProcessesView();
+
+                // Open layers panel as it is basically always used when opening client
+                Communicator.mediator.trigger("ui:open:layercontrol");
 
 
 			},

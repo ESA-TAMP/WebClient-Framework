@@ -275,6 +275,40 @@ button[active=active] {
 }
 
 /*
+ * Data management
+ */
+ .datamanagement {
+    width: 56em;
+    top: 10em;
+    right: 3em;
+    font-size: .9em;
+    position: absolute;
+}
+.datamanagement ul {
+    margin: 0 0 1em 1.5em;
+    padding: 0;
+}
+.datamanagement li {
+    margin: .2em 0 .8em 0;
+    padding: 0 0 0 .6em;
+}
+.datamanagement ul input {
+    margin-top: 2px;
+}
+.datamanagement .sortable-layer {
+  margin: .3em -.5em 0 -2em;
+  padding: 0;
+}
+.datamanagement .sortable-layer .form-control {
+  font-size: 1em;
+  line-height: 1.1em;
+}
+
+.datamanagement .favouriteContainer{
+  cursor: pointer;
+}
+
+/*
  * Layer control styles
  */
 .layercontrol {
