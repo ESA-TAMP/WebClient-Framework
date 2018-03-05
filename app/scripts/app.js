@@ -241,7 +241,7 @@
 							c_end_date.setHours(23,59,59,999);
 
                             var favourite = false;
-                            if(favourites.indexOf(p.id)!=-1){
+                            if(favourites.indexOf(wcs_id)!=-1){
                                 favourite = true;
                             }
 
@@ -416,6 +416,8 @@
                     className: "sortable"
                 });
 
+                globals.favouritesView = this.favouritesView;
+
                 /*this.favouritesView.setFilter(function (child, index, collection) {
                   return false;
                 });*/
@@ -532,6 +534,9 @@
 
 
                 this.processesView = new v.ProcessesView();
+
+                // Open layers panel as it is basically always used when opening client
+                Communicator.mediator.trigger("ui:open:layercontrol");
 
 
 			},

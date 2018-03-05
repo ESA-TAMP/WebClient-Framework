@@ -182,7 +182,7 @@
         "title": "TAMP",
         "url": "http://vtpip.zamg.ac.at/",
         "items": [{
-            "name": "Layers",
+            "name": "Favourite Layers",
             "icon": "fa-globe",
             "eventToRaise": "ui:open:layercontrol",
             "template": "LayerControl"
