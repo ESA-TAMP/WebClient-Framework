@@ -150,11 +150,16 @@
                 var domain = [];
                 var range = [];
 
+
                 if (localStorage.getItem('favourite') === null) {
 
                     localStorage.setItem('favourite', JSON.stringify([
-                        'FLEXPART_SO2__2D_175__DU_176_4326_01',
-                        'WRFCHEM_EYJA_VASH_AL_D01__2D_103_4326_01'
+                        'MYD04_Image_Optical_Depth_Land_And_Ocean',
+                        'MOD04_Image_Optical_Depth_Land_And_Ocean',
+                        'WRFCHEM_AOD550',
+                        'WRFCHEM_DUSTcol',
+                        'WRFCHEM_PM25surf',
+                        'WRFCHEM_PM10surf'
                     ]));
                 }
 

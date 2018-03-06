@@ -89,9 +89,20 @@
                 if (this.model.get('view').isBaseLayer)
                 	isBaseLayer = true;
 
-                var options = { id: this.model.get("download").id, name: this.model.get('name'), isBaseLayer: isBaseLayer, visible: evt.target.checked };
+                var options = {
+            		name: this.model.get('name'),
+            		isBaseLayer: isBaseLayer,
+            		visible: evt.target.checked
+            	};
 
                 if( !isBaseLayer && evt.target.checked ){
+
+                	var id;
+                	var downld = defaultFor(this.model.get('download'), {});
+                	if(downld.hasOwnProperty('id')){
+                		options.id = downld.id;
+                	}
+
 
                 	var layer = globals.products.find(function(model) { return model.get('download').id == options.id; });
                     if (layer != -1  && !(typeof layer === 'undefined')) {
