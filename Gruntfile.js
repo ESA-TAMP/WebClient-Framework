@@ -348,9 +348,10 @@ module.exports = function (grunt) {
                         'bower_components/backbone.wreqr/lib/amd/backbone.wreqr.min.js',
                         'bower_components/backbone.babysitter/lib/amd/backbone.babysitter.min.js',
                         'bower_components/requirejs-text/text.js',
-                        'bower_components/require-handlebars-plugin/Handlebars.js',
+                        'bower_components/require-handlebars-plugin/hbs/handlebars.js',
                         'bower_components/require-handlebars-plugin/hbs/i18nprecompile.js',
                         'bower_components/require-handlebars-plugin/hbs/json2.js',
+                        'bower_components/require-handlebars-plugin/hbs/underscore.js',
                         'bower_components/require-handlebars-plugin/hbs.js',
                         'bower_components/backbone.marionette.handlebars/backbone.marionette.handlebars.min.js',
                         'bower_components/bootstrap/dist/*/*',
@@ -361,7 +362,7 @@ module.exports = function (grunt) {
                         'bower_components/cesium/Build/Cesium/**',
                         'bower_components/papaparse/papaparse.min.js',
                         'bower_components/plotty/dist/plotty.min.js',
-						'bower_components/geotiffjs/dist/geotiff.min.js',
+						'bower_components/geotiffjs/index.js',
                         'scripts/vendor/**',
                     ]
                 },{

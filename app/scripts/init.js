@@ -104,7 +104,7 @@
             tmpl: "../templates",
 
             /* handlebars from the require handlerbars plugin below */
-            handlebars: '../bower_components/require-handlebars-plugin/Handlebars',
+            handlebars: '../bower_components/require-handlebars-plugin/handlebars',
 
             /* require handlebars plugin - Alex Sexton */
             i18nprecompile: '../bower_components/require-handlebars-plugin/hbs/i18nprecompile',
@@ -118,7 +118,7 @@
             keypress: '../bower_components/Keypress/keypress',
 
             papaparse: '../bower_components/papaparse/papaparse.min',
-			geotiff: '../bower_components/geotiffjs/dist/geotiff.min',
+			geotiff: '../bower_components/geotiffjs/index',
             plotty: '../bower_components/plotty/dist/plotty.min'
 
         },
