@@ -1424,8 +1424,8 @@ define(['backbone.marionette',
 							"range_max": range[1],
 						}))
 
-							.done(function( data ) {	
-								that.map.scene.imageryLayers.remove(ces_layer);									
+							.done(function( data ) {
+								that.map.scene.imageryLayers.remove(ces_layer);
 							    imageURI = "data:image/gif;base64,"+data;
 							    var imagelayer = new Cesium.SingleTileImageryProvider({url: imageURI});
 								ces_layer = that.map.scene.imageryLayers.addImageryProvider(imagelayer, index);
@@ -2295,9 +2295,6 @@ define(['backbone.marionette',
 			            request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
 			          }
 
-		          	//http://vtdas-dave.zamg.ac.at//wcs?service=WCS&Request=GetCoverage&version=2.0.0&subset=t(1535811503)&subset=Lat(-4.688330529581465,-14.478850661434036)&subset=Long(35.86456036862774,41.114085751074356)&CoverageId=S5P_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_L2_4326_0035&format=image/tiff
-					//http://vtdas-dave.zamg.ac.at/wcs?service=WCS&Request=DescribeCoverage&version=2.0.0&coverageID=S5P_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_L2_4326_0035
-
 			          $.get(request)
 			            .success(function(resp) {
 
@@ -2316,11 +2313,25 @@ define(['backbone.marionette',
 				                  var hasEndTime = false;
 				                  var wcsEndpoint = entries[ee]['atom:source'];
 				                  
-				                  /*if(b!=null){
+				                  if(b!=null){
 				                  	wcsEndpoint = wcsEndpoint +
-					                  	'&subset=Lat('+b[1]+','+b[3]+')'+
-					                  	'&subset=Long('+b[0]+','+b[2]+')';
-				                  }*/
+					                  	'&subset=Lat('+b[0]+','+b[2]+')'+
+					                  	'&subset=Long('+b[1]+','+b[3]+')';
+					                  // Intersect product bbox and bbox selection
+					                  if(lowCorn[0]<b[0]){
+					                  	lowCorn[0] = b[0];
+					                  }
+					                  if(lowCorn[1]<b[1]){
+					                  	lowCorn[1] = b[1];
+					                  }
+					                  if(upperCorn[0]>b[2]){
+					                  	upperCorn[0] = b[2];
+					                  }
+					                  if(upperCorn[1]>b[3]){
+					                  	upperCorn[1] = b[3];
+					                  }
+				                  }
+
 				                  //wcsEndpoint += '&scale=0.1';
 
 				                  if(summ.indexOf('<strong>End</strong>') !== -1){
@@ -2832,6 +2843,14 @@ define(['backbone.marionette',
 
 					}else{
 						//this.map.scene.primitives.remove(this.coverages_collections[product.get("views")[0].id]);
+						for (var p=0; p<cur_coll._primitives.length; p++){
+							var prim = cur_coll._primitives[p];
+							if(prim.cov_id){
+								this.p_plot.removeDataset(prim.cov_id);
+							}
+							cur_coll.remove(prim);
+						};
+
 						cur_coll.show = false;
 					}
 
@@ -3324,6 +3343,24 @@ define(['backbone.marionette',
 					}
 					
 				}
+
+				var that = this;
+				globals.products.each(function(product) {
+					// Cleanup previous coverage data as we need to fetch
+					// all new with new bbox
+					var cur_coll = that.coverages_collections[product.get("views")[0].id];
+					for (var p=0; p<cur_coll._primitives.length; p++){
+						var prim = cur_coll._primitives[p];
+						if(prim.cov_id){
+							that.p_plot.removeDataset(prim.cov_id);
+						}
+						cur_coll.remove(prim);
+					};
+	            	if (product.get("views")[0].protocol == "WCS"){
+		        		that.checkCoverages(product, product.get("visible"));
+
+	        		}
+	        	});
 
 
 			},

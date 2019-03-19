@@ -95,7 +95,7 @@
             		visible: evt.target.checked
             	};
 
-                if( !isBaseLayer && evt.target.checked ){
+                if( !isBaseLayer ){
 
                 	var id;
                 	var downld = defaultFor(this.model.get('download'), {});
