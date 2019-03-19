@@ -20,3 +20,22 @@
 .tooltip{
 	z-index: 1031!important;
 }
+
+#calendarselection{
+  position: absolute;
+  right: 2px;
+  top: 2px;
+  z-index: 1104;
+}
+
+#calendarwidgetholder{
+  position: absolute;
+  right: 0px;
+  top: -260px;
+}
+
+
+.record{
+  stroke: black!important;
+}
+

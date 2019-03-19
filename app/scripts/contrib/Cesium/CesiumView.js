@@ -1607,7 +1607,17 @@ define(['backbone.marionette',
 
 				if(gt === undefined){gt = GeoTIFF.parse(data)}
 				if(img === undefined) {img = gt.getImage(0);}
-				if(rasdata === undefined) {rasdata = img.readRasters()}
+				if(rasdata === undefined) {rasdata = img.readRasters();}
+				if(rasdata === undefined) {
+					// Something went wrong reading the tiff, show message and stop here
+					$("#error-messages").append(
+                          '<div class="alert alert-warning alert-info">'+
+                          '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>'+
+                          'There was an error accessing the current dataset' +
+                        '</div>'
+	                );
+	                return;
+				}
 				var meta = img.getGDALMetadata();
 				var self = this;
 
@@ -2228,7 +2238,7 @@ define(['backbone.marionette',
             checkCoverages: function(product,visible){
 
             	// Remove possible timetick and play button
-            	Communicator.mediator.trigger("date:tick:select", false);
+            	//Communicator.mediator.trigger("date:tick:select", false);
             	$('#playercontrols').hide();
             	$('#timestamp').hide();
 
@@ -2268,31 +2278,75 @@ define(['backbone.marionette',
 
 		    			this.p_plot.setColorScale(colorscale);
 
-	        			$.post( url, Tmpl_get_time_data({
-							"collection": collection,
-							"begin_time": getISODateTimeString(this.begin_time),
-							"end_time": getISODateTimeString(this.end_time),
-						}), "xml")
 
+		    			var request = 
+				            'http://vtdas-dave.zamg.ac.at/pycsw/pycsw/csw.py?mode=opensearch'+
+				            '&service=CSW&version=2.0.2&request=GetRecords&elementsetname=brief'+
+				            '&typenames=csw:Record&resulttype=results'+
+				            '&time='+getISODateTimeString(this.begin_time)+'/'+getISODateTimeString(this.end_time)+
+				            '&q='+collection+
+				            '&maxrecords=100'+
+				            '&outputFormat=application/json';
 
-						.done(function( data ) {
-							var coverages = Papa.parse(data, {
-								header: true,
-								skipEmptyLines: true
-							});
+			          var identifier = collection;
+			          var b = null;
+			          if(this.bboxsel !== null){
+			          	b = this.bboxsel;
+			            request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
+			          }
 
-							// Add old coverages to current selection to check 
-							// later possible things that have to bee freed
-							/*var tmp_current_covs = coverages.data;
-							for (var i = 0; i < self.currentCoverages.length; i++) {
-								if(!_.find(coverages.data, function(c){
-										return c.identifier == self.currentCoverages[i].identifier;
-									})
-								){
-									tmp_current_covs.push(self.currentCoverages[i]);
-								}
-							}
-							self.currentCoverages = tmp_current_covs;*/
+		          	//http://vtdas-dave.zamg.ac.at//wcs?service=WCS&Request=GetCoverage&version=2.0.0&subset=t(1535811503)&subset=Lat(-4.688330529581465,-14.478850661434036)&subset=Long(35.86456036862774,41.114085751074356)&CoverageId=S5P_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_L2_4326_0035&format=image/tiff
+					//http://vtdas-dave.zamg.ac.at/wcs?service=WCS&Request=DescribeCoverage&version=2.0.0&coverageID=S5P_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_L2_4326_0035
+
+			          $.get(request)
+			            .success(function(resp) {
+
+			              	var coverages = {
+			              		data: []
+			              	};
+			              	var entries = resp['atom:feed']['atom:entry'];
+
+			              	if(typeof entries !== 'undefined'){
+				                for( var ee=0; ee<entries.length; ee++ ){
+				                  var bboxCont = entries[ee]['http://www.georss.org/georss:where']['gml:Envelope'];
+				                  var lowCorn = bboxCont['gml:lowerCorner'].split(' ').map(parseFloat);
+				                  var upperCorn = bboxCont['gml:upperCorner'].split(' ').map(parseFloat);
+				                  var id = entries[ee]['atom:title'];
+				                  var summ = entries[ee]['atom:summary'];
+				                  var hasEndTime = false;
+				                  var wcsEndpoint = entries[ee]['atom:source'];
+				                  
+				                  /*if(b!=null){
+				                  	wcsEndpoint = wcsEndpoint +
+					                  	'&subset=Lat('+b[1]+','+b[3]+')'+
+					                  	'&subset=Long('+b[0]+','+b[2]+')';
+				                  }*/
+				                  //wcsEndpoint += '&scale=0.1';
+
+				                  if(summ.indexOf('<strong>End</strong>') !== -1){
+				                    hasEndTime = true;
+				                  }
+				                  // Replace all tags of summary with white spaces and then
+				                  // split by whitespaces, leaving is necessary information
+				                  var spl = summ.replace(/ *\<[^>]*\> */g, " ").split(/[\s]+/);
+				                  var start = new Date(spl[9]);
+				                  var end = start;
+				                  if(hasEndTime){
+				                    end = new Date(spl[7]);
+				                  }
+				                  var id = spl[5];
+
+				                  if(identifier.indexOf('QA_VALUE') !== -1 || id.indexOf('QA_VALUE') === -1){
+					                  coverages.data.push({
+					                            identifier: id,
+					                            wcsEndpoint: wcsEndpoint,
+					                            bbox: [lowCorn[1], lowCorn[0], upperCorn[1], upperCorn[0]]
+					                        }
+					                  );
+					              }
+
+				                }
+			              	}
 
 							self.currentCoverages = coverages.data;
 
@@ -2378,11 +2432,13 @@ define(['backbone.marionette',
 							for (var i = coverages.data.length - 1; i >= 0; i--) {
 
 								var bbox = coverages.data[i].bbox;
-								bbox = bbox.substring(1, bbox.length - 1).split(",").map(parseFloat);
+
+								var request = 'http://vtdas-dave.zamg.ac.at/'+coverages.data[i].wcsEndpoint;
+								//bbox = bbox.substring(1, bbox.length - 1).split(",").map(parseFloat);
 								//var request = url + "?service=WCS&request=GetCoverage&version=2.0.1&coverageid="+coverages.data[i].identifier;
 
 								//var request = url.substring(0,url.length-11) + "/coverage/"+coverages.data[i].identifier+".tif";
-								var request = url.substring(0,url.length-11) + "/davprc/coverage/"+coverages.data[i].identifier;
+								//var request = url.substring(0,url.length-11) + "/davprc/coverage/"+coverages.data[i].identifier;
 								//console.log(request);
 
 
