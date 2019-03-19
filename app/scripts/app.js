@@ -540,6 +540,7 @@
 
                 this.processesView = new v.ProcessesView();
 
+                this.ViewsView = new v.ViewsView();
                 // Open layers panel as it is basically always used when opening client
                 Communicator.mediator.trigger("ui:open:layercontrol");
 

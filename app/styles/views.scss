@@ -1,0 +1,22 @@
+
+
+#views{
+	width: 15em;
+    top: 10em;
+    left: 32em;
+    font-size: .9em;
+    position: absolute;
+}
+
+#views .panel-body{
+	padding: 8px;
+}
+
+#views .panel-body button{
+	margin-bottom: 5px;
+}
+
+.darkbutton{
+	background-color: #333 !important;
+    border-color: #444 !important;
+}

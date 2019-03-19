@@ -25,6 +25,7 @@
 				this.listenTo(Communicator.mediator, "ui:fullscreen:globe", this.onFullscrenGlobe);
 				this.listenTo(Communicator.mediator, "ui:fullscreen:analytics", this.onFullscrenAnalytics);
 				this.listenTo(Communicator.mediator, "ui:open:processes", this.onProcessesOpen);
+				this.listenTo(Communicator.mediator, "ui:open:views", this.onViewsOpen);
 			},
 
 			onFullscrenGlobe: function () {
@@ -82,7 +83,13 @@
 					App.optionsLayout.close();
 				}
 			},
-
+			onViewsOpen: function(event){
+				if (_.isUndefined(App.ViewsView.isClosed) || App.ViewsView.isClosed) {
+					App.viewContent.show(App.ViewsView);
+				}else{
+					App.viewContent.close();
+				}
+			},
 			onProcessesOpen: function(event){
 				if (_.isUndefined(App.processesView.isClosed) || App.processesView.isClosed) {
 					App.viewContent.show(App.processesView);

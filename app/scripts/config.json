@@ -179,8 +179,8 @@
     }],
 
     "navBarConfig": {
-        "title": "TAMP",
-        "url": "http://vtpip.zamg.ac.at/",
+        "title": "APP4AQ-p2",
+        "url": "https://projekte.ffg.at/projekt/2975612",
         "items": [{
             "name": "Favourite Layers",
             "icon": "fa-globe",
@@ -192,10 +192,10 @@
             "eventToRaise": "ui:open:dataManagement",
             "template": "DataManagement"
         }, {
-            "name": "Processes",
-            "icon": "fa-gears",
-            "eventToRaise": "ui:open:processes",
-            "template": "LayerControl"
+            "name": "Views",
+            "icon": "fa-eye",
+            "eventToRaise": "ui:open:views",
+            "template": "ViewControl"
         }, {
             "name": "Tools",
             "icon": "fa-wrench",
@@ -238,7 +238,8 @@
         "views/DownloadFilterView",
         "views/StoryBannerView",
         "views/LayerSettings",
-        "views/ProcessesView"
+        "views/ProcessesView",
+        "views/ViewsView"
     ],
 
     "models": [
@@ -301,6 +302,9 @@
     }, {
         "id": "DataItem",
         "template": "hbs!tmpl/DataItem"
+    }, {
+        "id": "ViewControl",
+        "template": "hbs!tmpl/ViewControl"
     }],
 
     "selectionTools": [{
