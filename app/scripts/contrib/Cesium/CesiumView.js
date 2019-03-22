@@ -256,9 +256,9 @@ define(['backbone.marionette',
 						animation: false,
 						orderIndependentTranslucency: false,
 						imageryProvider: layer,
-						terrainProvider : new Cesium.CesiumTerrainProvider({
+						/*terrainProvider : new Cesium.CesiumTerrainProvider({
 					        url : '//tiles.maps.eox.at/dem'
-					    }),
+					    }),*/
 						creditContainer: "cesium_attribution",
 						contextOptions: {webgl: {preserveDrawingBuffer: true}},
 						clock: clock,
