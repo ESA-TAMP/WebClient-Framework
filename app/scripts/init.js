@@ -4,6 +4,7 @@
     var root = this;
 
     root.require.config({
+        urlArgs: 'bust=v1.00',
         waitSeconds: 120,
         /* starting point for application */
         deps: ['backbone', 'backbone.marionette', 'bootstrap', 'marionette.handlebars', 'main'],

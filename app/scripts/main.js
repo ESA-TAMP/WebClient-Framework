@@ -57,6 +57,7 @@ function defaultFor(arg, val) { return typeof arg !== 'undefined' ? arg : val; }
 		// }
 
 		var configurl = defaultFor(CONFIG_URL, "scripts/config.json");
+		configurl+='?bust=v1.00'
 		$.get(configurl, function(values) {
 			
 			// Configure Debug options
