@@ -33,1451 +33,407 @@
             };
 
             var PRODUCT_URL = "http://vtdas-dave.zamg.ac.at/davprc/ows";
+
+
+             
+
             var USER_PRODUCTS = [
                     {
-                        "name": "S5P NITROGENDIOXIDE TROPOSPHERIC COLUMN QA_VALUE_L2",
-                        "id": "S5P_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_QA_VALUE_L2_4326_0035",
-                        "date":
-                        [ 
-                            "May 3, 2000",
-                            "Oct. 28, 2002"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        100
-                                    ],
-                                    "uom":"",
-                                    
-                            }
-                        }
-                    },{
-                        "name": "S5P NITROGENDIOXIDE TROPOSPHERIC COLUMN L2",
-                        "id": "S5P_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_L2_4326_0035",
-                        "date":
-                        [ 
-                            "May 3, 2000",
-                            "Oct. 28, 2002"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        0.0001
-                                    ],
-                                    "uom":"",
-                                    
-                            }
-                        }
-                    },{
-                        "name": "S5P OZONE TOTAL VERTICAL COLUMN L2",
-                        "id": "S5P_OZONE_TOTAL_VERTICAL_COLUMN_L2_4326_0035",
-                        "date":
-                        [ 
-                            "May 3, 2000",
-                            "Oct. 28, 2002"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0.11,
-                                        0.15
-                                    ],
-                                    "uom":"",
-                                    
-                            }
-                        }
-                    },
-                    {
-                        "name": "LIDAR EARLINET LIDAR_Aberystwyth_UK_355nm",
-                        "id": "LIDAR_Aberystwyth_United_Kingdom_355nm_4326_04",
-                        "date":
-                        [ 
-                            "May 3, 2000",
-                            "Oct. 28, 2002"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "Sentinel 5P L2 NO2 quality value",
-                        "id": "S5P_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_QA_VALUE_L2_4326_007",
-                        "date":
-                        [ 
-                            "Nov. 28, 2017",
-                            "Nov. 29, 2017"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        100
-                                    ],
-                                    "uom":"",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "Sentinel 5P L2 NO2 tropospheric column",
-                        "id": "S5P_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_L2_4326_007",
-                        "date":
-                        [ 
-                            "Nov. 28, 2017",
-                            "Nov. 29, 2017"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        0.0001
-                                    ],
-                                    "uom":"mol m-2",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "Sentinel 5P L2 O3 quality value",
-                        "id": "S5P_OZONE_TOTAL_VERTICAL_COLUMN_QA_VALUE_L2_4326_007",
-                        "date":
-                        [ 
-                            "Nov. 28, 2017",
-                            "Nov. 29, 2017"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        100
-                                    ],
-                                    "uom":"",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "Sentinel 5P L2 O3 total vertical column",
-                        "id": "S5P_OZONE_TOTAL_VERTICAL_COLUMN_L2_4326_007",
-                        "date":
-                        [ 
-                            "Nov. 28, 2017",
-                            "Nov. 29, 2017"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        0.2
-                                    ],
-                                    "uom":"mol m-2",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "Sentinel 5P L2 SO2 quality  value",
-                        "id": "S5P_SULFURDIOXIDE_TOTAL_VERTICAL_COLUMN_QA_VALUE_L2_4326_007",
-                        "date":
-                        [ 
-                            "Nov. 28, 2017",
-                            "Nov. 29, 2017"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        100
-                                    ],
-                                    "uom":"",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "Sentinel 5P L2 SO2 total vertical column",
-                        "id": "S5P_SULFURDIOXIDE_TOTAL_VERTICAL_COLUMN_L2_4326_007",
-                        "date":
-                        [ 
-                            "Nov. 28, 2017",
-                            "Nov. 29, 2017"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        0.005
-                                    ],
-                                    "uom":"mol m-2",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "AOT Quality flag from MODIS AQUA",
-                        "id": "MYD04_Land_Ocean_Quality_Flag_4326_005",
-                        "date":
-                        [ 
-                            "Jan. 1, 2017",
-                            "Feb. 5, 2018"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"AOD",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "Seviri Ash Mass loading type 2",
-                        "id": "SEVIRI_MASS_TYPE2_4326_00499231950845",
-                        "date":
-                        [ 
-                            "April 13, 2010",
-                            "May 23, 2010"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0.1,
-                                        3
-                                    ],
-                                    "uom":"g/m2",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "WRFCHEM - AOD 550nm",
-                        "id": "WRFCHEM_AOD550_4326_005",
-                        "date":
-                        [ 
-                            "Sept. 7, 2017",
-                            "March 8, 2018"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0.006,
-                                        10.783
-                                    ],
-                                    "uom":"",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "WRFCHEM - Dust column",
-                        "id": "WRFCHEM_DUSTcol_4326_005",
-                        "date":
-                        [ 
-                            "Sept. 7, 2017",
-                            "March 8, 2018"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        6268.647
-                                    ],
-                                    "uom":"mg/m2",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "WRFCHEM - PM2.5 column",
-                        "id": "WRFCHEM_PM25col_4326_005",
-                        "date":
-                        [ 
-                            "Sept. 7, 2017",
-                            "March 8, 2018"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        1.571,
-                                        4060.447
-                                    ],
-                                    "uom":"mg/m2",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "WRFCHEM - PM10 column",
-                        "id": "WRFCHEM_PM10col_4326_005",
-                        "date":
-                        [ 
-                            "Sept. 7, 2017",
-                            "March 8, 2018"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        1.572,
-                                        9617.989
-                                    ],
-                                    "uom":"mg/m2",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "WRFCHEM - PM2.5 surface",
+                        "name": "WRFCHEM_PM25surf_4326_005",
                         "id": "WRFCHEM_PM25surf_4326_005",
                         "date":
-                        [ 
-                            "Sept. 7, 2017",
-                            "March 8, 2018"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0.158,
-                                        1663.152
-                                    ],
-                                    "uom":"µg/m3",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "WRFCHEM - PM10 surface",
-                        "id": "WRFCHEM_PM10surf_4326_005",
+                        "name": "MODIS_AOT_multi_resolution_4326_003",
+                        "id": "MODIS_AOT_multi_resolution_4326_003",
                         "date":
-                        [ 
-                            "Sept. 7, 2017",
-                            "March 8, 2018"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0.157,
-                                        4007.677
-                                    ],
-                                    "uom":"µg/m3",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "Seviri Ash Mass loading",
-                        "id": "SEVIRI_MASS_4326_025",
+                        "name": "S5P_SULFURDIOXIDE_TOTAL_VERTICAL_COLUMN_QA_VALUE_L2_4326_0035",
+                        "id": "S5P_SULFURDIOXIDE_TOTAL_VERTICAL_COLUMN_QA_VALUE_L2_4326_0035",
                         "date":
-                        [ 
-                            "April 13, 2010",
-                            "May 23, 2010"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0.1,
-                                        3
-                                    ],
-                                    "uom":"g/m2",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "WRFCHEM AOT 2D - EYJA 2017",
-                        "id": "WRFCHEM_AOT_4326_01",
+                        "name": "S5P_SULFURDIOXIDE_TOTAL_VERTICAL_COLUMN_L2_4326_0035",
+                        "id": "S5P_SULFURDIOXIDE_TOTAL_VERTICAL_COLUMN_L2_4326_0035",
                         "date":
-                        [ 
-                            "April 14, 2010",
-                            "May 23, 2010"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        100
-                                    ],
-                                    "uom":"",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "AOT Cloud fraction over Ocean from MODIS TERRA",
-                        "id": "MOD04_Aerosol_Cloud_Fraction_Ocean_4326_005",
+                        "name": "MOD04_Aerosol_Cloud_Fraction_Land_4326_003",
+                        "id": "MOD04_Aerosol_Cloud_Fraction_Land_4326_003",
                         "date":
-                        [ 
-                            "Jan. 1, 2017",
-                            "Feb. 4, 2018"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "AOT Cloud fraction over Ocean from MODIS AQUA",
-                        "id": "MYD04_Aerosol_Cloud_Fraction_Ocean_4326_005",
-                        "date":
-                        [ 
-                            "Jan. 1, 2017",
-                            "Feb. 5, 2018"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "AOT Cloud fraction over Land from MODIS AQUA",
-                        "id": "MYD04_Aerosol_Cloud_Fraction_Land_4326_005",
-                        "date":
-                        [ 
-                            "Jan. 1, 2017",
-                            "Feb. 5, 2018"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "AOT 3Km From MODIS AQUA",
-                        "id": "MYD04_Image_Optical_Depth_Land_And_Ocean_4326_003",
-                        "date":
-                        [ 
-                            "Jan. 1, 2017",
-                            "March 1, 2018"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "AOT Cloud fraction over Land from MODIS TERRA",
+                        "name": "MOD04_Aerosol_Cloud_Fraction_Land_4326_005",
                         "id": "MOD04_Aerosol_Cloud_Fraction_Land_4326_005",
                         "date":
-                        [ 
-                            "Jan. 1, 2017",
-                            "Dec. 28, 2017"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "OMI - SO2 PBL concentration global",
-                        "id": "OMI_L2G_SO2_4326_0125",
+                        "name": "S5P_OZONE_TOTAL_VERTICAL_COLUMN_QA_VALUE_L2_4326_0035",
+                        "id": "S5P_OZONE_TOTAL_VERTICAL_COLUMN_QA_VALUE_L2_4326_0035",
                         "date":
-                        [ 
-                            "Oct. 1, 2015",
-                            "Dec. 1, 2017"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        -10,
-                                        50
-                                    ],
-                                    "uom":"DU",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "OMI - NO2 total column concentration global",
-                        "id": "OMI_L2G_NO2_4326_025",
+                        "name": "MODIS_AQUA_AOT_multi_resolution_4326_003",
+                        "id": "MODIS_AQUA_AOT_multi_resolution_4326_003",
                         "date":
-                        [ 
-                            "Oct. 1, 2004",
-                            "June 14, 2017"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        100000000000000,
-                                        10000000000000000
-                                    ],
-                                    "uom":"molecules/cm^2",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "CAI_L3_global_radiance_1600nm",
-                        "id": "TANSO-CAI_L3_RADIANCE_1600_4326_0125",
+                        "name": "S5P_OZONE_TOTAL_VERTICAL_COLUMN_L2_4326_0035",
+                        "id": "S5P_OZONE_TOTAL_VERTICAL_COLUMN_L2_4326_0035",
                         "date":
-                        [ 
-                            "Jan. 1, 2014",
-                            "Dec. 31, 2014"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        60
-                                    ],
-                                    "uom":"W/m^2/sr/micro-m",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "CAI_L3_global_radiance_870nm",
-                        "id": "TANSO-CAI_L3_RADIANCE_870_4326_0125",
+                        "name": "S5P_NO2QA50_TROPOSPHERIC_COLUMN_L2_4326_0035",
+                        "id": "S5P_NO2QA50_TROPOSPHERIC_COLUMN_L2_4326_0035",
                         "date":
-                        [ 
-                            "Jan. 1, 2014",
-                            "Dec. 31, 2014"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        400
-                                    ],
-                                    "uom":"W/m^2/sr/micro-m",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "CAI_L3_global_radiance_674nm",
-                        "id": "TANSO-CAI_L3_RADIANCE_674_4326_0125",
+                        "name": "S5P_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_QA_VALUE_L2_4326_0035",
+                        "id": "S5P_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_QA_VALUE_L2_4326_0035",
                         "date":
-                        [ 
-                            "Jan. 1, 2014",
-                            "Dec. 31, 2014"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        500
-                                    ],
-                                    "uom":"W/m^2/sr/micro-m",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "CAI_L3_global_radiance_380nm",
-                        "id": "TANSO-CAI_L3_RADIANCE_380_4326_0125",
+                        "name": "WRFCHEM_SO2_D02_4326_0015",
+                        "id": "WRFCHEM_SO2_D02_4326_0015",
                         "date":
-                        [ 
-                            "Jan. 1, 2014",
-                            "Dec. 31, 2014"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        400
-                                    ],
-                                    "uom":"W/m^2/sr/micro-m",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "CAI_L3_NDVI_CONFIDENCE",
-                        "id": "TANSO-CAI_L3_NDVI_CONFIDENCE_4326_00333333333333",
+                        "name": "S5P_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_L2_4326_0035",
+                        "id": "S5P_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_L2_4326_0035",
                         "date":
-                        [ 
-                            "Jan. 1, 2014",
-                            "Dec. 31, 2014"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "CAI_L3_NDVI",
-                        "id": "TANSO-CAI_L3_NDVI_4326_00333333333333",
+                        "name": "WRFCHEM_PM25col_4326_005",
+                        "id": "WRFCHEM_PM25col_4326_005",
                         "date":
-                        [ 
-                            "Jan. 2, 2014",
-                            "Dec. 31, 2014"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        -1,
-                                        1
-                                    ],
-                                    "uom":"",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "PARASOL  L2 AOT - LAND",
-                        "id": "PARASOL_L2_AOT_LAND__fixed_294_4326_015",
+                        "name": "WRFCHEM_PM10surf_4326_005",
+                        "id": "WRFCHEM_PM10surf_4326_005",
                         "date":
-                        [ 
-                            "Jan. 1, 2006",
-                            "May 31, 2010"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"AOD",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "MACC SO2 Total Column DU",
-                        "id": "MACC_SO2_DU_291_4326_1125",
+                        "name": "MYD04_Image_Optical_Depth_Land_And_Ocean_4326_003",
+                        "id": "MYD04_Image_Optical_Depth_Land_And_Ocean_4326_003",
                         "date":
-                        [ 
-                            "May 1, 2010",
-                            "May 31, 2010"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        10
-                                    ],
-                                    "uom":"DU",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "MACC SO2 Total Column",
-                        "id": "MACC_SO2_4326_1125",
+                        "name": "MYD04_Image_Optical_Depth_Land_And_Ocean_4326_005",
+                        "id": "MYD04_Image_Optical_Depth_Land_And_Ocean_4326_005",
                         "date":
-                        [ 
-                            "May 1, 2010",
-                            "May 31, 2010"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        0.00005
-                                    ],
-                                    "uom":"kg/m2",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "CAMS SO2 mass concentration",
-                        "id": "CAMS_SO2_4326_00998571341378",
+                        "name": "MODIS_TERRA_AOT_multi_resolution_4326_003",
+                        "id": "MODIS_TERRA_AOT_multi_resolution_4326_003",
                         "date":
-                        [ 
-                            "Sept. 14, 2016",
-                            "Sept. 14, 2016"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        30
-                                    ],
-                                    "uom":"microg/m3",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "MOD04 AOD Downscaled",
-                        "id": "MOD04_Image_Optical_Depth_Land_And_Ocean__downscaled_202_4326_005",
+                        "name": "WRFCHEM_PM10col_4326_005",
+                        "id": "WRFCHEM_PM10col_4326_005",
                         "date":
-                        [ 
-                            "Jan. 1, 2013",
-                            "Dec. 31, 2014"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"AOD",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "AOT 3Km From MODIS TERRA",
+                        "name": "MOD04_Image_Optical_Depth_Land_And_Ocean_4326_003",
                         "id": "MOD04_Image_Optical_Depth_Land_And_Ocean_4326_003",
                         "date":
-                        [ 
-                            "Jan. 1, 2013",
-                            "March 3, 2018"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"AOD",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "AOT Quality Flag from MODIS TERRA",
+                        "name": "MOD04_Image_Optical_Depth_Land_And_Ocean_4326_005",
+                        "id": "MOD04_Image_Optical_Depth_Land_And_Ocean_4326_005",
+                        "date":
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
+                            }
+                        }
+                    },
+                    {
+                        "name": "MOD04_Land_Ocean_Quality_Flag_4326_003",
+                        "id": "MOD04_Land_Ocean_Quality_Flag_4326_003",
+                        "date":
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
+                            }
+                        }
+                    },
+                    {
+                        "name": "MOD04_Land_Ocean_Quality_Flag_4326_005",
                         "id": "MOD04_Land_Ocean_Quality_Flag_4326_005",
                         "date":
-                        [ 
-                            "Oct. 1, 2013",
-                            "Feb. 4, 2018"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"AOD",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "FLEXPART SO2 Integrated Column DU",
-                        "id": "FLEXPART_SO2__2D_175__DU_176_4326_01",
+                        "name": "MOD04_Aerosol_Cloud_Fraction_Ocean_4326_003",
+                        "id": "MOD04_Aerosol_Cloud_Fraction_Ocean_4326_003",
                         "date":
-                        [ 
-                            "Sept. 16, 2014",
-                            "Sept. 24, 2014"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        1,
-                                        200
-                                    ],
-                                    "uom":"DU",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "FLEXPART SO2 Integrated Column",
-                        "id": "FLEXPART_SO2__2D_175_4326_01",
+                        "name": "MOD04_Aerosol_Cloud_Fraction_Ocean_4326_005",
+                        "id": "MOD04_Aerosol_Cloud_Fraction_Ocean_4326_005",
                         "date":
-                        [ 
-                            "Sept. 16, 2014",
-                            "Sept. 24, 2014"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        1,
-                                        100000000
-                                    ],
-                                    "uom":"ng/m2",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "EVDC SO2 paramaribo complete",
-                        "id": "EVDC_SO2_paramaribo_complete_ground_measurements",
+                        "name": "MYD04_Land_Ocean_Quality_Flag_4326_003",
+                        "id": "MYD04_Land_Ocean_Quality_Flag_4326_003",
                         "date":
-                        [ 
-                            "Jan. 1, 2002",
-                            "Dec. 31, 2012"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"DU",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "WRFCHEM - EYJA - 2D",
-                        "id": "WRFCHEM_EYJA_VASH_AL_D01__2D_103_4326_01",
+                        "name": "MYD04_Land_Ocean_Quality_Flag_4326_005",
+                        "id": "MYD04_Land_Ocean_Quality_Flag_4326_005",
                         "date":
-                        [ 
-                            "May 4, 2010",
-                            "May 22, 2010"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        10000000
-                                    ],
-                                    "uom":"microg/m2",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "BASCOE vertical column",
-                        "id": "BASCOE__integr_102_4326_375",
+                        "name": "WRFCHEM_SO2_D01_4326_01",
+                        "id": "WRFCHEM_SO2_D01_4326_01",
                         "date":
-                        [ 
-                            "May 1, 2015",
-                            "July 30, 2015"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0.05,
-                                        0.09
-                                    ],
-                                    "uom":"smr",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "PARASOL L2 AOT - SEA",
-                        "id": "PARASOL_L2_AOT_SEA_4326_015",
+                        "name": "MYD04_Aerosol_Cloud_Fraction_Land_4326_003",
+                        "id": "MYD04_Aerosol_Cloud_Fraction_Land_4326_003",
                         "date":
-                        [ 
-                            "Jan. 1, 2006",
-                            "May 31, 2010"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "PARASOL L2 AOT - LAND - 10x",
-                        "id": "PARASOL_L2_AOT_LAND_4326_015",
+                        "name": "MYD04_Aerosol_Cloud_Fraction_Land_4326_005",
+                        "id": "MYD04_Aerosol_Cloud_Fraction_Land_4326_005",
                         "date":
-                        [ 
-                            "Jan. 1, 2006",
-                            "May 31, 2010"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "OMI Level 2 AOT 388nm",
-                        "id": "OMI_L2_AOT388_4326_01",
+                        "name": "WRFCHEM_AOT_4326_01",
+                        "id": "WRFCHEM_AOT_4326_01",
                         "date":
-                        [ 
-                            "Jan. 1, 2006",
-                            "May 21, 2010"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "OMI Level 2 AOT 367nm",
-                        "id": "OMI_L2_AOT367_4326_01",
+                        "name": "WRFCHEM_AOD550_4326_005",
+                        "id": "WRFCHEM_AOD550_4326_005",
                         "date":
-                        [ 
-                            "Jan. 1, 2006",
-                            "May 21, 2010"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "WRFCHEM - EYJA - VASH AL -D01",
-                        "id": "WRFCHEM_EYJA_VASH_AL_D01_4326_01",
+                        "name": "MYD04_Aerosol_Cloud_Fraction_Ocean_4326_003",
+                        "id": "MYD04_Aerosol_Cloud_Fraction_Ocean_4326_003",
                         "date":
-                        [ 
-                            "May 4, 2010",
-                            "May 22, 2010"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1000
-                                    ],
-                                    "uom":"µg/m3",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "GOME2B SO2 Level 2 3D",
-                        "id": "GOME2B_SO2_L2_3D_4326_025",
+                        "name": "MYD04_Aerosol_Cloud_Fraction_Ocean_4326_005",
+                        "id": "MYD04_Aerosol_Cloud_Fraction_Ocean_4326_005",
                         "date":
-                        [ 
-                            "Sept. 15, 2014",
-                            "Sept. 26, 2014"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        2
-                                    ],
-                                    "uom":"",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "GOME2B SO2 Level 2 2D",
-                        "id": "GOME2B_SO2_L2_2D_4326_025",
+                        "name": "WRFCHEM_DUSTcol_4326_005",
+                        "id": "WRFCHEM_DUSTcol_4326_005",
                         "date":
-                        [ 
-                            "Sept. 15, 2014",
-                            "Sept. 26, 2014"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        10
-                                    ],
-                                    "uom":"DU",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
                     },
-                
                     {
-                        "name": "OMI SO2 Level 2 3D",
-                        "id": "OMI_SO2_L2_3D_4326_01",
+                        "name": "MOD04_Image_Optical_Depth_Land_And_Ocean__downscaled_202_4326_005",
+                        "id": "MOD04_Image_Optical_Depth_Land_And_Ocean__downscaled_202_4326_005",
                         "date":
-                        [ 
-                            "Sept. 15, 2014",
-                            "Sept. 26, 2014"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        2
-                                    ],
-                                    "uom":"",
-                                    
+                        ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
                             }
                         }
-                    },
-                
-                    {
-                        "name": "OMI SO2 L2 2D",
-                        "id": "OMI_SO2_L2_2D_4326_01",
-                        "date":
-                        [ 
-                            "Sept. 15, 2014",
-                            "Sept. 26, 2014"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        10
-                                    ],
-                                    "uom":"DU",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "Lidar Bira O3",
-                        "id": "LIDAR_BIRA_O3_4326_04",
-                        "date":
-                        [ 
-                            "May 1, 2015",
-                            "July 31, 2015"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "OMI Level 2 AOT 451nm",
-                        "id": "OMI_L2_AOT451_4326_01",
-                        "date":
-                        [ 
-                            "Jan. 1, 2006",
-                            "May 21, 2010"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "OMI Level 2 AOT 483nm",
-                        "id": "OMI_L2_AOT483_4326_01",
-                        "date":
-                        [ 
-                            "Jan. 1, 2006",
-                            "May 21, 2010"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "BASCOE",
-                        "id": "BASCOE_4326_375",
-                        "date":
-                        [ 
-                            "May 1, 2015",
-                            "July 30, 2015"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        0.00001
-                                    ],
-                                    "uom":"vmr",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "EVDC_SO2",
-                        "id": "EVDC_SO2_ground_measurements",
-                        "date":
-                        [ 
-                            "Jan. 1, 2012",
-                            "Jan. 1, 2012"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"DU",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "EEA_SO2",
-                        "id": "EEA_SO2_ground_measurements",
-                        "date":
-                        [ 
-                            "Sept. 1, 2014",
-                            "Sept. 30, 2014"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        1
-                                    ],
-                                    "uom":"micro g / m3",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "FLEXPART SO2 Holu",
-                        "id": "FLEXPART_SO2_4326_01",
-                        "date":
-                        [ 
-                            "Sept. 16, 2014",
-                            "Sept. 24, 2014"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        5000
-                                    ],
-                                    "uom":"ng/m3",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "OMI SO2 Level 2 - granules",
-                        "id": "OMI_L2_SO2_4326_01",
-                        "date":
-                        [ 
-                            "Jan. 1, 2012",
-                            "Sept. 23, 2014"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0,
-                                        10
-                                    ],
-                                    "uom":"DU",
-                                    
-                            }
-                        }
-                    },
-                
-                    {
-                        "name": "WRF-CHEM Holu",
-                        "id": "WRFCHEM_D01_4326_0015",
-                        "date":
-                        [ 
-                            "Sept. 15, 2014",
-                            "Sept. 17, 2014"
-                        ],
-                        "parameters":
-                        {
-                            "Parameter1": 
-                            {
-                                    "range": 
-                                    [
-                                        0.0001,
-                                        0.001
-                                    ],
-                                    "uom":"ppmv",
-                                    
-                            }
-                        }
-                    },
-                
+                    }
           ];
             
         </script>
