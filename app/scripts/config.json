@@ -26,11 +26,7 @@
                 "id": "terrain-light",
                 "protocol": "WMTS",
                 "urls": [
-                    "https://{s}.tiles.maps.eox.at/wmts/?service=WMTS&version=1.0.0&request=GetTile&tilematrix={TileMatrix}&layer=terrain-light&style={style}&tilerow={TileRow}&tilecol={TileCol}&tilematrixset={TileMatrixSet}&format=image%2Fpng",
-                    "http://b.tiles.maps.eox.at/wmts/",
-                    "http://c.tiles.maps.eox.at/wmts/",
-                    "http://d.tiles.maps.eox.at/wmts/",
-                    "http://e.tiles.maps.eox.at/wmts/"
+                    "https://{s}.s2maps-tiles.eu/wmts/?service=WMTS&version=1.0.0&request=GetTile&tilematrix={TileMatrix}&layer=terrain-light&style={Style}&tilerow={TileRow}&tilecol={TileCol}&tilematrixset={TileMatrixSet}&format=image%2Fjpg"
                 ],
                 "matrixSet": "WGS84",
                 "style": "default",
@@ -63,11 +59,7 @@
                 "id": "terrain",
                 "protocol": "WMTS",
                 "urls": [
-                    "//a.tiles.maps.eox.at/wmts/",
-                    "//b.tiles.maps.eox.at/wmts/",
-                    "//c.tiles.maps.eox.at/wmts/",
-                    "//d.tiles.maps.eox.at/wmts/",
-                    "//e.tiles.maps.eox.at/wmts/"
+                    "https://{s}.s2maps-tiles.eu/wmts/?service=WMTS&version=1.0.0&request=GetTile&tilematrix={TileMatrix}&layer=terrain&style={Style}&tilerow={TileRow}&tilecol={TileCol}&tilematrixset={TileMatrixSet}&format=image%2Fjpg"
                 ],
                 "matrixSet": "WGS84",
                 "style": "default",
@@ -101,11 +93,7 @@
             "protocol": "WMTS",
             "visible": false,
             "urls": [
-                "//a.tiles.maps.eox.at/wmts/",
-                "//b.tiles.maps.eox.at/wmts/",
-                "//c.tiles.maps.eox.at/wmts/",
-                "//d.tiles.maps.eox.at/wmts/",
-                "//e.tiles.maps.eox.at/wmts/"
+                "https://{s}.s2maps-tiles.eu/wmts/?service=WMTS&version=1.0.0&request=GetTile&tilematrix={TileMatrix}&layer=coastline&style={Style}&tilerow={TileRow}&tilecol={TileCol}&tilematrixset={TileMatrixSet}&format=image%2Fpng"
             ],
             "matrixSet": "WGS84",
             "style": "default",
@@ -128,11 +116,7 @@
             "protocol": "WMTS",
             "visible": false,
             "urls": [
-                "//a.tiles.maps.eox.at/wmts/",
-                "//b.tiles.maps.eox.at/wmts/",
-                "//c.tiles.maps.eox.at/wmts/",
-                "//d.tiles.maps.eox.at/wmts/",
-                "//e.tiles.maps.eox.at/wmts/"
+                "https://{s}.s2maps-tiles.eu/wmts/?service=WMTS&version=1.0.0&request=GetTile&tilematrix={TileMatrix}&layer=overlay_base&style={Style}&tilerow={TileRow}&tilecol={TileCol}&tilematrixset={TileMatrixSet}&format=image%2Fpng"
             ],
             "matrixSet": "WGS84",
             "style": "default",
@@ -192,10 +176,15 @@
             "eventToRaise": "ui:open:dataManagement",
             "template": "DataManagement"
         }, {
-            "name": "Views",
+            "name": "Area",
             "icon": "fa-eye",
-            "eventToRaise": "ui:open:views",
-            "template": "ViewControl"
+            "subitems": [{
+                "name": "Europe",
+                "eventToRaise": "map:zoom:europe"
+            }, {
+                "name": "Austria",
+                "eventToRaise": "map:zoom:austria"
+            }]
         }, {
             "name": "Tools",
             "icon": "fa-wrench",

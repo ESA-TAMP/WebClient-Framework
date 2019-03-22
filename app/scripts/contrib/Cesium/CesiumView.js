@@ -315,11 +315,6 @@ define(['backbone.marionette',
 			    // Add collection that handles rendering of resutls
 			    this.map.scene.primitives.add(this.process_result_collection);
 
-				// In order to bound max zoom to Europe
-				this.map.scene.screenSpaceCameraController.maximumZoomDistance = this.map.camera.getMagnitude()*1.1;
-				this.map.scene.screenSpaceCameraController.enableRotate = false;
-				this.map.scene.screenSpaceCameraController.enableTranslate = false;
-
 			    var self = this;
 
 				var handler = new Cesium.ScreenSpaceEventHandler(this.map.scene.canvas);
@@ -599,6 +594,15 @@ define(['backbone.marionette',
 						}
 	                	
 	                });
+
+                this.map.scene.camera.setView({
+					destination : Cesium.Rectangle.fromDegrees(-15.0, 18.0, 35.0, 72.0),
+				});
+
+				// In order to bound max zoom to Europe
+				this.map.scene.screenSpaceCameraController.maximumZoomDistance = this.map.camera.getMagnitude()*1.0;
+				this.map.scene.screenSpaceCameraController.enableRotate = false;
+				this.map.scene.screenSpaceCameraController.enableTranslate = false;
 				
 
 			},
@@ -3631,12 +3635,14 @@ define(['backbone.marionette',
 				this.map.scene.camera.setView({
 					destination : Cesium.Rectangle.fromDegrees(-15.0, 18.0, 35.0, 72.0),
 				});
+				this.map.scene.screenSpaceCameraController.maximumZoomDistance = this.map.camera.getMagnitude()*1.0;
 			},
 
 			onZoomAustria: function(){
 				this.map.scene.camera.setView({
 					destination : Cesium.Rectangle.fromDegrees(7.65, 45.85, 18.1, 49.5),
 				});
+				this.map.scene.screenSpaceCameraController.maximumZoomDistance = this.map.camera.getMagnitude()*1.0;
 			},
 
 			toggleDebug: function(){
