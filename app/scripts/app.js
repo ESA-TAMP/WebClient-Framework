@@ -210,7 +210,7 @@
 					console.log("Added product " + product.name );
 				}, this);
 
-				this.productServer = defaultFor(PRODUCT_URL, "http://vtdas-dave.zamg.ac.at/davprc/ows");
+				this.productServer = PRODUCT_URL;//defaultFor(PRODUCT_URL, "http://vtdas-dave.zamg.ac.at/davprc/ows");
 				var additional_products = [];
 
 				if (typeof USER_PRODUCTS !== 'undefined') {

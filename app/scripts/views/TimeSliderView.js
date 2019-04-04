@@ -235,8 +235,10 @@
 
       fetchWPS: function(start, end, params, callback){
 
+//pycsw/pycsw/csw.py?mode=opensearch&service=CSW&version=2.0.2&request=GetRecords&elementsetname=brief&
+
           var request = 
-            'http://vtdas-dave.zamg.ac.at/pycsw/pycsw/csw.py?mode=opensearch'+
+            PRODUCT_URL+'pycsw/pycsw/csw.py?mode=opensearch'+
             '&service=CSW&version=2.0.2&request=GetRecords&elementsetname=brief'+
             '&typenames=csw:Record&resulttype=results'+
             '&time='+getISODateTimeString(start)+'/'+getISODateTimeString(end)+
@@ -253,44 +255,47 @@
 
           $.get(request)
             .success(function(resp) {
+
               var rows = [];
-              var entries = resp['atom:feed']['atom:entry'];
-              if(typeof entries !== 'undefined'){
-                for( var ee=0; ee<entries.length; ee++ ){
-                  var bboxCont = entries[ee]['http://www.georss.org/georss:where']['gml:Envelope'];
-                  var lowCorn = bboxCont['gml:lowerCorner'].split(' ').map(parseFloat);
-                  var upperCorn = bboxCont['gml:upperCorner'].split(' ').map(parseFloat);
-                  var id = entries[ee]['atom:title'];
-                  var summ = entries[ee]['atom:summary'];
-                  var hasEndTime = false;
-                  var wcsEndpoint = entries[ee]['atom:source'];
-                  if(summ.indexOf('<strong>End</strong>') !== -1){
-                    hasEndTime = true;
-                  }
-                  // Replace all tags of summary with white spaces and then
-                  // split by whitespaces, leaving is necessary information
-                  var spl = summ.replace(/ *\<[^>]*\> */g, " ").split(/[\s]+/);
-                  var start = new Date(spl[9]);
-                  var end = start;
-                  if(hasEndTime){
-                    end = new Date(spl[7]);
-                  }
-                  var id = spl[5];
+              if(resp.hasOwnProperty('atom:feed') && resp['atom:feed'].hasOwnProperty('atom:entry')){
+                var entries = resp['atom:feed']['atom:entry'];
+                if(typeof entries !== 'undefined'){
+                  for( var ee=0; ee<entries.length; ee++ ){
+                    var bboxCont = entries[ee]['http://www.georss.org/georss:where']['gml:Envelope'];
+                    var lowCorn = bboxCont['gml:lowerCorner'].split(' ').map(parseFloat);
+                    var upperCorn = bboxCont['gml:upperCorner'].split(' ').map(parseFloat);
+                    var id = entries[ee]['atom:title'];
+                    var summ = entries[ee]['atom:summary'];
+                    var hasEndTime = false;
+                    var wcsEndpoint = entries[ee]['atom:source'];
+                    if(summ.indexOf('<strong>End</strong>') !== -1){
+                      hasEndTime = true;
+                    }
+                    // Replace all tags of summary with white spaces and then
+                    // split by whitespaces, leaving is necessary information
+                    var spl = summ.replace(/ *\<[^>]*\> */g, " ").split(/[\s]+/);
+                    var start = new Date(spl[9]);
+                    var end = start;
+                    if(hasEndTime){
+                      end = new Date(spl[7]);
+                    }
+                    var id = spl[5];
 
 
 
-                  if(identifier.indexOf('QA_VALUE') !== -1 || id.indexOf('QA_VALUE') === -1){
-                    rows.push([
-                          start,
-                          start, //end,
-                          {
-                              id: id,
-                              bbox: [lowCorn[1], lowCorn[0], upperCorn[1], upperCorn[0]]
-                          }
-                    ]);
+                    if(identifier.indexOf('QA_VALUE') !== -1 || id.indexOf('QA_VALUE') === -1){
+                      rows.push([
+                            start,
+                            start, //end,
+                            {
+                                id: id,
+                                bbox: [lowCorn[1], lowCorn[0], upperCorn[1], upperCorn[0]]
+                            }
+                      ]);
+                    }
                   }
+                  callback(rows);
                 }
-                callback(rows);
               }
 
             });

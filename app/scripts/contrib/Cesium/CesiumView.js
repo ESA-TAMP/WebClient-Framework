@@ -2280,7 +2280,7 @@ define(['backbone.marionette',
 
 
 		    			var request = 
-				            'http://vtdas-dave.zamg.ac.at/pycsw/pycsw/csw.py?mode=opensearch'+
+				            PRODUCT_URL+'pycsw/pycsw/csw.py?mode=opensearch'+
 				            '&service=CSW&version=2.0.2&request=GetRecords&elementsetname=brief'+
 				            '&typenames=csw:Record&resulttype=results'+
 				            '&time='+getISODateTimeString(this.begin_time)+'/'+getISODateTimeString(this.end_time)+
@@ -2301,62 +2301,89 @@ define(['backbone.marionette',
 			              	var coverages = {
 			              		data: []
 			              	};
-			              	var entries = resp['atom:feed']['atom:entry'];
 
-			              	if(typeof entries !== 'undefined'){
-				                for( var ee=0; ee<entries.length; ee++ ){
-				                  var bboxCont = entries[ee]['http://www.georss.org/georss:where']['gml:Envelope'];
-				                  var lowCorn = bboxCont['gml:lowerCorner'].split(' ').map(parseFloat);
-				                  var upperCorn = bboxCont['gml:upperCorner'].split(' ').map(parseFloat);
-				                  var id = entries[ee]['atom:title'];
-				                  var summ = entries[ee]['atom:summary'];
-				                  var hasEndTime = false;
-				                  var wcsEndpoint = entries[ee]['atom:source'];
-				                  
-				                  if(b!=null){
-				                  	wcsEndpoint = wcsEndpoint +
-					                  	'&subset=Lat('+b[0]+','+b[2]+')'+
-					                  	'&subset=Long('+b[1]+','+b[3]+')';
-					                  // Intersect product bbox and bbox selection
-					                  if(lowCorn[0]<b[0]){
-					                  	lowCorn[0] = b[0];
+			              	if(resp.hasOwnProperty('atom:feed') && resp['atom:feed'].hasOwnProperty('atom:entry')){
+
+			              		var entries = resp['atom:feed']['atom:entry'];
+			              		if(!Array.isArray(entries)){
+			              			entries = [entries];
+			              		}
+
+				              	if(typeof entries !== 'undefined'){
+
+					                for( var ee=0; ee<entries.length; ee++ ){
+					                  var bboxCont = entries[ee]['http://www.georss.org/georss:where']['gml:Envelope'];
+
+					                  if( bboxCont['gml:lowerCorner'] === "-90.200002 -0.2"){
+					                  	bboxCont['gml:lowerCorner']  = "-90 0"
 					                  }
-					                  if(lowCorn[1]<b[1]){
-					                  	lowCorn[1] = b[1];
+					                  if( bboxCont['gml:upperCorner'] === "90.2 359.800005"){
+					                  	bboxCont['gml:upperCorner'] = "90 360"
 					                  }
-					                  if(upperCorn[0]>b[2]){
-					                  	upperCorn[0] = b[2];
+
+					                   if( bboxCont['gml:lowerCorner'] === "-90.25 -180.25"){
+					                  	bboxCont['gml:lowerCorner']  = "-90 -180"
 					                  }
-					                  if(upperCorn[1]>b[3]){
-					                  	upperCorn[1] = b[3];
+					                  if( bboxCont['gml:upperCorner'] === "90.25 179.75"){
+					                  	bboxCont['gml:upperCorner'] = "90 180"
 					                  }
-				                  }
 
-				                  //wcsEndpoint += '&scale=0.1';
+					                 
 
-				                  if(summ.indexOf('<strong>End</strong>') !== -1){
-				                    hasEndTime = true;
-				                  }
-				                  // Replace all tags of summary with white spaces and then
-				                  // split by whitespaces, leaving is necessary information
-				                  var spl = summ.replace(/ *\<[^>]*\> */g, " ").split(/[\s]+/);
-				                  var start = new Date(spl[9]);
-				                  var end = start;
-				                  if(hasEndTime){
-				                    end = new Date(spl[7]);
-				                  }
-				                  var id = spl[5];
+					                  var lowCorn = bboxCont['gml:lowerCorner'].split(' ').map(parseFloat);
+					                  var upperCorn = bboxCont['gml:upperCorner'].split(' ').map(parseFloat);
+					                  var id = entries[ee]['atom:id'];
+					                  var summ = entries[ee]['atom:summary'];
+					                  var hasEndTime = false;
+					                  var wcsEndpoint = entries[ee]['atom:source'];
+					                  
+					                  if(b!=null){
+					                  	wcsEndpoint = wcsEndpoint +
+						                  	'&subset=Lat('+b[0]+','+b[2]+')'+
+						                  	'&subset=Long('+b[1]+','+b[3]+')';
+						                  // Intersect product bbox and bbox selection
+						                  if(lowCorn[0]<b[0]){
+						                  	lowCorn[0] = b[0];
+						                  }
+						                  if(lowCorn[1]<b[1]){
+						                  	lowCorn[1] = b[1];
+						                  }
+						                  if(upperCorn[0]>b[2]){
+						                  	upperCorn[0] = b[2];
+						                  }
+						                  if(upperCorn[1]>b[3]){
+						                  	upperCorn[1] = b[3];
+						                  }
+					                  }
 
-				                  if(identifier.indexOf('QA_VALUE') !== -1 || id.indexOf('QA_VALUE') === -1){
-					                  coverages.data.push({
-					                            identifier: id,
-					                            wcsEndpoint: wcsEndpoint,
-					                            bbox: [lowCorn[1], lowCorn[0], upperCorn[1], upperCorn[0]]
-					                        }
-					                  );
-					              }
+					                  //wcsEndpoint += '&scale=0.1';
 
-				                }
+					                  if(summ.indexOf('<strong>End</strong>') !== -1){
+					                    hasEndTime = true;
+					                  }
+					                  // Replace all tags of summary with white spaces and then
+					                  // split by whitespaces, leaving is necessary information
+					                  var spl = summ.replace(/ *\<[^>]*\> */g, " ").split(/[\s]+/);
+					                  var start = new Date(spl[9]);
+					                  var end = start;
+					                  if(hasEndTime){
+					                    end = new Date(spl[7]);
+					                  }
+					                  
+					                  //var id = spl[2];
+					                  // TODO: Coverage id usually found here, but not always? 
+
+					                  if(identifier.indexOf('QA_VALUE') !== -1 || id.indexOf('QA_VALUE') === -1){
+						                  coverages.data.push({
+						                            identifier: id,
+						                            wcsEndpoint: wcsEndpoint,
+						                            bbox: [lowCorn[1], lowCorn[0], upperCorn[1], upperCorn[0]]
+						                        }
+						                  );
+						              }
+
+					                }
+				              	}
 			              	}
 
 							self.currentCoverages = coverages.data;
@@ -2366,7 +2393,10 @@ define(['backbone.marionette',
 								if (array.length == 1 || array.length == 0)
 									return false;
 							    for(var i = 0; i < array.length - 1; i++) {
-							        if(array[i].bbox != array[i+1].bbox) {
+							        if(array[i].bbox[0] != array[i+1].bbox[0] || 
+							        	array[i].bbox[1] != array[i+1].bbox[1] ||
+							        	array[i].bbox[2] != array[i+1].bbox[2] ||
+							        	array[i].bbox[3] != array[i+1].bbox[3]) {
 							            return false;
 							        }
 							    }
@@ -2444,7 +2474,7 @@ define(['backbone.marionette',
 
 								var bbox = coverages.data[i].bbox;
 
-								var request = 'http://vtdas-dave.zamg.ac.at/'+coverages.data[i].wcsEndpoint;
+								var request = PRODUCT_URL+coverages.data[i].wcsEndpoint;
 								//bbox = bbox.substring(1, bbox.length - 1).split(",").map(parseFloat);
 								//var request = url + "?service=WCS&request=GetCoverage&version=2.0.1&coverageid="+coverages.data[i].identifier;
 

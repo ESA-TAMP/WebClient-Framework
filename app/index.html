@@ -32,12 +32,35 @@
                 baseUrl : "scripts/"
             };
 
-            var PRODUCT_URL = "http://vtdas-dave.zamg.ac.at/davprc/ows";
+            var PRODUCT_URL = "https://wcs-eo4sdcr.adamplatform.eu/";
+            var fetchCollectionListURL  = PRODUCT_URL+'wcs?service=WCS&Request=GetCapabilities&version=2.0.0';
+            var USER_PRODUCTS = [];
+
+            var request = new XMLHttpRequest();
+            request.open('GET', fetchCollectionListURL, false);  // `false` makes the request synchronous
+            request.send(null);
+
+            if (request.status === 200) {
+              
+                var collections = request.responseXML.getElementsByTagName('CoverageId');
+                for (col = 0; col  < collections.length; col++) {
+                    var colID = collections[col].textContent;
+                    console.log(colID);
+                    USER_PRODUCTS.push({
+                        "name": colID.replace(/_/g, ' '),
+                        "id": colID,
+                        "date": ["May 3, 2018","Oct. 28, 2018"],
+                        "parameters": {
+                            "Parameter1": {
+                                "range":[ 0, 100 ],"uom":"",
+                            }
+                        }
+                    });
+                }
+            }
 
 
-             
-
-            var USER_PRODUCTS = [
+            /*var USER_PRODUCTS = [
                     {
                         "name": "WRFCHEM_PM25surf_4326_005",
                         "id": "WRFCHEM_PM25surf_4326_005",
@@ -434,7 +457,7 @@
                             }
                         }
                     }
-          ];
+          ];*/
             
         </script>
 

@@ -34,7 +34,7 @@
       },
 
       initialize: function(options) {
-        this.wps_url = "http://vtdas-dave.zamg.ac.at/davprc/ows?";
+        this.wps_url = PRODUCT_URL + "/ows?";
         this.p_plot = new plotty.plot($('<canvas/>'), null, 1, 1);
       },
 
