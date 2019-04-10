@@ -403,11 +403,24 @@ define(['backbone.marionette',
 
 	                		$("#pickingresults").show();
 
+	                		var datSet = {
+	                			'measurement': {
+	                				'lineConnect': true,
+	                				'color': [0.1, 0.1, 1.0]
+	                			},
+	                			'timestamp': {}
+	                		};
+	                		if(renderdata[0].hasOwnProperty('timestamp') && 
+	                			renderdata[0]['timestamp'] instanceof Date) {
+	                			datSet['timestamp'] = {
+	                				scaleFormat: 'time'
+	                			}
+	                			renderdata = _.sortBy(renderdata, function(c){ return c.timestamp.getTime(); });
+	                		}
+
+
 	                		if(that.graph){
-	                			that.graph.dataSettings = {
-			                    	'measurement': {'lineConnect': true},
-			                    	'timestamp': {}
-			                    };
+	                			that.graph.dataSettings = datSet;
 			                    that.graph.renderSettings = {
 			                    	xAxis: that.selection_x,
 				                    yAxis: [that.selection_y],
@@ -425,7 +438,7 @@ define(['backbone.marionette',
 				                		}
 				                	}
 				                }
-				                
+
 				                that.graph.loadData(compRenDat);
 							}
 
@@ -717,6 +730,11 @@ define(['backbone.marionette',
 							w = Cesium.Math.toDegrees(rect.west),
 							n = Cesium.Math.toDegrees(rect.north),
 							s = Cesium.Math.toDegrees(rect.south);
+
+						if(e > 180){
+							e-= 180;
+							w-=180;
+						}
 						if( w <= p.x && p.x <= e &&
 						    s <= p.y && p.y <= n ) {
 						    return true;
@@ -2419,7 +2437,8 @@ define(['backbone.marionette',
 						                  coverages.data.push({
 						                            identifier: id,
 						                            wcsEndpoint: wcsEndpoint,
-						                            bbox: [lowCorn[1], lowCorn[0], upperCorn[1], upperCorn[0]]
+						                            bbox: [lowCorn[1], lowCorn[0], upperCorn[1], upperCorn[0]],
+						                            starttime: start
 						                        }
 						                  );
 						              }
@@ -2702,7 +2721,9 @@ define(['backbone.marionette',
 																	prim_to_render.cov_id = to_play[play_index].identifier;
 																	Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
 																	$('#timestamp').show();
-																	$('#timestamp').text(to_play[play_index].starttime);
+																	$('#timestamp').text(
+																		getISODateTimeString(to_play[play_index].starttime)
+																	);
 														        }
 
 														    }, 1000 / fps);
@@ -2745,7 +2766,9 @@ define(['backbone.marionette',
 																	prim_to_render.cov_id = to_play[play_index].identifier;
 																	Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
 																	$('#timestamp').show();
-																	$('#timestamp').text(to_play[play_index].starttime);
+																	$('#timestamp').text(
+																		getISODateTimeString(to_play[play_index].starttime)
+																	);
 														        }
 
 														    }, 1000 / fps);
@@ -2783,6 +2806,9 @@ define(['backbone.marionette',
 												prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
 												prim_to_render.cov_id = to_play[play_index].identifier;
 												Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
+												$('#timestamp').text(
+													getISODateTimeString(to_play[play_index].starttime)
+												);
 										    });
 
 										    // Setup forward button
@@ -2794,6 +2820,9 @@ define(['backbone.marionette',
 												prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
 												prim_to_render.cov_id = to_play[play_index].identifier;
 												Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
+												$('#timestamp').text(
+													getISODateTimeString(to_play[play_index].starttime)
+												);
 										    });
 
 										}
