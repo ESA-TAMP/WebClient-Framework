@@ -2219,8 +2219,10 @@ define(['backbone.marionette',
 						//self.timeseries.push({id:cov_id, data:line});
 					}else{
 						// 2D coverage for animation
-						self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
-						self.stackedDataset.push(cov_id);
+						if(typeof rasdata !== 'undefined' && rasdata.length>0){
+							self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
+							self.stackedDataset.push(cov_id);
+						}
 					}
 
 					self.currentDownload++;
@@ -2336,6 +2338,10 @@ define(['backbone.marionette',
 					                  var summ = entries[ee]['atom:summary'];
 					                  var hasEndTime = false;
 					                  var wcsEndpoint = entries[ee]['atom:source'];
+
+					                  if(wcsEndpoint.indexOf('CAMS')!==-1){
+					    				wcsEndpoint = wcsEndpoint.replace('CAMS', 'vr_CAMS');
+				    				  }
 					                  
 					                  if(b!=null){
 					                  	wcsEndpoint = wcsEndpoint +

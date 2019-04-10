@@ -279,7 +279,7 @@
                     if(hasEndTime){
                       end = new Date(spl[7]);
                     }
-                    var id = spl[5];
+                    var id = spl[2];
 
 
 
