@@ -34,7 +34,7 @@
 
             var PRODUCT_URL = "https://wcs-eo4sdcr.adamplatform.eu/";
             var fetchCollectionListURL  = PRODUCT_URL+'wcs?service=WCS&Request=GetCapabilities&version=2.0.0';
-            var USER_PRODUCTS = [];
+            /*var USER_PRODUCTS = [];
 
             var request = new XMLHttpRequest();
             request.open('GET', fetchCollectionListURL, false);  // `false` makes the request synchronous
@@ -46,18 +46,112 @@
                 for (col = 0; col  < collections.length; col++) {
                     var colID = collections[col].textContent;
                     console.log(colID);
-                    USER_PRODUCTS.push({
-                        "name": colID.replace(/_/g, ' '),
-                        "id": colID,
-                        "date": ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
+                    if(colID.indexOf('S5P') !== -1 || colID.indexOf('CAMS') !== -1){
+                        USER_PRODUCTS.push({
+                            "name": colID.replace(/_/g, ' '),
+                            "id": colID,
+                            "date": ["May 3, 2018","Oct. 28, 2018"],
+                            "parameters": {
+                                "Parameter1": {
+                                    "range":[ 0, 100 ],"uom":"",
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                 }
-            }
+            }*/
+
+
+            var USER_PRODUCTS = [
+                {
+                    "name": "S5P L2 TROPOMI NO2 TROPOSPHERIC COLUMN",
+                    "id": "S5P_LEVEL2_TROPOMI_L2__NO2____NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_4326_0035",
+                    "date":
+                    ["May 3, 2018","Oct. 28, 2018"],
+                    "parameters": {
+                        "Parameter1": {
+                            "range":[ 0.0, 0.00001 ],"uom":"NO2",
+                        }
+                    }
+                },
+                {
+                    "name": "S5P L2_TROPOMI SO2 TOTAL VERTICAL COLUMN",
+                    "id": "S5P_LEVEL2_TROPOMI_L2__SO2____SULFURDIOXIDE_TOTAL_VERTICAL_COLUMN_4326_0035",
+                    "date":
+                    ["May 3, 2018","Oct. 28, 2018"],
+                    "parameters": {
+                        "Parameter1": {
+                            "range":[ 0.000001, 0.01 ],"uom":"SO2",
+                        }
+                    }
+                },
+                {
+                    "name": "S5P L2 TROPOMI CO TOTAL COLUMN",
+                    "id": "S5P_LEVEL2_TROPOMI_L2__CO____CARBONMONOXIDE_TOTAL_COLUMN_4326_0035",
+                    "date":
+                    ["May 3, 2018","Oct. 28, 2018"],
+                    "parameters": {
+                        "Parameter1": {
+                            "range":[ 0.005, 0.06 ],"uom":"CO",
+                        }
+                    }
+                },
+                {
+                    "name": "S5P L2 TROPOMI O3 TOTAL VERTICAL COLUMN",
+                    "id": "S5P_LEVEL2_TROPOMI_L2__O3____OZONE_TOTAL_VERTICAL_COLUMN_4326_0035",
+                    "date":
+                    ["May 3, 2018","Oct. 28, 2018"],
+                    "parameters": {
+                        "Parameter1": {
+                            "range":[ 0.1, 0.2 ],"uom":"O3",
+                        }
+                    }
+                },
+                {
+                    "name": "CAMS ECMWF SFC TC SO2",
+                    "id": "CAMS_ECMWF_SFC_TCSO2_4326_04",
+                    "date":
+                    ["May 3, 2018","Oct. 28, 2018"],
+                    "parameters": {
+                        "Parameter1": {
+                            "range":[ 0, 1 ],"uom":"SO2",
+                        }
+                    }
+                },
+                {
+                    "name": "CAMS ECMWF SFC TC NO2",
+                    "id": "CAMS_ECMWF_SFC_TCNO2_4326_04",
+                    "date":
+                    ["May 3, 2018","Oct. 28, 2018"],
+                    "parameters": {
+                        "Parameter1": {
+                            "range":[ 0, 1 ],"uom":"NO2",
+                        }
+                    }
+                },
+                {
+                    "name": "CAMS ECMWF SFC GTC O3",
+                    "id": "CAMS_ECMWF_SFC_GTCO3_4326_04",
+                    "date":
+                    ["May 3, 2018","Oct. 28, 2018"],
+                    "parameters": {
+                        "Parameter1": {
+                            "range":[ 0, 500 ],"uom":"O3",
+                        }
+                    }
+                },
+                {
+                    "name": "CAMS ECMWF SFC PM10",
+                    "id": "CAMS_ECMWF_SFC_PM10_4326_04",
+                    "date":
+                    ["May 3, 2018","Oct. 28, 2018"],
+                    "parameters": {
+                        "Parameter1": {
+                            "range":[ 0.0, 0.05 ],"uom":"kg x m3",
+                        }
+                    }
+                }
+            ];
 
 
             /*var USER_PRODUCTS = [

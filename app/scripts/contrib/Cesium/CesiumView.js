@@ -74,7 +74,7 @@ define(['backbone.marionette',
 		'FileSaver',
 		'geotiff',
 		'plotty',
-		'analytics'
+		'graphly'
 	],
 	function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
 			 Tmpl_get_time_data, Tmpl_wcs_get_coverage) {
@@ -336,7 +336,6 @@ define(['backbone.marionette',
 							ent.image = pinimage;
 							self.selectedEntityId = null;
 						}
-						$("#pickingresults").empty();
 						$("#pickingresults").hide();
 					}
 					if (Cesium.defined(pickedObject)) {
@@ -372,11 +371,19 @@ define(['backbone.marionette',
 
 	                	var renderdata = self.pickScene(pos_x,pos_y);
 
-	                	$("#pickingresults").empty();
 	                	$("#pickingresults").hide();
 
-						$("#pickingresults").append('<div id="positionvalues" style="position:absolute;top:5px;left:50px"> Lat:'+pos_y.toFixed(5)+'; Lon:'+pos_x.toFixed(5)+'</div>');
+	                	// Do some cleanup
+	                	$("#positionvalues").remove();
+	                	$('#prcontainer').remove();
+	                	$('#enlarge').remove();
+	                	$('#analyticsSavebutton').remove();
 
+
+						$("#pickingresults").append(
+							'<div id="positionvalues" style="position:absolute;top:5px;left:60px"> Lat:'+
+							pos_y.toFixed(5)+'; Lon:'+pos_x.toFixed(5)+'</div>'
+						);
 
 	                	if (renderdata.length == 1){
 	                		$("#pickingresults").show();
@@ -396,61 +403,65 @@ define(['backbone.marionette',
 
 	                		$("#pickingresults").show();
 
-	                		$("#pickingresults").append('<button type="button" id="pickingresultsClose" class="close" style="position: absolute; right:0px; margin-right:5px; margin-top:5px;"><i class="fa fa-times-circle"></i></button>');
-							$("#pickingresults").append('<div id="pickingresultcontainer"></div>');
+	                		if(that.graph){
+	                			that.graph.dataSettings = {
+			                    	'measurement': {'lineConnect': true},
+			                    	'timestamp': {}
+			                    };
+			                    that.graph.renderSettings = {
+			                    	xAxis: that.selection_x,
+				                    yAxis: [that.selection_y],
+				                    colorAxis: [ null ],
+			                    };
 
-							$('#pickingresultsClose').click(function(){
-								self.special1dData = [];
-			                	$("#pickingresults").hide();
-			                	$("#pickingresults").empty();
-			                });
+			                    var compRenDat = {};
+				                for (var i = 0; i < renderdata.length; i++) {
+				                	
+				                	for(var k in renderdata[i]){
+				                		if(compRenDat.hasOwnProperty(k)){
+				                			compRenDat[k].push(renderdata[i][k]);
+				                		} else {
+				                			compRenDat[k] = [renderdata[i][k]];
+				                		}
+				                	}
+				                }
+				                
+				                that.graph.loadData(compRenDat);
+							}
 
-
-	                		var args = {
-								scatterEl: $('#pickingresultcontainer')[0],
-								selection_x: that.selection_x,
-								selection_y: [that.selection_y],
-								showDropDownSelection: false,
-								renderBlocks: false,
-								margin: {top: 45, right: 20, bottom: 10, left: 50}
-							};
-
-							$('#imagerenderer').remove();
-
-							var sp = new scatterPlot(args, function(){
-								},
-								function (values) {
-									//Communicator.mediator.trigger("cesium:highlight:point", [values.Latitude, values.Longitude, values.Radius]);
-								}, 
-								function(){
-									//Communicator.mediator.trigger("cesium:highlight:removeAll");
-								},
-								function(filter){
-									//Communicator.mediator.trigger("download:set:filter", filter);
-								}
-							);
-
-	                		sp.loadData({parsedData: renderdata});
-	                		// Move some things around
-	                		/*$('#download_button').remove();
-	                		$('#pickingresults').find('#save').attr('style','position: absolute; right: 29px; top: 7px');
-	                		$('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');*/
 
 	                		$("#pickingresults").append(
 								'<a href="javascript:void(0)" id="enlarge" style="position: absolute;top:5px;left:5px">'+
 									'<i style="font-size:1.5em;" class="fa fa-expand fa-rotate-90"></i></a>'
-								);
+							);
+
+							$('#pickingresults').append(
+								'<div id="analyticsSavebutton"><i class="fa fa-floppy-o" aria-hidden="true"></i></div>'
+							);
+
+							$('#analyticsSavebutton').click(function(){
+								that.graph.saveImage();
+							});
+
 							$('#enlarge').click(function (evt) {
 								if ($('#pickingresults').hasClass("big")){
 									$('#pickingresults').width("30%");
 									$('#pickingresults').height("30%");
 									$('#pickingresults').resize();
 									$('#pickingresults').removeClass("big");
+									$('#pickingresultcontainer').resize();
+									if(that.graph){
+										that.graph.resize();
+									}
 								}else{
 									$('#pickingresults').addClass( "big" )
 									$('#pickingresults').width("50%");
 									$('#pickingresults').height("70%");
 									$('#pickingresults').resize();
+									$('#pickingresultcontainer').resize();
+									if(that.graph){
+										that.graph.resize();
+									}
 								}
 								
 							});
@@ -669,7 +680,7 @@ define(['backbone.marionette',
 				$('#pickingresultsClose').click(function(){
 					self.special1dData = [];
 					$("#pickingresults").hide();
-					$("#pickingresults").empty();
+					//$("#pickingresults").empty();
 				});
 
 				$("#pickingresults").append(
@@ -891,6 +902,31 @@ define(['backbone.marionette',
 
 				this.isClosed = false;
 				$("#cesium_save").on("click", this.onSaveImage.bind(this));
+
+
+				$("#pickingresults").hide();
+				$("#pickingresults").append('<button type="button" id="pickingresultsClose" class="close" style="position: absolute; right:0px; margin-right:5px; margin-top:5px;"><i class="fa fa-times-circle"></i></button>');
+				$("#pickingresults").append('<div id="pickingresultcontainer"></div>');
+
+				$('#pickingresultsClose').click(function(){
+					self.special1dData = [];
+                	$("#pickingresults").hide();
+                });
+
+                this.graph = new graphly.graphly({
+	                el: '#pickingresultcontainer',
+	                margin: {top: 10, left: 80, bottom: 50, right: 30},
+	                dataSettings: {},
+	                renderSettings: {
+	                	xAxis: 'tmp',
+	                    yAxis: ['tmp'],
+	                    colorAxis: [ null ],
+	                },
+	                displayParameterLabel: false,
+	                debounceActive: false,
+	                colorAxisTickFormat: 'customExp',
+	                defaultAxisTickFormat: 'customExp'
+	            });
 
 				return this;
 			},
@@ -2627,89 +2663,7 @@ define(['backbone.marionette',
 
 										$("#pickingresults").show();
 
-										$("#pickingresults").append('<button type="button" id="pickingresultsClose" class="close" style="position: absolute; right:0px; margin-right:5px; margin-top:5px;"><i class="fa fa-times-circle"></i></button>');
-										$("#pickingresults").append('<div id="pickingresultcontainer"></div>');
-
-										$('#pickingresultsClose').click(function(){
-											self.special1dData = [];
-						                	$("#pickingresults").hide();
-						                	$("#pickingresults").empty();
-						                });
-
-										var args = {
-											scatterEl: $('#pickingresultcontainer')[0],
-											selection_x: "starttime",
-											selection_y: ["height"],
-											showDropDownSelection: false,
-											parsedData: self.timeseries,
-											renderBlocks: true,
-											dataRange: self.timeseriesRange,
-											margin: {top: 45, right: 120, bottom: 10, left: 50}
-										};
-
-										var sp = new scatterPlot(args, function(){
-											},
-											function (values) {
-												//Communicator.mediator.trigger("cesium:highlight:point", [values.Latitude, values.Longitude, values.Radius]);
-											}, 
-											function(){
-												//Communicator.mediator.trigger("cesium:highlight:removeAll");
-											},
-											function(filter){
-												//Communicator.mediator.trigger("download:set:filter", filter);
-											}
-										);
-
-										sp.loadData(args);
-										// Move some things around
-										/*$('#download_button').remove();
-										$('#pickingresults').find('#save').attr('style','position: absolute; right: 29px; top: 7px');
-										$('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');*/
-
-										$("#pickingresults").append(
-											'<a href="javascript:void(0)" id="enlarge" style="position: absolute;top:5px;left:5px">'+
-												'<i style="font-size:1.5em;" class="fa fa-expand fa-rotate-90"></i></a>'
-											);
-										$('#enlarge').click(function (evt) {
-											if ($('#pickingresults').hasClass("big")){
-												$('#pickingresults').width("30%");
-												$('#pickingresults').height("30%");
-												$('#pickingresults').resize();
-												$('#pickingresults').removeClass("big");
-											}else{
-												$('#pickingresults').addClass( "big" )
-												$('#pickingresults').width("50%");
-												$('#pickingresults').height("70%");
-												$('#pickingresults').resize();
-											}
-											
-										});
-
-										$("#pickingresults").prepend('<button type="button" id="pickingresultsClose" class="close" style="position: absolute; right:0px; margin-right:5px; margin-top:5px;"><i class="fa fa-times-circle"></i></button>');
-
-										$('#pickingresultsClose').click(function(){
-											self.special1dData = [];
-						                	$("#pickingresults").hide();
-						                	$("#pickingresults").empty();
-						                });
-
-										/*var h = self.timeseries[0].data.length;
-										var w = self.timeseries.length;
-										var timeseriesdata = new Float32Array(h * w);
-										for (var i=0; i<h; i++){
-											for(var j=0; j<w; j++){
-												timeseriesdata[(i*w)+j] = self.timeseries[j].data[i];
-											}
-										}
-										if(self.p_plot.datasetAvailable("timeseries")){
-											self.p_plot.removeDataset("timeseries");
-										}
-										self.p_plot.addDataset("timeseries", timeseriesdata, w, h);
-										self.p_plot.setDomain([3.792e+16, 4.949e+18]);
-										self.p_plot.setClamp(true,true);
-										self.p_plot.renderDataset("timeseries");
-										var tmp = self.p_plot.canvas.toDataURL();
-										window.open(tmp,'_blank');*/
+										// TODO: Load graphly plot
 
 										self.timeseries = [];
 
@@ -3301,7 +3255,6 @@ define(['backbone.marionette',
 					else{
 						this.pickingActive = false;
 						this.map.entities.getById("needle").show = false;
-						$("#pickingresults").empty();
 	                	$("#pickingresults").hide();
 					}
 

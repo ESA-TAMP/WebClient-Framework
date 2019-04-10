@@ -111,3 +111,32 @@
   background-color: white;
   display:none;
 }
+
+
+
+#pickingresultcontainer{
+  height: calc(100% - 20px);
+  top: 25px;
+}
+
+.y2AxisLabel.axisLabel {
+  display: none!important;
+}
+
+#analyticsSavebutton{
+  position: absolute;
+  left: 30px;
+  top: 1px;
+  color: #428bca;
+  font-size: 1.6em;
+  cursor: pointer;
+}
+
+#analyticsSavebutton:hover{
+  color: #296aa2;
+}
+
+#listdisplay{
+  position: absolute;
+  top: 40px;
+}

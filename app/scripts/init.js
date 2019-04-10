@@ -47,9 +47,6 @@
             timeslider_plugins: {
                 deps: ['timeslider', 'libcoverage']
 			},
-            keypress: {
-                exports: 'Keypress'
-            },
             xtk: {
                 exports: 'X'
             },
@@ -60,16 +57,16 @@
                 deps: ['cesium/Cesium'],
                 exports: 'DrawHelper'
             },
-            analytics: {
-                deps: ['d3', 'jquery']
-            },
             cesium: {
                 deps: ['papaparse']
-            }
+            },
+            graphly: {
+                deps: ['d3', 'plotty']
+            },
         },
 
         paths: {
-            analytics: '../bower_components/d3.Graphs/lib/scripts/av.min',
+            graphly: '../bower_components/graphly/dist/graphly.min',
             cesium: "../bower_components/cesium/Build/Cesium",
             drawhelper: "../scripts/vendor/cesium_DrawHelper",
             contrib: 'contrib',
@@ -113,9 +110,6 @@
 
             /* marionette and handlebars plugin */
             'marionette.handlebars': '../bower_components/backbone.marionette.handlebars/backbone.marionette.handlebars.min',
-
-
-            keypress: '../bower_components/Keypress/keypress',
 
             papaparse: '../bower_components/papaparse/papaparse.min',
 			geotiff: '../bower_components/geotiffjs/index',
