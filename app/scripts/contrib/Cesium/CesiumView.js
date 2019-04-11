@@ -387,6 +387,7 @@ define(['backbone.marionette',
 
 	                	if (renderdata.length == 1){
 	                		$("#pickingresults").show();
+	                		$('#pickingresultcontainer').hide();
 	                		
 
 	                		$("#pickingresults").append('<div style="margin: 0 auto; margin-top: 40px;" id="prcontainer"></div>');
@@ -402,6 +403,7 @@ define(['backbone.marionette',
 	                	}else if (renderdata.length > 1){
 
 	                		$("#pickingresults").show();
+	                		$('#pickingresultcontainer').show();
 
 	                		var datSet = {
 	                			'measurement': {
@@ -1680,7 +1682,7 @@ define(['backbone.marionette',
 				var self = this;
 
 				// Check if we need to transform data
-				if(meta.hasOwnProperty('OFFSET') && img.fileDirectory.hasOwnProperty('GDAL_NODATA')){
+				if(meta && meta.hasOwnProperty('OFFSET') && img.fileDirectory.hasOwnProperty('GDAL_NODATA')){
 					var nodata = Number(img.fileDirectory.GDAL_NODATA.slice(0,-1));
 					var scale = meta.OFFSET;
 					var convRasData = [];
