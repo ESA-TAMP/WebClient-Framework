@@ -2375,13 +2375,6 @@ define(['backbone.marionette',
 			            request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
 			          }
 
-			          if (collection == "cams_test_4326_04"){
-						var tmpreq = "https://wcs-eo4sdcr.adamplatform.eu/wcs?service=WCS&Request=GetCoverage&version=2.0.0&&format=image/tiff&filter=false&CoverageId=cams_test_4326_04&subset=unix(2019-03-26T00:00:00)";
-						self.loadCoverage(tmpreq, b, 'pakito', cur_coll, product, null);
-					  }
-
-									
-
 			          $.get(request)
 			            .success(function(resp) {
 
