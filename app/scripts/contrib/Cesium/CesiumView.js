@@ -420,12 +420,16 @@ define(['backbone.marionette',
 
 
 	                		if(that.graph){
-	                			that.graph.dataSettings = datSet;
-			                    that.graph.renderSettings = {
-			                    	xAxis: that.selection_x,
-				                    yAxis: [that.selection_y],
-				                    colorAxis: [ null ],
-			                    };
+	                			// Check if something changed in the selection
+	                			if(that.graph.renderSettings.xAxis !== that.selection_x || 
+	                				that.graph.renderSettings.yAxis[0] !== that.selection_y) {
+		                			that.graph.dataSettings = datSet;
+				                    that.graph.renderSettings = {
+				                    	xAxis: that.selection_x,
+					                    yAxis: [that.selection_y],
+					                    colorAxis: [ null ],
+				                    };
+				                }
 
 			                    var compRenDat = {};
 				                for (var i = 0; i < renderdata.length; i++) {
@@ -942,8 +946,8 @@ define(['backbone.marionette',
 	                },
 	                displayParameterLabel: false,
 	                debounceActive: false,
-	                colorAxisTickFormat: 'customExp',
-	                defaultAxisTickFormat: 'customExp'
+	                /*colorAxisTickFormat: 'customExp',
+	                defaultAxisTickFormat: 'customExp'*/
 	            });
 
 				return this;
@@ -1675,6 +1679,26 @@ define(['backbone.marionette',
 				var meta = img.getGDALMetadata();
 				var self = this;
 
+				// Check if we need to transform data
+				if(meta.hasOwnProperty('OFFSET') && img.fileDirectory.hasOwnProperty('GDAL_NODATA')){
+					var nodata = Number(img.fileDirectory.GDAL_NODATA.slice(0,-1));
+					var scale = meta.OFFSET;
+					var convRasData = [];
+					if(!isNaN(nodata) && !isNaN(scale)){
+
+						for (var i = 0; i < rasdata.length; i++) {
+							var convArr = [];
+							for (var rd = 0; rd < rasdata[i].length; rd++) {
+								convArr.push(
+									(rasdata[i][rd] - nodata ) *scale
+								);
+							}
+							convRasData.push(convArr);
+						}
+						rasdata = convRasData;
+					}
+				}
+
 
 				// Check if the GeoTIFF is a vertical curtain
 				if(meta && meta.hasOwnProperty('COORDINATES') && meta.hasOwnProperty('HEIGHT_LEVELS') &&
@@ -2350,6 +2374,13 @@ define(['backbone.marionette',
 			          	b = this.bboxsel;
 			            request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
 			          }
+
+			          if (collection == "cams_test_4326_04"){
+						var tmpreq = "https://wcs-eo4sdcr.adamplatform.eu/wcs?service=WCS&Request=GetCoverage&version=2.0.0&&format=image/tiff&filter=false&CoverageId=cams_test_4326_04&subset=unix(2019-03-26T00:00:00)";
+						self.loadCoverage(tmpreq, b, 'pakito', cur_coll, product, null);
+					  }
+
+									
 
 			          $.get(request)
 			            .success(function(resp) {
