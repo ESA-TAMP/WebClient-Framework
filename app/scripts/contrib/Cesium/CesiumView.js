@@ -2294,7 +2294,7 @@ define(['backbone.marionette',
             checkCoverages: function(product,visible){
 
             	// Remove possible timetick and play button
-            	//Communicator.mediator.trigger("date:tick:select", false);
+            	Communicator.mediator.trigger("date:tick:select", null);
             	$('#playercontrols').hide();
             	$('#timestamp').hide();
 
@@ -2447,8 +2447,24 @@ define(['backbone.marionette',
 				              	}
 			              	}
 
-							self.currentCoverages = coverages.data;
+			              	// here we need to remove all "older" coverages
+			              	for (var cc=0; cc<self.currentCoverages.length; cc++){
+			              		// Iterate current set to see if available
+			              		var stillActive = false;
+			              		for (var cd = 0; cd < coverages.data.length; cd++) {
+			              			if(self.currentCoverages[cc].identifier === coverages.data[cd].identifier){
+			              				stillActive = true;
+			              			}
+			              		}
+			              		if(!stillActive){
+			              			// check if available if yes remove coverage
+			              			if(self.p_plot.datasetCollection.hasOwnProperty(self.currentCoverages[cc].identifier)){
+			              				self.p_plot.removeDataset(self.currentCoverages[cc].identifier);
+			              			}
+			              		}
+			              	}
 
+							self.currentCoverages = coverages.data;
 
 							function identicalBbox(array) {
 								if (array.length == 1 || array.length == 0)
@@ -2487,7 +2503,7 @@ define(['backbone.marionette',
 								};
 
 								for (var i = prim_to_remove.length - 1; i >= 0; i--) {
-									if(prim_to_remove[i].cov_id){
+									if(prim_to_remove[i].cov_id && self.p_plot.datasetCollection.hasOwnProperty(prim_to_remove[i].cov_id)){
 										self.p_plot.removeDataset(prim_to_remove[i].cov_id);
 									}
 									cur_coll.remove(prim_to_remove[i]);

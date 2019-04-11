@@ -19,6 +19,30 @@
       initialize: function(options){
         this.options = options;
         this.bbox = null;
+
+        TimeSlider.prototype.setTimetick = function (date){
+
+          this.svg.selectAll('.timetick').remove();
+          if(date === null){
+            return;
+          }
+          var tick = this.svg.selectAll('.timetick').data([date]);
+          var that = this;
+          tick.enter().append('rect')
+            .attr('class', 'timetick')
+            .attr('x', function(a){
+              return that.scales.x(a);
+            })
+            .attr('y', 0 )
+            .attr('width', 1 )
+            .attr('height', (this.options.height-20))
+            .attr('stroke', 'red')
+            .attr('stroke-width', 1)
+            .attr('fill', '#f00');
+
+            tick.exit().remove();
+        }
+
       },
 
       render: function(options){
@@ -216,7 +240,7 @@
       },
 
       onTickSelected: function(date){
-        //this.slider.setTimetick(date);
+        this.slider.setTimetick(date);
       },
 
       fetch: function(start, end, params, callback){
@@ -234,8 +258,6 @@
 
 
       fetchWPS: function(start, end, params, callback){
-
-//pycsw/pycsw/csw.py?mode=opensearch&service=CSW&version=2.0.2&request=GetRecords&elementsetname=brief&
 
           var request = 
             PRODUCT_URL+'pycsw/pycsw/csw.py?mode=opensearch'+
