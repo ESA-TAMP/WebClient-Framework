@@ -2419,9 +2419,9 @@ define(['backbone.marionette',
 					                  var hasEndTime = false;
 					                  var wcsEndpoint = entries[ee]['atom:source'];
 
-					                  if(wcsEndpoint.indexOf('CAMS')!==-1){
+					                  /*if(wcsEndpoint.indexOf('CAMS')!==-1){
 					    				wcsEndpoint = wcsEndpoint.replace('CAMS', 'vr_CAMS');
-				    				  }
+				    				  }*/
 					                  
 					                  if(b!=null){
 					                  	wcsEndpoint = wcsEndpoint +
