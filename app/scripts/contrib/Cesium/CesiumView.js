@@ -1637,7 +1637,6 @@ define(['backbone.marionette',
 			},
 
 			loadCoverage: function(request, bbox, cov_id, cur_coll, product, prim){
-
 				return $.ajax({
 				   dataType:'arraybuffer',
 				   type:'GET',
@@ -1680,11 +1679,11 @@ define(['backbone.marionette',
 				}
 				var meta = img.getGDALMetadata();
 				var self = this;
-
+				
 				// Check if we need to transform data
 				if(meta && meta.hasOwnProperty('OFFSET') && img.fileDirectory.hasOwnProperty('GDAL_NODATA')){
 					var nodata = Number(img.fileDirectory.GDAL_NODATA.slice(0,-1));
-					var scale = meta.OFFSET;
+					var scale = Number(meta.OFFSET);
 					var convRasData = [];
 					if(!isNaN(nodata) && !isNaN(scale)){
 
@@ -2264,6 +2263,28 @@ define(['backbone.marionette',
 					var gt = GeoTIFF.parse(data);
 					var img = gt.getImage(0);
 					var rasdata = img.readRasters();
+
+					var meta = img.getGDALMetadata();
+
+					// Check if we need to transform data
+					if(meta && meta.hasOwnProperty('OFFSET') && img.fileDirectory.hasOwnProperty('GDAL_NODATA')){
+						var nodata = Number(img.fileDirectory.GDAL_NODATA.slice(0,-1));
+						var scale = Number(meta.OFFSET);
+						var convRasData = [];
+						if(!isNaN(nodata) && !isNaN(scale)){
+
+							for (var i = 0; i < rasdata.length; i++) {
+								var convArr = [];
+								for (var rd = 0; rd < rasdata[i].length; rd++) {
+									convArr.push(
+										(rasdata[i][rd] - nodata ) *scale
+									);
+								}
+								convRasData.push(convArr);
+							}
+							rasdata = convRasData;
+						}
+					}
 
 					if (img.getWidth()==1 && img.getHeight()==1) {
 						// This is a 1D "column"
