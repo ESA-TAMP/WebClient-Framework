@@ -1672,7 +1672,7 @@ define(['backbone.marionette',
 					$("#error-messages").append(
                           '<div class="alert alert-warning alert-info">'+
                           '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>'+
-                          'There was an error accessing the current dataset' +
+                          'There was an error accessing the current dataset ' + cov_id +
                         '</div>'
 	                );
 	                return;
@@ -2263,6 +2263,17 @@ define(['backbone.marionette',
 					var gt = GeoTIFF.parse(data);
 					var img = gt.getImage(0);
 					var rasdata = img.readRasters();
+
+					if(rasdata === undefined) {
+						// Something went wrong reading the tiff, show message and stop here
+						$("#error-messages").append(
+	                          '<div class="alert alert-warning alert-info">'+
+	                          '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>'+
+	                          'There was an error accessing the current dataset ' + cov_id +
+	                        '</div>'
+		                );
+		                return;
+					}
 
 					var meta = img.getGDALMetadata();
 
