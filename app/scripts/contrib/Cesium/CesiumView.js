@@ -2475,6 +2475,7 @@ define(['backbone.marionette',
 					                  }
 
 					                  //wcsEndpoint += '&scale=0.1';
+					                  wcsEndpoint += '&comprecompression=false';
 
 					                  if(summ.indexOf('<strong>End</strong>') !== -1){
 					                    hasEndTime = true;
@@ -2482,10 +2483,10 @@ define(['backbone.marionette',
 					                  // Replace all tags of summary with white spaces and then
 					                  // split by whitespaces, leaving is necessary information
 					                  var spl = summ.replace(/ *\<[^>]*\> */g, " ").split(/[\s]+/);
-					                  var start = new Date(spl[9]);
+					                  var start = new Date(spl[7]);
 					                  var end = start;
 					                  if(hasEndTime){
-					                    end = new Date(spl[7]);
+					                    end = new Date(spl[9]);
 					                  }
 					                  
 					                  //var id = spl[2];

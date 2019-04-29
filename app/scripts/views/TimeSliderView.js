@@ -296,10 +296,10 @@
                     // Replace all tags of summary with white spaces and then
                     // split by whitespaces, leaving is necessary information
                     var spl = summ.replace(/ *\<[^>]*\> */g, " ").split(/[\s]+/);
-                    var start = new Date(spl[9]);
+                    var start = new Date(spl[7]);
                     var end = start;
                     if(hasEndTime){
-                      end = new Date(spl[7]);
+                      end = new Date(spl[9]);
                     }
                     var id = spl[2];
 
