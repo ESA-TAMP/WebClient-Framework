@@ -2475,6 +2475,9 @@ define(['backbone.marionette',
 					                  }
 
 					                  //wcsEndpoint += '&scale=0.1';
+					                  if(wcsEndpoint.indexOf('WRFCHEM')!==-1){
+					                  	wcsEndpoint += '&scale=0.7';
+					                  }
 					                  wcsEndpoint += '&comprecompression=false';
 
 					                  if(summ.indexOf('<strong>End</strong>') !== -1){
