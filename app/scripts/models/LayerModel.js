@@ -13,6 +13,7 @@
 
 		var LayerModel = Backbone.Model.extend({
 			name: '',
+			description: '',
 			timeSlider: false,
 			timeSliderProtocol: '',
 			color: '',

@@ -3768,7 +3768,7 @@ define(['backbone.marionette',
 
 			onSaveImage: function(){
 				this.map.canvas.toBlob(function(blob) {
-					saveAs(blob, "TAMP_Screenshot.jpg");
+					saveAs(blob, "TOP_Rendering.jpg");
 				}, "image/jpeg");
 			},
 

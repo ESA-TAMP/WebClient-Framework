@@ -64,10 +64,11 @@
 
             var USER_PRODUCTS = [
                 {
-                    "name": "S5P L2 TROPOMI NO2 TROPOSPHERIC COLUMN",
+                    "name": "NO2 tropospheric column",
                     "id": "S5P_LEVEL2_TROPOMI_L2__NO2____NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_4326_0035",
+                    "description": "Sentinel 5P Nitrogen Dioxide (NO2) tropospheric columns",
                     "date":
-                    ["May 3, 2018","Oct. 28, 2018"],
+                    ["May 3, 2018","Oct. 28, 2019"],
                     "parameters": {
                         "Parameter1": {
                             "range":[ 0.0, 0.00001 ],"uom":"NO2",
@@ -75,10 +76,11 @@
                     }
                 },
                 {
-                    "name": "S5P L2_TROPOMI SO2 TOTAL VERTICAL COLUMN",
+                    "name": "SO2 total column",
                     "id": "S5P_LEVEL2_TROPOMI_L2__SO2____SULFURDIOXIDE_TOTAL_VERTICAL_COLUMN_4326_0035",
+                    "description": "Sentinel 5P Sulfur Dioxide (SO2) total column",
                     "date":
-                    ["May 3, 2018","Oct. 28, 2018"],
+                    ["May 3, 2018","Oct. 28, 2019"],
                     "parameters": {
                         "Parameter1": {
                             "range":[ 0.000001, 0.01 ],"uom":"SO2",
@@ -86,10 +88,11 @@
                     }
                 },
                 {
-                    "name": "S5P L2 TROPOMI CO TOTAL COLUMN",
+                    "name": "CO Vertical  column",
                     "id": "S5P_LEVEL2_TROPOMI_L2__CO____CARBONMONOXIDE_TOTAL_COLUMN_4326_0035",
+                    "description": "Sentinel 5P Carbn Monoxide (CO) total column",
                     "date":
-                    ["May 3, 2018","Oct. 28, 2018"],
+                    ["May 3, 2018","Oct. 28, 2019"],
                     "parameters": {
                         "Parameter1": {
                             "range":[ 0.005, 0.06 ],"uom":"CO",
@@ -97,10 +100,11 @@
                     }
                 },
                 {
-                    "name": "S5P L2 TROPOMI O3 TOTAL VERTICAL COLUMN",
+                    "name": "O3 tropospheric column",
                     "id": "S5P_LEVEL2_TROPOMI_L2__O3____OZONE_TOTAL_VERTICAL_COLUMN_4326_0035",
+                    "description": "Sentinel 5P Ozone (O3) tropospheric column",
                     "date":
-                    ["May 3, 2018","Oct. 28, 2018"],
+                    ["May 3, 2018","Oct. 28, 2019"],
                     "parameters": {
                         "Parameter1": {
                             "range":[ 0.1, 0.2 ],"uom":"O3",
@@ -108,10 +112,23 @@
                     }
                 },
                 {
-                    "name": "CAMS ECMWF SFC TC SO2",
-                    "id": "CAMS_ECMWF_SFC_TCSO2_4326_04",
+                    "name": "Aerosol index",
+                    "id": "S5P_LEVEL2_TROPOMI_L2__AER_AI____AEROSOL_INDEX_340_380_4326_0035",
+                    "description": "Sentinel 5P UV Aerosol Index 340-480 nm",
                     "date":
-                    ["May 3, 2018","Oct. 28, 2018"],
+                    ["May 3, 2018","Oct. 28, 2019"],
+                    "parameters": {
+                        "Parameter1": {
+                            "range":[ 0.1, 0.2 ],"uom":null,
+                        }
+                    }
+                },
+                {
+                    "name": "Global SO2 forecast",
+                    "id": "CAMS_ECMWF_SFC_TCSO2_4326_04",
+                    "description": "CAMS ECMWF SO2 Surface forecast",
+                    "date":
+                    ["May 3, 2018","Oct. 28, 2019"],
                     "parameters": {
                         "Parameter1": {
                             "range":[ 0, 1 ],"uom":"SO2",
@@ -119,10 +136,11 @@
                     }
                 },
                 {
-                    "name": "CAMS ECMWF SFC TC NO2",
+                    "name": "Global NO2 forecast",
                     "id": "CAMS_ECMWF_SFC_TCNO2_4326_04",
+                    "description": "CAMS ECMWF NO2 Surface forecast",
                     "date":
-                    ["May 3, 2018","Oct. 28, 2018"],
+                    ["May 3, 2018","Oct. 28, 2019"],
                     "parameters": {
                         "Parameter1": {
                             "range":[ 0, 1 ],"uom":"NO2",
@@ -130,10 +148,11 @@
                     }
                 },
                 {
-                    "name": "CAMS ECMWF SFC GTC O3",
+                    "name": "Global O3 forecast",
                     "id": "CAMS_ECMWF_SFC_GTCO3_4326_04",
+                    "description": "CAMS ECMWF O3 total column forecast",
                     "date":
-                    ["May 3, 2018","Oct. 28, 2018"],
+                    ["May 3, 2018","Oct. 28, 2019"],
                     "parameters": {
                         "Parameter1": {
                             "range":[ 0, 500 ],"uom":"O3",
@@ -141,10 +160,61 @@
                     }
                 },
                 {
-                    "name": "CAMS ECMWF SFC PM10",
+                    "name": "Global PM10 forecast",
                     "id": "CAMS_ECMWF_SFC_PM10_4326_04",
+                    "description": "CAMS ECMWF PM10 Surface forecast",
                     "date":
-                    ["May 3, 2018","Oct. 28, 2018"],
+                    ["May 3, 2018","Oct. 28, 2019"],
+                    "parameters": {
+                        "Parameter1": {
+                            "range":[ 0.0, 0.05 ],"uom":"kg x m3",
+                        }
+                    }
+                }
+
+                ,
+                {
+                    "name": "European PM10 analysis and forecast",
+                    "id": "EU_CAMS_SURFACE_PM10_4326_01",
+                    "description": "CAMS EU Regional PM10 surface analysis and forecast",
+                    "date":
+                    ["May 3, 2018","Oct. 28, 2019"],
+                    "parameters": {
+                        "Parameter1": {
+                            "range":[ 0, 1 ],"uom":"kg x m3",
+                        }
+                    }
+                },
+                {
+                    "name": "European SO2 analysis and forecast",
+                    "id": "EU_CAMS_SURFACE_SO2_4326_01",
+                    "description": "CAMS EU Regional SO2 surface analysis and forecast",
+                    "date":
+                    ["May 3, 2018","Oct. 28, 2019"],
+                    "parameters": {
+                        "Parameter1": {
+                            "range":[ 0, 1 ],"uom":"SO2",
+                        }
+                    }
+                },
+                {
+                    "name": "European NO2 analysis and forecast",
+                    "id": "EU_CAMS_SURFACE_NO2_4326_01",
+                    "description": "CAMS EU Regional NO2 surface analysis and forecast",
+                    "date":
+                    ["May 3, 2018","Oct. 28, 2019"],
+                    "parameters": {
+                        "Parameter1": {
+                            "range":[ 0, 500 ],"uom":"O3",
+                        }
+                    }
+                },
+                {
+                    "name": "European O3 analysis and forecast",
+                    "id": "EU_CAMS_SURFACE_O3_4326_01",
+                    "description": "CAMS EU Regional O3 surface analysis and forecast",
+                    "date":
+                    ["May 3, 2018","Oct. 28, 2019"],
                     "parameters": {
                         "Parameter1": {
                             "range":[ 0.0, 0.05 ],"uom":"kg x m3",
@@ -152,10 +222,11 @@
                     }
                 },
                 {
-                    "name": "WRFCHEM DUST col",
+                    "name": "ZAMG WRF-Chem EU dust analysis",
                     "id": "WRFCHEM_DUSTcol",
+                    "description": "",
                     "date":
-                    ["May 3, 2018","Oct. 28, 2018"],
+                    ["May 3, 2018","Oct. 28, 2019"],
                     "parameters": {
                         "Parameter1": {
                             "range":[ 0.0, 200 ],"uom":"mg/m2",
