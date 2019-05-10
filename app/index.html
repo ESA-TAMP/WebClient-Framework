@@ -64,62 +64,79 @@
 
             var USER_PRODUCTS = [
                 {
+                    "name": "CH4 total column",
+                    "id": "S5P_OFFL_L2__CH4_4326_0035",
+                    "description": "Sentinel 5P Methane (CH4) total column",
+                    "date":
+                    ["May 3, 2018","Oct. 28, 2019"],
+                    "parameters": {
+                        "Parameter1": {
+                            "range":[ 1500,2000 ],"uom":"CH4",
+                        }
+                    }
+                },
+                {
                     "name": "NO2 tropospheric column",
-                    "id": "S5P_LEVEL2_TROPOMI_L2__NO2____NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_4326_0035",
+                    "id": "S5P_NRTI_L2__NO2_4326_0035",
                     "description": "Sentinel 5P Nitrogen Dioxide (NO2) tropospheric columns",
                     "date":
                     ["May 3, 2018","Oct. 28, 2019"],
                     "parameters": {
                         "Parameter1": {
-                            "range":[ 0.0, 0.00001 ],"uom":"NO2",
+                            "range":[ 0,0.0005 ],"uom":"NO2",
+                            "clamp_max":true
                         }
                     }
                 },
                 {
                     "name": "SO2 total column",
-                    "id": "S5P_LEVEL2_TROPOMI_L2__SO2____SULFURDIOXIDE_TOTAL_VERTICAL_COLUMN_4326_0035",
+                    "id": "S5P_NRTI_L2__SO2_4326_0035",
                     "description": "Sentinel 5P Sulfur Dioxide (SO2) total column",
                     "date":
                     ["May 3, 2018","Oct. 28, 2019"],
                     "parameters": {
                         "Parameter1": {
-                            "range":[ 0.000001, 0.01 ],"uom":"SO2",
+                            "range":[ 0, 0.002 ],"uom":"SO2",
+                            "clamp_max":true
                         }
                     }
                 },
                 {
                     "name": "CO Vertical  column",
-                    "id": "S5P_LEVEL2_TROPOMI_L2__CO____CARBONMONOXIDE_TOTAL_COLUMN_4326_0035",
+                    "id": "S5P_NRTI_L2__CO_4326_0035",
                     "description": "Sentinel 5P Carbn Monoxide (CO) total column",
                     "date":
                     ["May 3, 2018","Oct. 28, 2019"],
                     "parameters": {
                         "Parameter1": {
-                            "range":[ 0.005, 0.06 ],"uom":"CO",
+                            "range":[ 0.001,0.05 ],"uom":"CO",
+                            "clamp_max":true
                         }
                     }
                 },
                 {
                     "name": "O3 tropospheric column",
-                    "id": "S5P_LEVEL2_TROPOMI_L2__O3____OZONE_TOTAL_VERTICAL_COLUMN_4326_0035",
+                    "id": "S5P_NRTI_L2__O3_4326_0035",
                     "description": "Sentinel 5P Ozone (O3) tropospheric column",
                     "date":
                     ["May 3, 2018","Oct. 28, 2019"],
                     "parameters": {
                         "Parameter1": {
-                            "range":[ 0.1, 0.2 ],"uom":"O3",
+                            "range":[ 0.1, 0.25 ],"uom":"O3",
+                            "clamp_max":true
                         }
                     }
                 },
                 {
                     "name": "Aerosol index",
-                    "id": "S5P_LEVEL2_TROPOMI_L2__AER_AI____AEROSOL_INDEX_340_380_4326_0035",
+                    "id": "S5P_NRTI_L2__AER_AI_4326_0035",
                     "description": "Sentinel 5P UV Aerosol Index 340-480 nm",
                     "date":
                     ["May 3, 2018","Oct. 28, 2019"],
                     "parameters": {
                         "Parameter1": {
-                            "range":[ 0.1, 0.2 ],"uom":null,
+                            "range":[ 0.1, 2 ],"uom":null,
+                            "clamp_max":true
                         }
                     }
                 },
