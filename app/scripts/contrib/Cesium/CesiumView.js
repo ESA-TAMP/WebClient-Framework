@@ -142,7 +142,7 @@ define(['backbone.marionette',
 				this.global_product_height = 0;
 
 				// TODO: Need to change this into an object which contais arrays for all different layers/collections
-				this.currentCoverages = [];
+				this.currentCoverages = {};
 				this.timeseries = [];
 				this.timeseriesRange = [0,1];
 
@@ -420,29 +420,46 @@ define(['backbone.marionette',
 	                			renderdata = _.sortBy(renderdata, function(c){ return c.timestamp.getTime(); });
 	                		}
 
+	                		var compRenDat = {};
+			                for (var i = 0; i < renderdata.length; i++) {
+			                	
+			                	for(var k in renderdata[i]){
+			                		if(compRenDat.hasOwnProperty(k)){
+			                			compRenDat[k].push(renderdata[i][k]);
+			                		} else {
+			                			compRenDat[k] = [renderdata[i][k]];
+			                		}
+			                	}
+			                }
 
 	                		if(that.graph){
+	                			 var rS = {
+			                    	xAxis: that.selection_x,
+				                    yAxis: [that.selection_y],
+				                    colorAxis: [ null ],
+			                    };
+			                    var datident;
+	                			// Check if we want to configure multiple sources
+	                			if(compRenDat.hasOwnProperty('collection')){
+	                				var collIds = _.unique(compRenDat['collection']);
+	                				if(collIds.length>1){
+	                					datident = {
+									        parameter: 'collection',
+									        identifiers: collIds
+									    }
+									    rS['dataIdentifier'] = datident;
+
+	                				}
+	                			}
 	                			// Check if something changed in the selection
 	                			if(that.graph.renderSettings.xAxis !== that.selection_x || 
 	                				that.graph.renderSettings.yAxis[0] !== that.selection_y) {
 		                			that.graph.dataSettings = datSet;
-				                    that.graph.renderSettings = {
-				                    	xAxis: that.selection_x,
-					                    yAxis: [that.selection_y],
-					                    colorAxis: [ null ],
-				                    };
+				                    that.graph.renderSettings = rS;
 				                }
 
-			                    var compRenDat = {};
-				                for (var i = 0; i < renderdata.length; i++) {
-				                	
-				                	for(var k in renderdata[i]){
-				                		if(compRenDat.hasOwnProperty(k)){
-				                			compRenDat[k].push(renderdata[i][k]);
-				                		} else {
-				                			compRenDat[k] = [renderdata[i][k]];
-				                		}
-				                	}
+				                if(datident){
+				                	that.graph.renderSettings.dataIdentifier = datident;
 				                }
 
 				                that.graph.loadData(compRenDat);
@@ -794,6 +811,7 @@ define(['backbone.marionette',
 	                	var rect = primitives[i].geometryInstances[0].geometry._rectangle;
 
 	                	// Check if coverage is part of a time stack
+	                	//console.log(that.stackedDataset);
 	                	if (that.stackedDataset.indexOf(cov_id)!=-1){
 	                		// The coverage is part of the stacked dataset 
 	                		// so we can go through all elements
@@ -802,13 +820,17 @@ define(['backbone.marionette',
 	                			if(that.p_plot.datasetAvailable(stackCovID)) {
 	                				var timestamp = pos;
 	                				var covsData = that.currentCoverages;
-	                				for (var cov in covsData){
-	                					if(covsData[cov].identifier == stackCovID){
-	                						if(covsData[cov].hasOwnProperty('starttime')){
-	                							timestamp = new Date(covsData[cov].starttime);
-	                						}
-	                					}
-	                				};
+	                				var collection;
+	                				for(var coll in covsData){
+		                				for (var cov in covsData[coll]){
+		                					if(covsData[coll][cov].identifier == stackCovID){
+		                						if(covsData[coll][cov].hasOwnProperty('starttime')){
+		                							timestamp = new Date(covsData[coll][cov].starttime);
+		                							collection = coll;
+		                						}
+		                					}
+		                				};
+		                			}
 									var ds = that.p_plot.datasetCollection[stackCovID];
 									var w = ds.width;
 									var h = ds.height;
@@ -836,7 +858,8 @@ define(['backbone.marionette',
 										renderdata.push({
 											id:id,
 											measurement: ds.data[(y*w)+x],
-											timestamp: timestamp
+											timestamp: timestamp,
+											collection: collection
 										})
 									}
 									
@@ -868,16 +891,19 @@ define(['backbone.marionette',
 									id = cov_id.substr(0,getPosition(cov_id, '_', 3));
 								}
 
-								var timestamp;
+								var timestamp, collection;
                 				var covsData = that.currentCoverages;
 
-                				for (var cov in covsData){
-                					if(covsData[cov].identifier == cov_id){
-                						if(covsData[cov].hasOwnProperty('starttime')){
-                							timestamp = new Date(covsData[cov].starttime);
-                						}
-                					}
-                				};
+                				for(var coll in covsData){
+	                				for (var cov in covsData[coll]){
+	                					if(covsData[coll][cov].identifier == cov_id){
+	                						if(covsData[coll][cov].hasOwnProperty('starttime')){
+	                							timestamp = new Date(covsData[coll][cov].starttime);
+	                							collection = coll;
+	                						}
+	                					}
+	                				};
+	                			}
 
 								//pos++;
 								if(volume_primitives){
@@ -893,7 +919,8 @@ define(['backbone.marionette',
 										id:id,
 										measurement: ds.data[(y*w)+x],
 										height: height,
-										timestamp: timestamp
+										timestamp: timestamp,
+										collection: collection
 									})
 								}
 
@@ -2510,23 +2537,26 @@ define(['backbone.marionette',
 			              	}
 
 			              	// here we need to remove all "older" coverages
-			              	for (var cc=0; cc<self.currentCoverages.length; cc++){
-			              		// Iterate current set to see if available
-			              		var stillActive = false;
-			              		for (var cd = 0; cd < coverages.data.length; cd++) {
-			              			if(self.currentCoverages[cc].identifier === coverages.data[cd].identifier){
-			              				stillActive = true;
-			              			}
-			              		}
-			              		if(!stillActive){
-			              			// check if available if yes remove coverage
-			              			if(self.p_plot.datasetCollection.hasOwnProperty(self.currentCoverages[cc].identifier)){
-			              				self.p_plot.removeDataset(self.currentCoverages[cc].identifier);
-			              			}
-			              		}
+			              	if(self.currentCoverages.hasOwnProperty(identifier)){
+				              	for (var cc=0; cc<self.currentCoverages[identifier].length; cc++){
+				              		// Iterate current set to see if available
+				              		var stillActive = false;
+				              		for (var cd = 0; cd < coverages.data.length; cd++) {
+				              			if(self.currentCoverages[identifier][cc].identifier === coverages.data[cd].identifier){
+				              				stillActive = true;
+				              			}
+				              		}
+				              		if(!stillActive){
+				              			// check if available if yes remove coverage
+				              			if(self.p_plot.datasetCollection.hasOwnProperty(self.currentCoverages[identifier][cc].identifier)){
+				              				self.p_plot.removeDataset(self.currentCoverages[identifier][cc].identifier);
+				              			}
+				              		}
+				              	}
 			              	}
 
-							self.currentCoverages = coverages.data;
+							self.currentCoverages[identifier] = coverages.data;
+
 
 							function identicalBbox(array) {
 								if (array.length == 1 || array.length == 0)
