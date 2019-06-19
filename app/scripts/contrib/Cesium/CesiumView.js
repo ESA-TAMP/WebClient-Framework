@@ -118,7 +118,7 @@ define(['backbone.marionette',
 				this.begin_time = null;
 				this.end_time = null;
 
-				this.stackedDataset = [];
+				this.stackedDataset = {};
 				this.playback = false;
 
 				this.pickingActive = false;
@@ -812,11 +812,17 @@ define(['backbone.marionette',
 
 	                	// Check if coverage is part of a time stack
 	                	//console.log(that.stackedDataset);
-	                	if (that.stackedDataset.indexOf(cov_id)!=-1){
+	                	var currColl;
+	                	for(var coll in that.stackedDataset){
+	                		if(that.stackedDataset[coll].indexOf(cov_id) !== -1){
+	                			currColl = coll;
+	                		}
+	                	}
+	                	if (currColl){
 	                		// The coverage is part of the stacked dataset 
 	                		// so we can go through all elements
-	                		for (var j = that.stackedDataset.length - 1; j >= 0; j--) {
-	                			var stackCovID = that.stackedDataset[j];
+	                		for (var j = that.stackedDataset[currColl].length - 1; j >= 0; j--) {
+	                			var stackCovID = that.stackedDataset[currColl][j];
 	                			if(that.p_plot.datasetAvailable(stackCovID)) {
 	                				var timestamp = pos;
 	                				var covsData = that.currentCoverages;
@@ -2276,7 +2282,7 @@ define(['backbone.marionette',
 
 			},
 
-			addCoverage: function(request, cov_id){
+			addCoverage: function(request, cov_id, cur_coll){
 
 				var self = this;
 
@@ -2360,7 +2366,11 @@ define(['backbone.marionette',
 						// 2D coverage for animation
 						if(typeof rasdata !== 'undefined' && rasdata.length>0){
 							self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
-							self.stackedDataset.push(cov_id);
+							if(self.stackedDataset.hasOwnProperty(cur_coll)){
+								self.stackedDataset[cur_coll].push(cov_id);
+							} else {
+								self.stackedDataset[cur_coll] = [cov_id];
+							}
 						}
 					}
 
@@ -2605,32 +2615,35 @@ define(['backbone.marionette',
 								// If stacked coverages there is only one primitive per collection
 								// and the texture data saved in the plot library so we check there for availability
 								// to see if we have to free the texture
-								for (var i = self.stackedDataset.length - 1; i >= 0; i--) {
-									if(
-										!_.find(coverages.data, function(c){
-											return c.identifier == self.stackedDataset[i];
-										})
-									){
-										if(self.p_plot.datasetAvailable(self.stackedDataset[i])) {
-											self.p_plot.removeDataset(self.stackedDataset[i]);
-											self.stackedDataset.splice(i,1);
-											this.global_product_height-=250
+								// TODO: This is not working as expected, things are being deleted when they should not
+								for(var coll in self.stackedDataset){
+									for (var i = self.stackedDataset[coll].length - 1; i >= 0; i--) {
+										if(
+											!_.find(coverages.data, function(c){
+												return c.identifier == self.stackedDataset[coll][i];
+											})
+										){
+											if(self.p_plot.datasetAvailable(self.stackedDataset[coll][i])) {
+												self.p_plot.removeDataset(self.stackedDataset[coll][i]);
+												self.stackedDataset[coll].splice(i,1);
+												this.global_product_height-=250
+											}
 										}
-									}
 
-								};
+									};
 
-								for (var p=0; p<cur_coll._primitives.length; p++){
-									// We also check to see if there is an already created primitive for
-									// the stack animation
-									if(
-										!_.find(self.stackedDataset, function(c){
-											return c == self.stackedDataset[i];
-										})
-									){
-										stacked_prim = cur_coll._primitives[p];
-									}
-								};
+									for (var p=0; p<cur_coll._primitives.length; p++){
+										// We also check to see if there is an already created primitive for
+										// the stack animation
+										if(
+											!_.find(self.stackedDataset[coll], function(c){
+												return c == self.stackedDataset[coll][i];
+											})
+										){
+											stacked_prim = cur_coll._primitives[p];
+										}
+									};
+								}
 							}
 
 							var deferreds = [];
@@ -2725,6 +2738,7 @@ define(['backbone.marionette',
 										var bbox = bbox;
 										var cov_id = coverages.data[i].identifier;
 										var plot = self.p_plot;
+										var collId = product.get('download').id;
 
 										if(!stacked){
 											// If not stacked just request and create primitves for all coverages
@@ -2744,16 +2758,25 @@ define(['backbone.marionette',
 												self.p_plot.removeDataset(cov_id);
 											}
 											// Check if selection active
+
 											if(self.bboxsel){
 												if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
 													deferreds.push(self.loadCoverage(request, bbox, cov_id, cur_coll, product, stacked_prim));
 													// We need to add it to the stacked list as it will be compared to to see if part of a stack collection
-													self.stackedDataset.push(cov_id);
+													if(self.stackedDataset.hasOwnProperty(collId)){
+														self.stackedDataset[collId].push(cov_id);
+													} else {
+														self.stackedDataset[collId] = [cov_id];
+													}
 												}
 											}else{
 												deferreds.push(self.loadCoverage(request, bbox, cov_id, cur_coll, product, stacked_prim));
 												// We need to add it to the stacked list as it will be compared to to see if part of a stack collection
-												self.stackedDataset.push(cov_id);
+												if(self.stackedDataset.hasOwnProperty(collId)){
+													self.stackedDataset[collId].push(cov_id);
+												} else {
+													self.stackedDataset[collId] = [cov_id];
+												}
 											}
 										}else{
 											// We only request the data if it is not already available
@@ -2762,10 +2785,10 @@ define(['backbone.marionette',
 												// but do not actually visualize it, so we do not need to create a primitive
 												if(self.bboxsel){
 													if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
-														deferreds.push(self.addCoverage(request, cov_id));
+														deferreds.push(self.addCoverage(request, cov_id, collId));
 													}
 												}else{
-													deferreds.push(self.addCoverage(request, cov_id));
+													deferreds.push(self.addCoverage(request, cov_id, collId));
 												}
 											}
 										}
