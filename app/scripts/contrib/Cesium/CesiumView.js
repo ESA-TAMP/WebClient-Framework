@@ -1603,13 +1603,14 @@ define(['backbone.marionette',
 				if(alpha==1){alpha=0.98;}
 
 				// Check for antimeridian crossing if there is do some wrapping
-				if( (bbox[2] - bbox[0] > 180) &&
+				/*if( (bbox[2] - bbox[0] > 180) &&
 				    (bbox[0]!=-180 && bbox[2]!=180) &&
 				    (bbox[0]!=0 && bbox[2]!=360) ){
 					var tmp = bbox[0] + 360;
 					bbox[0] = bbox[2];
 					bbox[2] = tmp;
-				}
+				}*/
+				// TODO: Do we need this check here?
 
 				var instance = new Cesium.GeometryInstance({
 				  geometry : new Cesium.RectangleGeometry({
@@ -2515,7 +2516,11 @@ define(['backbone.marionette',
 					                  if(wcsEndpoint.indexOf('WRFCHEM')!==-1){
 					                  	wcsEndpoint += '&scale=0.7';
 					                  }
-					                  wcsEndpoint += '&comprecompression=false';
+					                  if(wcsEndpoint.indexOf('S5P_LEVEL2_QA_AER_AI_4326_0035')!==-1){
+					                  	wcsEndpoint += '&scale=0.05';
+					                  }
+					                  
+					                  wcsEndpoint += '&comprecompression=false&nodata=nan';
 
 					                  if(summ.indexOf('<strong>End</strong>') !== -1){
 					                    hasEndTime = true;
