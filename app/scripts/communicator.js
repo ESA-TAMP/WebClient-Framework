@@ -26,6 +26,7 @@
 						this.trackEvents(event, param);
 					}
 
+					this.saveStatus(event, param);
 				}, this);
 
 				//create a req/res
@@ -34,8 +35,21 @@
 				// create commands
 				this.command = new Backbone.Wreqr.Commands();
 
+
 				this.on('all');
 			},
+
+			saveStatus: function(event, param){
+
+                // Tracking timeslider
+                if(event === 'time:domain:change'){
+                    localStorage.setItem('timeDomain', JSON.stringify([param.start, param.end]));
+                }
+
+                if(event === 'time:change'){
+                    localStorage.setItem('timeSelection', JSON.stringify([param.start, param.end]));
+                }
+            },
 
 			registerEventHandler: function(eventid, handler) {
 				// FIXXME: create a list of eventid to keep track!

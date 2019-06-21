@@ -14,7 +14,8 @@
       id: 'timeslider',
       events: {
         'selectionChanged': 'onChangeTime',
-        'coverageselected': 'onCoverageSelected'
+        'coverageselected': 'onCoverageSelected',
+        'displayChanged': 'onDisplayChanged'
       },
       initialize: function(options){
         this.options = options;
@@ -76,31 +77,64 @@
             }
         }
 
-        var selectionstart = new Date(this.options.brush.start);
-        var selectionend = new Date(this.options.brush.end);
+        var selectionstart, selectionend;
+
+        if(localStorage.getItem('timeSelection')){
+            var time = JSON.parse(localStorage.getItem('timeSelection'));
+            selectionstart = new Date(time[0]);
+            selectionend = new Date(time[1]);
+        }else{
+            // If time not in localstorage use default of current date
+            // minus 12 hours
+            selectionstart = new Date();
+            selectionstart.setUTCHours(selectionstart.getUTCHours() - (24*14));
+
+            selectionend = new Date(selectionstart.getTime());
+            selectionend.setUTCHours(selectionend.getUTCHours() + 1);
+
+        }
+
+        var domainStart, domainEnd;
+        if(localStorage.getItem('timeDomain')){
+            var domain = JSON.parse(localStorage.getItem('timeDomain'));
+            domainStart = new Date(domain[0]);
+            domainEnd = new Date(domain[1]);
+        }else{
+            domainStart = new Date();
+            domainStart.setUTCHours(domainStart.getUTCHours() - (24*16));
+
+            domainEnd = new Date();
+            domainEnd.setUTCHours(domainEnd.getUTCHours() + (24*3));
+
+        }
 
         this.activeWPSproducts = [];
 
+
         var initopt = {
-          domain: {
-            start: new Date(this.options.domain.start),
-            end: new Date(this.options.domain.end)
-          },
-          brush: {
-            start: selectionstart,
-            end: selectionend
-          },
-          debounce: 300,
-          ticksize: 8,
-          datasets: []
+            domain: {
+                start: new Date(this.options.domain.start),
+                end: new Date(this.options.domain.end)
+            },
+            display: {
+                start: domainStart,
+                end: domainEnd
+            },
+            brush: {
+                start: selectionstart,
+                end: selectionend
+            },
+            debounce: 300,
+            ticksize: 8,
+            datasets: []
         };
 
-        if (this.options.display){
+        /*if (this.options.display){
           initopt["display"] = {
             start: new Date(this.options.display.start),
             end: new Date(this.options.display.end)
           };
-        }
+        }*/
 
         this.slider = new TimeSlider(this.el, initopt);
 
@@ -205,6 +239,10 @@
           start: evt.originalEvent.detail.start,
           end: evt.originalEvent.detail.end
         };
+      },
+
+      onDisplayChanged: function(evt){
+          Communicator.mediator.trigger('time:domain:change', evt.originalEvent.detail);
       },
 
       onDateCenter: function(range){;
