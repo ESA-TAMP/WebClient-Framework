@@ -143,6 +143,8 @@ define(['backbone.marionette',
 
 				// TODO: Need to change this into an object which contais arrays for all different layers/collections
 				this.currentCoverages = {};
+				this.primitiveToRender = {};
+				this.dataToRender = {};
 				this.timeseries = [];
 				this.timeseriesRange = [0,1];
 
@@ -1274,6 +1276,9 @@ define(['backbone.marionette',
 							}
 						}
 					}, this);
+
+					this.primitiveToRender = {};
+					this.dataToRender = {};
 
 					globals.products.each(function(product) {
                     	if(product.get("download").id==options.id){
@@ -2520,7 +2525,7 @@ define(['backbone.marionette',
 					                  	wcsEndpoint += '&scale=0.05';
 					                  }
 					                  
-					                  wcsEndpoint += '&comprecompression=false&nodata=nan';
+					                  wcsEndpoint += '&comprecompression=false';
 
 					                  if(summ.indexOf('<strong>End</strong>') !== -1){
 					                    hasEndTime = true;
@@ -2831,6 +2836,9 @@ define(['backbone.marionette',
 											var play_index = play_length-1;
 											var fps = 15;
 
+											self.primitiveToRender[collection] = cur_coll._primitives[0];
+											self.dataToRender[collection] = coverages.data;
+
 											$('#playercontrols').show();
 											
 											// Remove handlers
@@ -2852,9 +2860,12 @@ define(['backbone.marionette',
 														        if(self.playback){
 														        	Cesium.requestAnimationFrame(tick);
 															        play_index = (play_index+1) % play_length;
-																  	self.p_plot.renderDataset(to_play[play_index].identifier);
-																	prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
-																	prim_to_render.cov_id = to_play[play_index].identifier;
+														        	// Go trhough all available stacks to be animated
+														        	for (var coll in self.dataToRender){
+																	  	self.p_plot.renderDataset(self.dataToRender[coll][play_index].identifier);
+																		self.primitiveToRender[coll].appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+																		self.primitiveToRender[coll].cov_id = self.dataToRender[coll][play_index].identifier;
+														        	}
 																	Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
 																	$('#timestamp').show();
 																	$('#timestamp').text(
@@ -3499,6 +3510,8 @@ define(['backbone.marionette',
 				}
 
 				var that = this;
+				this.primitiveToRender = {};
+				this.dataToRender = {};
 				globals.products.each(function(product) {
 					// Cleanup previous coverage data as we need to fetch
 					// all new with new bbox
@@ -3686,6 +3699,8 @@ define(['backbone.marionette',
 
 				this.begin_time = time.start;
 				this.end_time = time.end;
+				this.primitiveToRender = {};
+				this.dataToRender = {};
                                         
 	            globals.products.each(function(product) {
                     if(product.get("timeSlider")){
