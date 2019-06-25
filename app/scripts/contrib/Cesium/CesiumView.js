@@ -463,6 +463,8 @@ define(['backbone.marionette',
 
 				                if(datident){
 				                	that.graph.renderSettings.dataIdentifier = datident;
+				                } else if(that.graph.renderSettings.hasOwnProperty('dataIdentifier')){
+				                	delete that.graph.renderSettings.dataIdentifier;
 				                }
 
 				                that.graph.loadData(compRenDat);
@@ -706,7 +708,20 @@ define(['backbone.marionette',
         			}
         			flatdata = _.sortBy(flatdata, function(c){ return c.timestamp.getTime(); });
         		}
-        		if(additional_data[0].hasOwnProperty('timestamp') && 
+
+        		//TODO: Currently there is an issue with just single values
+        		// in plot library so we add a second NaN data value which is not shown
+        		// but should get rid of the error
+        		if(flatdata.length==1){
+        			flatdata.push({
+        				measurement: NaN,
+        				timestamp: new Date(flatdata[0].timestamp.getTime()+(60*100*60*60)),
+        				collection: flatdata[0].collection
+        			});
+        		}
+
+
+        		if(additional_data.length>0 && additional_data[0].hasOwnProperty('timestamp') && 
         			additional_data[0]['timestamp'] instanceof Date) {
         			datSet['timestamp'] = {
         				scaleFormat: 'time'
@@ -776,6 +791,8 @@ define(['backbone.marionette',
 
 	                if(datident){
 	                	this.graph.renderSettings.dataIdentifier = datident;
+	                } else if(this.graph.renderSettings.hasOwnProperty('dataIdentifier')){
+	                	delete this.graph.renderSettings.dataIdentifier;
 	                }
 
 	                this.graph.loadData(renderdata);
@@ -2575,7 +2592,6 @@ define(['backbone.marionette',
 	    					);
 
 							$.ajax({
-								dataType:'arraybuffer',
 								type:'GET',
 								dataType: 'JSON',
 								url: request
@@ -3107,9 +3123,12 @@ define(['backbone.marionette',
 														        if(self.playback){
 														        	Cesium.requestAnimationFrame(tick);
 															        play_index = (play_index+1) % play_length;
-																  	self.p_plot.renderDataset(to_play[play_index].identifier);
-																	prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
-																	prim_to_render.cov_id = to_play[play_index].identifier;
+																  	// Go trhough all available stacks to be animated
+														        	for (var coll in self.dataToRender){
+																	  	self.p_plot.renderDataset(self.dataToRender[coll][play_index].identifier);
+																		self.primitiveToRender[coll].appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+																		self.primitiveToRender[coll].cov_id = self.dataToRender[coll][play_index].identifier;
+														        	}
 																	Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
 																	$('#timestamp').show();
 																	$('#timestamp').text(
@@ -3148,9 +3167,12 @@ define(['backbone.marionette',
 										        if(play_index<0)
 										        	play_index = play_length-1;
 										        play_index = play_index % play_length;
-											  	self.p_plot.renderDataset(to_play[play_index].identifier);
-												prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
-												prim_to_render.cov_id = to_play[play_index].identifier;
+											  	// Go trhough all available stacks to be animated
+									        	for (var coll in self.dataToRender){
+												  	self.p_plot.renderDataset(self.dataToRender[coll][play_index].identifier);
+													self.primitiveToRender[coll].appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+													self.primitiveToRender[coll].cov_id = self.dataToRender[coll][play_index].identifier;
+									        	}
 												Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
 												$('#timestamp').text(
 													getISODateTimeString(to_play[play_index].starttime)
@@ -3162,9 +3184,12 @@ define(['backbone.marionette',
 
 											$("#step-forward-button").on('click', function () {
 										        play_index = (play_index+1) % play_length;
-											  	self.p_plot.renderDataset(to_play[play_index].identifier);
-												prim_to_render.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
-												prim_to_render.cov_id = to_play[play_index].identifier;
+											  	// Go trhough all available stacks to be animated
+									        	for (var coll in self.dataToRender){
+												  	self.p_plot.renderDataset(self.dataToRender[coll][play_index].identifier);
+													self.primitiveToRender[coll].appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+													self.primitiveToRender[coll].cov_id = self.dataToRender[coll][play_index].identifier;
+									        	}
 												Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
 												$('#timestamp').text(
 													getISODateTimeString(to_play[play_index].starttime)
