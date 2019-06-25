@@ -50,6 +50,9 @@
 		    },
 
 			onClose: function() {
+				if(this.products){
+					this.products.currentView.collection = globals.products;
+				}
 				this.close();
 			}
 
