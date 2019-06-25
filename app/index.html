@@ -228,9 +228,7 @@
                             "range":[ 0.0, 0.05 ],"uom":"kg/m3",
                         }
                     }
-                }
-
-                ,
+                },
                 {
                     "name": "European PM10 analysis and forecast",
                     "id": "EU_CAMS_SURFACE_PM10_4326_01",
@@ -239,7 +237,7 @@
                     ["May 3, 2018","Oct. 28, 2019"],
                     "parameters": {
                         "Parameter1": {
-                            "range":[ 0, 0.005 ],"uom":"kg/m3",
+                            "range":[ 0, 150 ],"uom":"μm/m3",
                         }
                     }
                 },
@@ -251,7 +249,7 @@
                     ["May 3, 2018","Oct. 28, 2019"],
                     "parameters": {
                         "Parameter1": {
-                            "range":[ 0, 0.0005 ],"uom":"kg/m2",
+                            "range":[ 0, 150 ],"uom":"μm/m3",
                         }
                     }
                 },
@@ -263,7 +261,7 @@
                     ["May 3, 2018","Oct. 28, 2019"],
                     "parameters": {
                         "Parameter1": {
-                            "range":[ 0, 0.005 ],"uom":"kg/m2",
+                            "range":[ 0, 150 ],"uom":"μm/m3",
                         }
                     }
                 },
@@ -275,7 +273,7 @@
                     ["May 3, 2018","Oct. 28, 2019"],
                     "parameters": {
                         "Parameter1": {
-                            "range":[ 0.0, 0.005 ],"uom":"kg/m2",
+                            "range":[ 0.0, 150 ],"uom":"μm/m3",
                         }
                     }
                 },
@@ -293,405 +291,6 @@
                 }
             ];
 
-
-            /*var USER_PRODUCTS = [
-                    {
-                        "name": "WRFCHEM_PM25surf_4326_005",
-                        "id": "WRFCHEM_PM25surf_4326_005",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "MODIS_AOT_multi_resolution_4326_003",
-                        "id": "MODIS_AOT_multi_resolution_4326_003",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "S5P_SULFURDIOXIDE_TOTAL_VERTICAL_COLUMN_QA_VALUE_L2_4326_0035",
-                        "id": "S5P_SULFURDIOXIDE_TOTAL_VERTICAL_COLUMN_QA_VALUE_L2_4326_0035",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "S5P_SULFURDIOXIDE_TOTAL_VERTICAL_COLUMN_L2_4326_0035",
-                        "id": "S5P_SULFURDIOXIDE_TOTAL_VERTICAL_COLUMN_L2_4326_0035",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "MOD04_Aerosol_Cloud_Fraction_Land_4326_003",
-                        "id": "MOD04_Aerosol_Cloud_Fraction_Land_4326_003",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "MOD04_Aerosol_Cloud_Fraction_Land_4326_005",
-                        "id": "MOD04_Aerosol_Cloud_Fraction_Land_4326_005",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "S5P_OZONE_TOTAL_VERTICAL_COLUMN_QA_VALUE_L2_4326_0035",
-                        "id": "S5P_OZONE_TOTAL_VERTICAL_COLUMN_QA_VALUE_L2_4326_0035",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "MODIS_AQUA_AOT_multi_resolution_4326_003",
-                        "id": "MODIS_AQUA_AOT_multi_resolution_4326_003",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "S5P_OZONE_TOTAL_VERTICAL_COLUMN_L2_4326_0035",
-                        "id": "S5P_OZONE_TOTAL_VERTICAL_COLUMN_L2_4326_0035",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "S5P_NO2QA50_TROPOSPHERIC_COLUMN_L2_4326_0035",
-                        "id": "S5P_NO2QA50_TROPOSPHERIC_COLUMN_L2_4326_0035",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "S5P_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_QA_VALUE_L2_4326_0035",
-                        "id": "S5P_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_QA_VALUE_L2_4326_0035",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "WRFCHEM_SO2_D02_4326_0015",
-                        "id": "WRFCHEM_SO2_D02_4326_0015",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "S5P_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_L2_4326_0035",
-                        "id": "S5P_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_L2_4326_0035",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "WRFCHEM_PM25col_4326_005",
-                        "id": "WRFCHEM_PM25col_4326_005",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "WRFCHEM_PM10surf_4326_005",
-                        "id": "WRFCHEM_PM10surf_4326_005",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "MYD04_Image_Optical_Depth_Land_And_Ocean_4326_003",
-                        "id": "MYD04_Image_Optical_Depth_Land_And_Ocean_4326_003",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "MYD04_Image_Optical_Depth_Land_And_Ocean_4326_005",
-                        "id": "MYD04_Image_Optical_Depth_Land_And_Ocean_4326_005",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "MODIS_TERRA_AOT_multi_resolution_4326_003",
-                        "id": "MODIS_TERRA_AOT_multi_resolution_4326_003",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "WRFCHEM_PM10col_4326_005",
-                        "id": "WRFCHEM_PM10col_4326_005",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "MOD04_Image_Optical_Depth_Land_And_Ocean_4326_003",
-                        "id": "MOD04_Image_Optical_Depth_Land_And_Ocean_4326_003",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "MOD04_Image_Optical_Depth_Land_And_Ocean_4326_005",
-                        "id": "MOD04_Image_Optical_Depth_Land_And_Ocean_4326_005",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "MOD04_Land_Ocean_Quality_Flag_4326_003",
-                        "id": "MOD04_Land_Ocean_Quality_Flag_4326_003",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "MOD04_Land_Ocean_Quality_Flag_4326_005",
-                        "id": "MOD04_Land_Ocean_Quality_Flag_4326_005",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "MOD04_Aerosol_Cloud_Fraction_Ocean_4326_003",
-                        "id": "MOD04_Aerosol_Cloud_Fraction_Ocean_4326_003",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "MOD04_Aerosol_Cloud_Fraction_Ocean_4326_005",
-                        "id": "MOD04_Aerosol_Cloud_Fraction_Ocean_4326_005",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "MYD04_Land_Ocean_Quality_Flag_4326_003",
-                        "id": "MYD04_Land_Ocean_Quality_Flag_4326_003",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "MYD04_Land_Ocean_Quality_Flag_4326_005",
-                        "id": "MYD04_Land_Ocean_Quality_Flag_4326_005",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "WRFCHEM_SO2_D01_4326_01",
-                        "id": "WRFCHEM_SO2_D01_4326_01",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "MYD04_Aerosol_Cloud_Fraction_Land_4326_003",
-                        "id": "MYD04_Aerosol_Cloud_Fraction_Land_4326_003",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "MYD04_Aerosol_Cloud_Fraction_Land_4326_005",
-                        "id": "MYD04_Aerosol_Cloud_Fraction_Land_4326_005",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "WRFCHEM_AOT_4326_01",
-                        "id": "WRFCHEM_AOT_4326_01",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "WRFCHEM_AOD550_4326_005",
-                        "id": "WRFCHEM_AOD550_4326_005",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "MYD04_Aerosol_Cloud_Fraction_Ocean_4326_003",
-                        "id": "MYD04_Aerosol_Cloud_Fraction_Ocean_4326_003",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "MYD04_Aerosol_Cloud_Fraction_Ocean_4326_005",
-                        "id": "MYD04_Aerosol_Cloud_Fraction_Ocean_4326_005",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "WRFCHEM_DUSTcol_4326_005",
-                        "id": "WRFCHEM_DUSTcol_4326_005",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    },
-                    {
-                        "name": "MOD04_Image_Optical_Depth_Land_And_Ocean__downscaled_202_4326_005",
-                        "id": "MOD04_Image_Optical_Depth_Land_And_Ocean__downscaled_202_4326_005",
-                        "date":
-                        ["May 3, 2018","Oct. 28, 2018"],
-                        "parameters": {
-                            "Parameter1": {
-                                "range":[ 0, 100 ],"uom":"",
-                            }
-                        }
-                    }
-          ];*/
             
         </script>
 

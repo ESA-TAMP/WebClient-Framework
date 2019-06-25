@@ -815,7 +815,7 @@ define(['backbone.marionette',
 
 	                	// Check if coverage is part of a time stack
 	                	//console.log(that.stackedDataset);
-	                	var currColl;
+	                	var currColl = false;
 	                	for(var coll in that.stackedDataset){
 	                		if(that.stackedDataset[coll].indexOf(cov_id) !== -1){
 	                			currColl = coll;
@@ -1735,9 +1735,10 @@ define(['backbone.marionette',
 				}
 
 				// Check if we need to transform data
-				if(meta && meta.hasOwnProperty('OFFSET') && img.fileDirectory.hasOwnProperty('GDAL_NODATA')){
+				// TODO: This is intended only for CAMS data!!!
+				if(meta && meta.hasOwnProperty('SCALE') && img.fileDirectory.hasOwnProperty('GDAL_NODATA')){
 					var nodata = Number(img.fileDirectory.GDAL_NODATA.slice(0,-1));
-					var scale = Number(meta.OFFSET);
+					var scale = Number(meta.SCALE);
 					var convRasData = [];
 					if(!isNaN(nodata) && !isNaN(scale)){
 
@@ -1745,7 +1746,7 @@ define(['backbone.marionette',
 							var convArr = [];
 							for (var rd = 0; rd < rasdata[i].length; rd++) {
 								convArr.push(
-									(rasdata[i][rd] - nodata ) *scale
+									((rasdata[i][rd] - nodata ) * scale) *1e9
 								);
 							}
 							convRasData.push(convArr);
