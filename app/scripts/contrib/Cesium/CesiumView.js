@@ -87,6 +87,7 @@ define(['backbone.marionette',
 
 				var canv = $('<canvas></canvas>')[0];
 				this.p_plot = new plotty.plot(canv, null, 1, 1);
+				this.p_plot.setNoDataValue(Number.MIN_VALUE);
 
 				this.map = undefined;
 				this.isClosed = true;
@@ -1701,6 +1702,8 @@ define(['backbone.marionette',
 				var outlines = product.get("outlines");
 				var range = parameters[band].range;
 				var alpha = product.get("opacity");
+				var nullValue = defaultFor(parameters[band].nullValue, false);
+
 
 
 				if(gt === undefined){gt = GeoTIFF.parse(data)}
@@ -1718,7 +1721,19 @@ define(['backbone.marionette',
 				}
 				var meta = img.getGDALMetadata();
 				var self = this;
-				
+
+				if(nullValue){
+					for (var rd = 0; rd < rasdata.length; rd++) {
+						for (var ar = 0; ar < rasdata[rd].length; ar++) {
+							for (var nv = 0; nv < nullValue.length; nv++) {
+								if(rasdata[rd][ar] === nullValue[nv]){
+									rasdata[rd][ar] = NaN;
+								}
+							}
+						}
+					}
+				}
+
 				// Check if we need to transform data
 				if(meta && meta.hasOwnProperty('OFFSET') && img.fileDirectory.hasOwnProperty('GDAL_NODATA')){
 					var nodata = Number(img.fileDirectory.GDAL_NODATA.slice(0,-1));
@@ -2288,7 +2303,7 @@ define(['backbone.marionette',
 
 			},
 
-			addCoverage: function(request, cov_id, cur_coll){
+			addCoverage: function(request, cov_id, cur_coll, product){
 
 				var self = this;
 
@@ -2302,6 +2317,23 @@ define(['backbone.marionette',
 					var gt = GeoTIFF.parse(data);
 					var img = gt.getImage(0);
 					var rasdata = img.readRasters();
+
+					var parameters = product.get("parameters");
+	    			var keys = _.keys(parameters);
+	    			var band = keys[0];
+					var nullValue = defaultFor(parameters[band].nullValue, false);
+
+					if(nullValue){
+						for (var rd = 0; rd < rasdata.length; rd++) {
+							for (var ar = 0; ar < rasdata[rd].length; ar++) {
+								for (var nv = 0; nv < nullValue.length; nv++) {
+									if(rasdata[rd][ar] === nullValue[nv]){
+										rasdata[rd][ar] = NaN;
+									}
+								}
+							}
+						}
+					}
 
 					if(rasdata === undefined) {
 						// Something went wrong reading the tiff, show message and stop here
@@ -2795,10 +2827,10 @@ define(['backbone.marionette',
 												// but do not actually visualize it, so we do not need to create a primitive
 												if(self.bboxsel){
 													if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
-														deferreds.push(self.addCoverage(request, cov_id, collId));
+														deferreds.push(self.addCoverage(request, cov_id, collId, product));
 													}
 												}else{
-													deferreds.push(self.addCoverage(request, cov_id, collId));
+													deferreds.push(self.addCoverage(request, cov_id, collId, product));
 												}
 											}
 										}

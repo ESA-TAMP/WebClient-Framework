@@ -12,7 +12,8 @@ define(['backbone', 'objectStore'], function(Backbone, ObjectStore) {
 	    filterElements: function(keyword){
 	    	filtered = this.filter(function (p) {
 	            return (
-	            	p.get("name").toLowerCase().indexOf(keyword.toLowerCase()) !== -1
+	            	p.get("name").toLowerCase().indexOf(keyword.toLowerCase()) !== -1 ||
+	            	p.get("description").toLowerCase().indexOf(keyword.toLowerCase()) !== -1
 	            );
 	        });
 	        return new Products(filtered);
