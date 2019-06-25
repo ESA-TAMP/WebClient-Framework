@@ -2714,7 +2714,13 @@ define(['backbone.marionette',
 				        if(this.bboxsel !== null){
 				        	b = this.bboxsel;
 				        	request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
+				        } else {
+				        	// Always apply global bbox to make sure no weird 
+			                  // coverages are retuned that go over the pole 
+			                  // and things like that
+			                b = [-90, -180, 90, 180];
 				        }
+				        request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
 
 			          	$.get(request)
 			              .success(function(resp) {
@@ -2735,21 +2741,6 @@ define(['backbone.marionette',
 					                for( var ee=0; ee<entries.length; ee++ ){
 					                  var bboxCont = entries[ee]['http://www.georss.org/georss:where']['gml:Envelope'];
 
-					                  if( bboxCont['gml:lowerCorner'] === "-90.200002 -0.2"){
-					                  	bboxCont['gml:lowerCorner']  = "-90 0"
-					                  }
-					                  if( bboxCont['gml:upperCorner'] === "90.2 359.800005"){
-					                  	bboxCont['gml:upperCorner'] = "90 360"
-					                  }
-
-					                   if( bboxCont['gml:lowerCorner'] === "-90.25 -180.25"){
-					                  	bboxCont['gml:lowerCorner']  = "-90 -180"
-					                  }
-					                  if( bboxCont['gml:upperCorner'] === "90.25 179.75"){
-					                  	bboxCont['gml:upperCorner'] = "90 180"
-					                  }
-
-					                 
 
 					                  var lowCorn = bboxCont['gml:lowerCorner'].split(' ').map(parseFloat);
 					                  var upperCorn = bboxCont['gml:upperCorner'].split(' ').map(parseFloat);
@@ -2781,13 +2772,21 @@ define(['backbone.marionette',
 						                  }
 					                  }
 
-					                  //wcsEndpoint += '&scale=0.1';
+					                  // Apply scaling base on number of requested coverages
+					                  var scaleFactor = 1.0;
+
+					                  scaleFactor -= (entries.length/100)/2;
+
 					                  if(wcsEndpoint.indexOf('WRFCHEM')!==-1){
-					                  	wcsEndpoint += '&scale=0.7';
+					                  	scaleFactor*=0.7;
 					                  }
 					                  if(wcsEndpoint.indexOf('S5P_LEVEL2_QA_AER_AI_4326_0035')!==-1){
-					                  	wcsEndpoint += '&scale=0.05';
+					                  	scaleFactor*=0.05;
 					                  }
+
+					                  wcsEndpoint += '&scale='+scaleFactor;
+
+
 					                  
 					                  wcsEndpoint += '&comprecompression=false';
 
