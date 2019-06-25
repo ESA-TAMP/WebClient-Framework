@@ -237,10 +237,8 @@
 						}
 
 						if (p.id != "None" && p.id != ""){
-							var ground_measurements = false;
-							if(p.id.indexOf("ground_measurements") > -1){
-								ground_measurements = true;
-							}
+
+							var ground_measurements = defaultFor(p.groundMeasurements, false);
 							var wcs_id = p.id;//.split('_').slice(0,-2).join('_');
 							var c_start_date = new Date(p.date[0].replace(/\./g,' '));
 							var c_end_date = new Date(p.date[1].replace(/\./g,' '));

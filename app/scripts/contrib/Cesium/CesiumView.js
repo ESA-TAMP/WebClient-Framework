@@ -650,24 +650,13 @@ define(['backbone.marionette',
 				this.selectedEntityId = pickedObject.id;
 				var id = pickedObject.id;
 
-				var toplot = _.filter(this.special1dData, function(obj){
-					return id === obj.id;
-				});
-
-
-				toplot = _.filter(toplot, function(obj){
-					return (obj.timestamp.getTime() > this.begin_time.getTime() && obj.timestamp.getTime() < this.end_time.getTime());
-				},this); 
-
+				// Do some cleanup
+            	$("#positionvalues").remove();
+            	$('#prcontainer').remove();
+            	$('#enlarge').remove();
+            	$('#analyticsSavebutton').remove();
 
 				$("#pickingresults").show();
-
-				var unique_params = [];
-				$.each($.unique(toplot), function(i, obj) {
-					if (unique_params.indexOf(obj.field) == -1) {
-						unique_params.push(obj.field);
-					}
-				});
 
 				// Add possible data available in the area
 				var cartographic = Cesium.Ellipsoid.WGS84.cartesianToCartographic(pickedObject.primitive.position);
@@ -677,69 +666,159 @@ define(['backbone.marionette',
 
 				$("#pickingresults").append('<div id="positionvalues" style="position:absolute;top:5px;left:50px"> Lat:'+pos_y.toFixed(5)+'; Lon:'+pos_x.toFixed(5)+'</div>');
 
-				for (var i = additional_data.length - 1; i >= 0; i--) {
-					additional_data[i][unique_params[0]] = additional_data[i][this.selection_y];
-					delete additional_data[i][this.selection_y];
-				}
+				var flatdata = [];
 
-				toplot.push(additional_data);
-				toplot = _.flatten(toplot);
+				if(this.stations.hasOwnProperty(id)){
 
-				for (var i = toplot.length-1; i >= 0 ; i--) {
-					for (var j = 0; j < unique_params.length; j++) {
-						if(toplot[i][unique_params[j]]==-9999999){
-							//delete toplot[i];
-							toplot.splice(i, 1);
-						}
+					/*renderdata = {
+						'timestamp': this.stations[id].observation_time_start,
+						'measurement': this.stations[id].values,
+					}*/
+
+					for (var i = 0; i < this.stations[id].values.length; i++) {
+						flatdata.push({
+							measurement: this.stations[id].values[i],
+							timestamp: this.stations[id].observation_time_start[i],
+							collection: id
+						});
 					}
-					
 				}
 
-				$("#pickingresults").append('<button type="button" id="pickingresultsClose" class="close" style="position: absolute; right:0px; margin-right:5px; margin-top:5px;"><i class="fa fa-times-circle"></i></button>');
-				$("#pickingresults").append('<div id="pickingresultcontainer"></div>');
-
-				var args = {
-					scatterEl: $('#pickingresultcontainer')[0],
-					selection_x: 'timestamp',
-					selection_y: unique_params,
-					showDropDownSelection: false,
-					margin: {top: 45, right: 20, bottom: 10, left: 50},
-				};
-
-				var sp = new scatterPlot(args, function(){}, function(){}, function(){});
-
-				sp.loadData({parsedData: toplot});
-				// Move some things around
-				/*$('#download_button').remove();
-				$('#pickingresults').find('#save').attr('style','position: absolute; right: 29px; top: 7px');
-				$('#pickingresults').find('#grid').attr('style','position: absolute; right: 155px; top: 7px');*/
+				var datSet = {
+        			'measurement': {
+        				'lineConnect': true,
+        				'color': [0.1, 0.1, 1.0]
+        			},
+        			'measurement': {
+        				'lineConnect': true,
+        				'color': [0.8, 0.2, 0.2]
+        			},
+        			'timestamp': {}
+        		};
 
 
+				// Sort data separately to have two consecutive lists when connecting
+				// with lines
+        		if(flatdata[0].hasOwnProperty('timestamp') && 
+        			flatdata[0]['timestamp'] instanceof Date) {
+        			datSet['timestamp'] = {
+        				scaleFormat: 'time'
+        			}
+        			flatdata = _.sortBy(flatdata, function(c){ return c.timestamp.getTime(); });
+        		}
+        		if(additional_data[0].hasOwnProperty('timestamp') && 
+        			additional_data[0]['timestamp'] instanceof Date) {
+        			datSet['timestamp'] = {
+        				scaleFormat: 'time'
+        			}
+        			additional_data = _.sortBy(additional_data, function(c){ return c.timestamp.getTime(); });
+        		}
 
-				$('#pickingresultsClose').click(function(){
-					self.special1dData = [];
-					$("#pickingresults").hide();
-					//$("#pickingresults").empty();
-				});
+				flatdata = flatdata.concat(additional_data)
 
-				$("#pickingresults").append(
+
+
+				$("#pickingresults").show();
+        		$('#pickingresultcontainer').show();
+
+        		
+
+        		var renderdata = {};
+        		for (var i = 0; i < flatdata.length; i++) {
+        			for (var pkey in flatdata[i]){
+        				if(renderdata.hasOwnProperty(pkey)){
+        					renderdata[pkey].push(flatdata[i][pkey]);
+        				} else {
+        					renderdata[pkey] = [flatdata[i][pkey]];
+        				}
+        			}
+        		}
+
+        		/*var compRenDat = {};
+                for (var i = 0; i < renderdata.length; i++) {
+                	
+                	for(var k in renderdata[i]){
+                		if(compRenDat.hasOwnProperty(k)){
+                			compRenDat[k].push(renderdata[i][k]);
+                		} else {
+                			compRenDat[k] = [renderdata[i][k]];
+                		}
+                	}
+                }*/
+                this.selection_x = 'timestamp';
+				this.selection_y = 'measurement';
+
+        		if(this.graph){
+        			 var rS = {
+                    	xAxis: this.selection_x,
+	                    yAxis: [this.selection_y],
+	                    colorAxis: [ null ],
+                    };
+                    var datident;
+        			// Check if we want to configure multiple sources
+        			if(renderdata.hasOwnProperty('collection')){
+        				var collIds = _.unique(renderdata['collection']);
+        				if(collIds.length>1){
+        					datident = {
+						        parameter: 'collection',
+						        identifiers: collIds
+						    }
+						    rS['dataIdentifier'] = datident;
+
+        				}
+        			}
+        			// Check if something changed in the selection
+        			if(this.graph.renderSettings.xAxis !== this.selection_x || 
+        				this.graph.renderSettings.yAxis[0] !== this.selection_y) {
+            			this.graph.dataSettings = datSet;
+	                    this.graph.renderSettings = rS;
+	                }
+
+	                if(datident){
+	                	this.graph.renderSettings.dataIdentifier = datident;
+	                }
+
+	                this.graph.loadData(renderdata);
+				}
+
+
+        		$("#pickingresults").append(
 					'<a href="javascript:void(0)" id="enlarge" style="position: absolute;top:5px;left:5px">'+
 						'<i style="font-size:1.5em;" class="fa fa-expand fa-rotate-90"></i></a>'
-					);
+				);
+
+				$('#pickingresults').append(
+					'<div id="analyticsSavebutton"><i class="fa fa-floppy-o" aria-hidden="true"></i></div>'
+				);
+
+				var that = this;
+				$('#analyticsSavebutton').click(function(){
+					that.graph.saveImage();
+				});
+
 				$('#enlarge').click(function (evt) {
 					if ($('#pickingresults').hasClass("big")){
 						$('#pickingresults').width("30%");
 						$('#pickingresults').height("30%");
 						$('#pickingresults').resize();
 						$('#pickingresults').removeClass("big");
+						$('#pickingresultcontainer').resize();
+						if(that.graph){
+							that.graph.resize();
+						}
 					}else{
 						$('#pickingresults').addClass( "big" )
 						$('#pickingresults').width("50%");
 						$('#pickingresults').height("70%");
 						$('#pickingresults').resize();
+						$('#pickingresultcontainer').resize();
+						if(that.graph){
+							that.graph.resize();
+						}
 					}
 					
 				});
+
 			},
 
 			pickScene: function(long, lat){
@@ -975,7 +1054,7 @@ define(['backbone.marionette',
 
                 this.graph = new graphly.graphly({
 	                el: '#pickingresultcontainer',
-	                margin: {top: 10, left: 80, bottom: 50, right: 30},
+	                margin: {top: 10, left: 80, bottom: 50, right: 40},
 	                dataSettings: {},
 	                renderSettings: {
 	                	xAxis: 'tmp',
@@ -1735,18 +1814,26 @@ define(['backbone.marionette',
 				}
 
 				// Check if we need to transform data
-				// TODO: This is intended only for CAMS data!!!
-				if(meta && meta.hasOwnProperty('SCALE') && img.fileDirectory.hasOwnProperty('GDAL_NODATA')){
-					var nodata = Number(img.fileDirectory.GDAL_NODATA.slice(0,-1));
+				
+				if(meta && meta.hasOwnProperty('SCALE') && meta.hasOwnProperty('OFFSET') 
+					/*&& img.fileDirectory.hasOwnProperty('GDAL_NODATA')*/){
+					//var nodata = Number(img.fileDirectory.GDAL_NODATA.slice(0,-1));
 					var scale = Number(meta.SCALE);
+					var offset = Number(meta.OFFSET);
 					var convRasData = [];
-					if(!isNaN(nodata) && !isNaN(scale)){
+
+					var unitconv = 1.0;
+					if(product.get('download').id === 'EU_CAMS_SURFACE_PM10_4326_01'){
+						unitconv = 1e9;
+					}
+
+					if(!isNaN(offset) && !isNaN(scale)){
 
 						for (var i = 0; i < rasdata.length; i++) {
 							var convArr = [];
 							for (var rd = 0; rd < rasdata[i].length; rd++) {
 								convArr.push(
-									((rasdata[i][rd] - nodata ) * scale) *1e9
+									(offset + (rasdata[i][rd] * scale)) * unitconv
 								);
 							}
 							convRasData.push(convArr);
@@ -2350,17 +2437,25 @@ define(['backbone.marionette',
 					var meta = img.getGDALMetadata();
 
 					// Check if we need to transform data
-					if(meta && meta.hasOwnProperty('OFFSET') && img.fileDirectory.hasOwnProperty('GDAL_NODATA')){
-						var nodata = Number(img.fileDirectory.GDAL_NODATA.slice(0,-1));
-						var scale = Number(meta.OFFSET);
+					if(meta && meta.hasOwnProperty('SCALE') && meta.hasOwnProperty('OFFSET') 
+						/*&& img.fileDirectory.hasOwnProperty('GDAL_NODATA')*/){
+						//var nodata = Number(img.fileDirectory.GDAL_NODATA.slice(0,-1));
+						var scale = Number(meta.SCALE);
+						var offset = Number(meta.OFFSET);
 						var convRasData = [];
-						if(!isNaN(nodata) && !isNaN(scale)){
+
+						var unitconv = 1.0;
+						if(product.get('download').id === 'EU_CAMS_SURFACE_PM10_4326_01'){
+							unitconv = 1e9;
+						}
+
+						if(!isNaN(offset) && !isNaN(scale)){
 
 							for (var i = 0; i < rasdata.length; i++) {
 								var convArr = [];
 								for (var rd = 0; rd < rasdata[i].length; rd++) {
 									convArr.push(
-										(rasdata[i][rd] - nodata ) *scale
+										(offset + (rasdata[i][rd] * scale)) * unitconv
 									);
 								}
 								convRasData.push(convArr);
@@ -2463,10 +2558,130 @@ define(['backbone.marionette',
 		    			var alpha = product.get("opacity");
 		    			var url = product.get("views")[0].urls[0];
 		    			var collection = product.get("views")[0].id;
+		    			var that = this;
 		    			var self = this;
-		    			//self.current_product = product;
+		    			self.current_product = product;
 
 		    			this.p_plot.setColorScale(colorscale);
+
+
+		    			if(product.get("ground_measurements")){
+
+		    				var request = (
+		    					'http://top-platform.eu/portal/'+
+		    					product.get('download').id+'/'+
+		    					getISODateTimeString(this.begin_time)+'/'+
+		    					getISODateTimeString(this.end_time)
+	    					);
+
+							$.ajax({
+								dataType:'arraybuffer',
+								type:'GET',
+								dataType: 'JSON',
+								url: request
+							})
+							.done(function( jsondata ) {
+
+								that.stations = {};
+								for (var i = 0; i < jsondata.length; i++) {
+									if(that.stations.hasOwnProperty(jsondata[i].name)){
+										that.stations[jsondata[i].name].values.push(
+											jsondata[i].value
+										);
+										that.stations[jsondata[i].name].observation_time_start.push(
+											new Date(jsondata[i].observation_time_start)
+										);
+										that.stations[jsondata[i].name].observation_time_end.push(
+											new Date(jsondata[i].observation_time_end)
+										);
+									} else {
+										that.stations[jsondata[i].name] = {
+											id: jsondata[i].name,
+											values: [jsondata[i].value],
+											latitude: jsondata[i].latitude,
+											height: jsondata[i].height,
+											longitude: jsondata[i].longitude,
+											observation_time_start: [
+												new Date(jsondata[i].observation_time_start)
+											],
+											observation_time_end: [
+												new Date(jsondata[i].observation_time_end)
+											],
+										}
+									}
+								}
+
+								cur_coll.removeAll();
+
+								for (var stID in that.stations){
+									var cS = that.stations[stID];
+									var pos = new Cesium.Cartesian3.fromDegrees(cS.longitude, cS.latitude);
+									var bil_coll = cur_coll.add(new Cesium.BillboardCollection());
+									var icon = pinimage;
+
+									if(that.selectedEntityId == cS.id){
+										icon = pinimage_selected;
+									}
+
+									var b = bil_coll.add({
+										id: cS.id,
+										position : pos,
+										verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+										image: icon,
+										scale : 0.5,
+									});
+
+									that.primitiveMapping[cS.id] = b;
+									if(that.selectedEntityId == cS.id){
+										that.pickEntity({primitive:b, id:cS.id}, cS.latitude, cS.longitude);
+									}
+
+									cur_coll.show = true;
+								}
+
+
+								/*var data = xmldata.getElementsByTagName("data");
+								var id = xmldata.getElementsByTagName("siteName")[0].textContent;
+								var latitude = Number(xmldata.getElementsByTagName("siteLatitude")[0].textContent);
+								var longitude = Number(xmldata.getElementsByTagName("siteLongitude")[0].textContent);
+								
+								var field = xmldata.getElementsByTagName("field")[0].textContent.replace(/ /g,"_");
+								//console.log(id, field);
+								for (var i = data.length - 1; i >= 0; i--) {
+									//console.log(data[i].getElementsByTagName("timeStart")[0].textContent);
+									//console.log(data[i].getElementsByTagName("value")[0].textContent);
+									
+									var obj = {};
+									obj['id'] = id;
+									obj[field] = Number(data[i].getElementsByTagName("value")[0].textContent);
+									obj['timestamp'] = new Date(data[i].getElementsByTagName("timeStart")[0].textContent);
+									obj['field'] = field;
+									self.special1dData.push(obj);
+								}
+
+								var pos = new Cesium.Cartesian3.fromDegrees(longitude, latitude);
+								var bil_coll = cur_coll.add(new Cesium.BillboardCollection());
+								var icon = pinimage;
+								if(self.selectedEntityId == id){
+									icon = pinimage_selected;
+								}
+								var b = bil_coll.add({
+									id: id,
+									position : pos,
+									verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+									image: icon
+								});
+								self.primitiveMapping[id] = b;
+								if(self.selectedEntityId == id){
+									self.pickEntity({primitive:b, id:id}, latitude, longitude);
+								}
+								cur_coll.show = true;*/
+
+							});
+
+							// Stop here don't need to execute the rest
+							return;
+						}
 
 
 		    			var request = 
@@ -2478,15 +2693,15 @@ define(['backbone.marionette',
 				            '&maxrecords=100'+
 				            '&outputFormat=application/json';
 
-			          var identifier = collection;
-			          var b = null;
-			          if(this.bboxsel !== null){
-			          	b = this.bboxsel;
-			            request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
-			          }
+				        var identifier = collection;
+				        var b = null;
+				        if(this.bboxsel !== null){
+				        	b = this.bboxsel;
+				        	request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
+				        }
 
-			          $.get(request)
-			            .success(function(resp) {
+			          	$.get(request)
+			              .success(function(resp) {
 
 			              	var coverages = {
 			              		data: []
@@ -2720,99 +2935,42 @@ define(['backbone.marionette',
 								*/
 								///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-								//if(self.current_product.get("ground_measurements")){
-								if(product.get("ground_measurements")){
+							
+								
 
-									$.ajax({
-										dataType:'arraybuffer',
-										type:'GET',
-										dataType: 'xml',
-										url: request
+								// Check if coverage is already in collection, if not add them
+								if(
+									!_.find(cur_coll._primitives, function(p){
+										return p.cov_id == coverages.data[i].identifier;
 									})
-									.done(function( xmldata ) {
+								){
 
-										var data = xmldata.getElementsByTagName("data");
-										var id = xmldata.getElementsByTagName("siteName")[0].textContent;
-										var latitude = Number(xmldata.getElementsByTagName("siteLatitude")[0].textContent);
-										var longitude = Number(xmldata.getElementsByTagName("siteLongitude")[0].textContent);
-										
-										var field = xmldata.getElementsByTagName("field")[0].textContent.replace(/ /g,"_");
-										//console.log(id, field);
-										for (var i = data.length - 1; i >= 0; i--) {
-											//console.log(data[i].getElementsByTagName("timeStart")[0].textContent);
-											//console.log(data[i].getElementsByTagName("value")[0].textContent);
-											
-											var obj = {};
-											obj['id'] = id;
-											obj[field] = Number(data[i].getElementsByTagName("value")[0].textContent);
-											obj['timestamp'] = new Date(data[i].getElementsByTagName("timeStart")[0].textContent);
-											obj['field'] = field;
-											self.special1dData.push(obj);
-										}
+									var bbox = bbox;
+									var cov_id = coverages.data[i].identifier;
+									var plot = self.p_plot;
+									var collId = product.get('download').id;
 
-										var pos = new Cesium.Cartesian3.fromDegrees(longitude, latitude);
-										var bil_coll = cur_coll.add(new Cesium.BillboardCollection());
-										var icon = pinimage;
-										if(self.selectedEntityId == id){
-											icon = pinimage_selected;
-										}
-										var b = bil_coll.add({
-											id: id,
-											position : pos,
-											verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-											image: icon
-										});
-										self.primitiveMapping[id] = b;
-										if(self.selectedEntityId == id){
-											self.pickEntity({primitive:b, id:id}, latitude, longitude);
-										}
-										cur_coll.show = true;
-
-									});
-								}else{
-
-									// Check if coverage is already in collection, if not add them
-									if(
-										!_.find(cur_coll._primitives, function(p){
-											return p.cov_id == coverages.data[i].identifier;
-										})
-									){
-
-										var bbox = bbox;
-										var cov_id = coverages.data[i].identifier;
-										var plot = self.p_plot;
-										var collId = product.get('download').id;
-
-										if(!stacked){
-											// If not stacked just request and create primitves for all coverages
-											// Check if selection active
-											if(self.bboxsel){
-												if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
-													deferreds.push(self.loadCoverage(request, bbox, cov_id, cur_coll, product, null));
-												}
-											}else{
+									if(!stacked){
+										// If not stacked just request and create primitves for all coverages
+										// Check if selection active
+										if(self.bboxsel){
+											if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
 												deferreds.push(self.loadCoverage(request, bbox, cov_id, cur_coll, product, null));
 											}
-										}else if(stacked && i == coverages.data.length-1){
-											// If the collection is stacked and this is the last element (in time)
-											// of the list it means the primitive is not available already and needs to be created
-											// or we have found an already created primite and saved it to stacked primitive
-											if(self.p_plot.datasetAvailable(cov_id)) {
-												self.p_plot.removeDataset(cov_id);
-											}
-											// Check if selection active
+										}else{
+											deferreds.push(self.loadCoverage(request, bbox, cov_id, cur_coll, product, null));
+										}
+									}else if(stacked && i == coverages.data.length-1){
+										// If the collection is stacked and this is the last element (in time)
+										// of the list it means the primitive is not available already and needs to be created
+										// or we have found an already created primite and saved it to stacked primitive
+										if(self.p_plot.datasetAvailable(cov_id)) {
+											self.p_plot.removeDataset(cov_id);
+										}
+										// Check if selection active
 
-											if(self.bboxsel){
-												if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
-													deferreds.push(self.loadCoverage(request, bbox, cov_id, cur_coll, product, stacked_prim));
-													// We need to add it to the stacked list as it will be compared to to see if part of a stack collection
-													if(self.stackedDataset.hasOwnProperty(collId)){
-														self.stackedDataset[collId].push(cov_id);
-													} else {
-														self.stackedDataset[collId] = [cov_id];
-													}
-												}
-											}else{
+										if(self.bboxsel){
+											if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
 												deferreds.push(self.loadCoverage(request, bbox, cov_id, cur_coll, product, stacked_prim));
 												// We need to add it to the stacked list as it will be compared to to see if part of a stack collection
 												if(self.stackedDataset.hasOwnProperty(collId)){
@@ -2822,17 +2980,25 @@ define(['backbone.marionette',
 												}
 											}
 										}else{
-											// We only request the data if it is not already available
-											if(!self.p_plot.datasetAvailable(cov_id)) {
-												// It is stacked but this is any other coverage where for now we only need the data
-												// but do not actually visualize it, so we do not need to create a primitive
-												if(self.bboxsel){
-													if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
-														deferreds.push(self.addCoverage(request, cov_id, collId, product));
-													}
-												}else{
+											deferreds.push(self.loadCoverage(request, bbox, cov_id, cur_coll, product, stacked_prim));
+											// We need to add it to the stacked list as it will be compared to to see if part of a stack collection
+											if(self.stackedDataset.hasOwnProperty(collId)){
+												self.stackedDataset[collId].push(cov_id);
+											} else {
+												self.stackedDataset[collId] = [cov_id];
+											}
+										}
+									}else{
+										// We only request the data if it is not already available
+										if(!self.p_plot.datasetAvailable(cov_id)) {
+											// It is stacked but this is any other coverage where for now we only need the data
+											// but do not actually visualize it, so we do not need to create a primitive
+											if(self.bboxsel){
+												if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
 													deferreds.push(self.addCoverage(request, cov_id, collId, product));
 												}
+											}else{
+												deferreds.push(self.addCoverage(request, cov_id, collId, product));
 											}
 										}
 									}
