@@ -277,6 +277,7 @@
 
 							if(ground_measurements){
 								args['ground_measurements'] = true;
+								args['timeSliderProtocol'] = 'KVP';
 							}
 
 							globals.products.add(new m.LayerModel(args));

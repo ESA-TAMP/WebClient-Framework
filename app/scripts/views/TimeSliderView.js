@@ -294,6 +294,38 @@
               });
       },
 
+      fetchKVP: function(start, end, params, callback){
+        
+        var request = (
+                  'http://top-platform.eu/portal/'+
+                  this.id+'/'+
+                  getISODateTimeString(start)+'/'+
+                  getISODateTimeString(end)
+                );
+
+              $.ajax({
+                type:'GET',
+                dataType: 'JSON',
+                url: request
+              })
+              .done(function( jsondata ) {
+
+                var rows = [];
+                for (var i = 0; i < jsondata.length; i++) {
+                  rows.push([
+                    new Date(jsondata[i].observation_time_start),
+                    new Date(jsondata[i].observation_time_end),
+                    {
+                        id: jsondata[i].name
+                    }
+                  ]);
+                }
+                callback(rows);
+              });
+
+
+      },
+
 
       fetchWPS: function(start, end, params, callback){
 
@@ -424,6 +456,18 @@
                     lineplot: true,
                     records: null,
                     source: {fetch: this.fetch.bind(attrs)}
+                  });
+                  break;
+                case "KVP":
+                  attrs = {
+                    id: product.get('download').id,
+                    url: product.get('download').url
+                  };
+                  this.slider.addDataset({
+                    id: product.get('download').id,
+                    color: product.get('color'),
+                    records: null,
+                    source: {fetch: this.fetchKVP.bind(attrs)}
                   });
                   break;
               }
