@@ -959,15 +959,19 @@ define(['backbone.marionette',
 									pos++;
 									this.selection_x = 'timestamp';
 									this.selection_y = 'measurement';
-									if (ds.data[(y*w)+x]!=-9999){
-										renderdata.push({
-											id:id,
-											measurement: ds.data[(y*w)+x],
-											timestamp: timestamp,
-											collection: collection
-										})
+
+									var value = ds.data[(y*w)+x];
+									if(value === Number.MIN_VALUE){
+										value = NaN;
 									}
-									
+
+									renderdata.push({
+										id:id,
+										measurement: value,
+										timestamp: timestamp,
+										collection: collection
+									})
+
 								}
 	                		};
 	                	}else{
@@ -1019,15 +1023,18 @@ define(['backbone.marionette',
 									this.selection_y = 'measurement';
 								}
 
-								if (ds.data[(y*w)+x]!=-9999){
-									renderdata.push({
-										id:id,
-										measurement: ds.data[(y*w)+x],
-										height: height,
-										timestamp: timestamp,
-										collection: collection
-									})
+								var value = ds.data[(y*w)+x];
+								if(value === Number.MIN_VALUE){
+									value = NaN;
 								}
+								
+								renderdata.push({
+									id:id,
+									measurement: value,
+									height: height,
+									timestamp: timestamp,
+									collection: collection
+								})
 
 							}
 
@@ -1053,6 +1060,8 @@ define(['backbone.marionette',
 					colorScale: 'jet',
 					domain: [30000,60000]
 				});
+
+				this.plot.setNoDataValue(Number.MIN_VALUE);
 
 				//this.plot.setClamp(true, true);
 
@@ -1519,7 +1528,7 @@ define(['backbone.marionette',
 				/*var max = Math.max.apply(null, rasdata[0]);
 				var min = Math.min.apply(null, rasdata[0]);*/
 				this.p_plot.setDomain([min, max]);
-				this.p_plot.setNoDataValue(-9999);
+				this.p_plot.setNoDataValue(Number.MIN_VALUE);
 				this.p_plot.setClamp(false,true);
 				this.p_plot.renderDataset("process_result");
 
@@ -1818,12 +1827,19 @@ define(['backbone.marionette',
 				var meta = img.getGDALMetadata();
 				var self = this;
 
+				// First convert array so that we can modify values
+				var convArray = [];
+
+				for (var i = 0; i < rasdata.length; i++) {
+					convArray.push(Array.from(rasdata[i]));
+				}
+
 				if(nullValue){
-					for (var rd = 0; rd < rasdata.length; rd++) {
-						for (var ar = 0; ar < rasdata[rd].length; ar++) {
+					for (var rd = 0; rd < convArray.length; rd++) {
+						for (var ar = 0; ar < convArray[rd].length; ar++) {
 							for (var nv = 0; nv < nullValue.length; nv++) {
-								if(rasdata[rd][ar] === nullValue[nv]){
-									rasdata[rd][ar] = NaN;
+								if(convArray[rd][ar] === nullValue[nv]){
+									convArray[rd][ar] = Number.MIN_VALUE;
 								}
 							}
 						}
@@ -1837,7 +1853,6 @@ define(['backbone.marionette',
 					//var nodata = Number(img.fileDirectory.GDAL_NODATA.slice(0,-1));
 					var scale = Number(meta.SCALE);
 					var offset = Number(meta.OFFSET);
-					var convRasData = [];
 
 					var unitconv = 1.0;
 					if(product.get('download').id === 'EU_CAMS_SURFACE_PM10_4326_01'){
@@ -1847,17 +1862,14 @@ define(['backbone.marionette',
 					if(!isNaN(offset) && !isNaN(scale)){
 
 						for (var i = 0; i < rasdata.length; i++) {
-							var convArr = [];
 							for (var rd = 0; rd < rasdata[i].length; rd++) {
-								convArr.push(
-									(offset + (rasdata[i][rd] * scale)) * unitconv
-								);
+								convArray[i][rd] = (offset + (rasdata[i][rd] * scale)) * unitconv
 							}
-							convRasData.push(convArr);
 						}
-						rasdata = convRasData;
 					}
 				}
+
+				rasdata = convArray;
 
 
 				// Check if the GeoTIFF is a vertical curtain
@@ -1874,7 +1886,7 @@ define(['backbone.marionette',
 
 					self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
 					self.p_plot.setDomain(range);
-					self.p_plot.setNoDataValue(-9999);
+					self.p_plot.setNoDataValue(Number.MIN_VALUE);
 					self.p_plot.setClamp(clamp[0],clamp[1]);
 					this.p_plot.setColorScale(colorscale);
 					self.p_plot.renderDataset(cov_id);
@@ -2000,7 +2012,7 @@ define(['backbone.marionette',
 								for (var i = 0; i < rasdata.length; i++) {
 									self.p_plot.addDataset((cov_id+"_"+i), rasdata[i], img.getWidth(), img.getHeight());
 									self.p_plot.setDomain(range);
-									self.p_plot.setNoDataValue(-9999);
+									self.p_plot.setNoDataValue(Number.MIN_VALUE);
 									self.p_plot.setClamp(clamp[0],clamp[1]);
 									this.p_plot.setColorScale(colorscale);
 									self.p_plot.renderDataset((cov_id+"_"+i));
@@ -2043,7 +2055,7 @@ define(['backbone.marionette',
 
 								self.p_plot.addDataset(cov_id+"_"+'sliceX', sliceX, imgY, imgZ);
 								self.p_plot.setDomain(range);
-								self.p_plot.setNoDataValue(-9999);
+								self.p_plot.setNoDataValue(Number.MIN_VALUE);
 								self.p_plot.setClamp(clamp[0],clamp[1]);
 								this.p_plot.setColorScale(colorscale);
 								self.p_plot.renderDataset(cov_id+"_"+'sliceX');
@@ -2179,7 +2191,7 @@ define(['backbone.marionette',
 
 								self.p_plot.addDataset(cov_id+"_"+'sliceY', sliceY, imgX, imgZ);
 								self.p_plot.setDomain(range);
-								self.p_plot.setNoDataValue(-9999);
+								self.p_plot.setNoDataValue(Number.MIN_VALUE);
 								self.p_plot.setClamp(clamp[0],clamp[1]);
 								this.p_plot.setColorScale(colorscale);
 								self.p_plot.renderDataset(cov_id+"_"+'sliceY');
@@ -2284,7 +2296,7 @@ define(['backbone.marionette',
 								// Creation of height slice
 								self.p_plot.addDataset((cov_id+'_sliceZ'), rasdata[zSelection], imgX, imgY);
 								self.p_plot.setDomain(range);
-								self.p_plot.setNoDataValue(-9999);
+								self.p_plot.setNoDataValue(Number.MIN_VALUE);
 								self.p_plot.setClamp(clamp[0],clamp[1]);
 								this.p_plot.setColorScale(colorscale);
 								self.p_plot.renderDataset((cov_id+'_sliceZ'));
@@ -2383,7 +2395,7 @@ define(['backbone.marionette',
 						// Not a volume so create just one primitive
 						self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
 						self.p_plot.setDomain(range);
-						self.p_plot.setNoDataValue(-9999);
+						self.p_plot.setNoDataValue(Number.MIN_VALUE);
 						self.p_plot.setClamp(clamp[0],clamp[1]);
 						this.p_plot.setColorScale(colorscale);
 						self.p_plot.renderDataset(cov_id);
@@ -2433,7 +2445,7 @@ define(['backbone.marionette',
 							for (var ar = 0; ar < rasdata[rd].length; ar++) {
 								for (var nv = 0; nv < nullValue.length; nv++) {
 									if(rasdata[rd][ar] === nullValue[nv]){
-										rasdata[rd][ar] = NaN;
+										rasdata[rd][ar] = Number.MIN_VALUE;
 									}
 								}
 							}
@@ -2775,7 +2787,8 @@ define(['backbone.marionette',
 					                  // Apply scaling base on number of requested coverages
 					                  var scaleFactor = 1.0;
 
-					                  scaleFactor -= (entries.length/100)/2;
+					                  //scaleFactor -= (entries.length/100)/2;
+					                  //scaleFactor = 0.6;
 
 					                  if(wcsEndpoint.indexOf('WRFCHEM')!==-1){
 					                  	scaleFactor*=0.7;
