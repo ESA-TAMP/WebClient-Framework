@@ -311,15 +311,25 @@
               .done(function( jsondata ) {
 
                 var rows = [];
+                var maxdate = new Date("1970-01-01T21:58:23Z");
+                var mindate = new Date("2118-10-23T21:58:23Z");
                 for (var i = 0; i < jsondata.length; i++) {
-                  rows.push([
-                    new Date(jsondata[i].observation_time_start),
-                    new Date(jsondata[i].observation_time_end),
-                    {
-                        id: jsondata[i].name
-                    }
-                  ]);
+                  var tmpdate = new Date(jsondata[i].observation_time_start);
+                  if(mindate.getTime()>tmpdate.getTime()){
+                    mindate = tmpdate;
+                  }
+                  tmpdate = new Date(jsondata[i].observation_time_end);
+                  if(maxdate.getTime()<tmpdate.getTime()){
+                    maxdate = tmpdate;
+                  }
                 }
+                rows.push([
+                  mindate,
+                  maxdate,
+                  {
+                      id: this.id
+                  }
+                ]);
                 callback(rows);
               });
 
