@@ -32,8 +32,13 @@
                 baseUrl : "scripts/"
             };
 
-            var PRODUCT_URL = "https://wcs.top-platform.eu/";
+            //var PRODUCT_URL = "https://wcs.top-platform.eu/";
+            //var fetchCollectionListURL  = PRODUCT_URL+'wcs?service=WCS&Request=GetCapabilities&version=2.0.0';
+
+            var PRODUCT_URL = "http://vtapp4aq.zamg.ac.at/";
             var fetchCollectionListURL  = PRODUCT_URL+'wcs?service=WCS&Request=GetCapabilities&version=2.0.0';
+
+
             /*var USER_PRODUCTS = [];
 
             var request = new XMLHttpRequest();
@@ -63,342 +68,446 @@
 
 
             var USER_PRODUCTS = [
-                {
-                    "name": "CH4 total column - Near real time",
-                    "id": "S5P_NRTI_L2__CH4_4326_0035",
-                    "description": "Sentinel 5P Methane (CH4) total column",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 1500,2000 ],"uom":"mol/m2",
-                            "clamp_max":true,
-                            "clamp_min":true,
-                            "nullValue": [0, 9.969209968386869e+36]
-                        }
-                    }
-                },
-                {
-                    "name": "CH4 total column - Offline",
-                    "id": "S5P_OFFL_L2__CH4_4326_0035",
-                    "description": "Sentinel 5P Methane (CH4) total column",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 1500,2000 ],"uom":"mol/m2",
-                            "clamp_max":true,
-                            "clamp_min":true,
-                            "nullValue": [0, 9.969209968386869e+36]
-                        }
-                    }
-                },
-                {
-                    "name": "NO2 tropospheric column - Near real time",
-                    "id": "S5P_NRTI_L2__NO2_4326_0035",
-                    "description": "Sentinel 5P Nitrogen Dioxide (NO2) tropospheric columns",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 0,0.0005 ],"uom":"mol/m2",
-                            "clamp_max":true,
-                            "clamp_min":true,
-                            "nullValue": [0, 9.969209968386869e+36]
-                        }
-                    }
-                },
-                {
-                    "name": "NO2 tropospheric column - Offline",
-                    "id": "S5P_OFFL_L2__NO2_4326_0035",
-                    "description": "Sentinel 5P Nitrogen Dioxide (NO2) tropospheric columns",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 0,0.0005 ],"uom":"mol/m2",
-                            "clamp_max":true,
-                            "clamp_min":true,
-                            "nullValue": [0, 9.969209968386869e+36]
-                        }
-                    }
-                },
-                {
-                    "name": "SO2 total column - Near real time",
-                    "id": "S5P_NRTI_L2__SO2_4326_0035",
-                    "description": "Sentinel 5P Sulfur Dioxide (SO2) total column",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 0, 0.002 ],"uom":"mol/m2",
-                            "clamp_max":true,
-                            "clamp_min":true,
-                            "nullValue": [0, 9.969209968386869e+36]
-                        }
-                    }
-                },
-                {
-                    "name": "SO2 total column - Offline",
-                    "id": "S5P_OFFL_L2__SO2_4326_0035",
-                    "description": "Sentinel 5P Sulfur Dioxide (SO2) total column",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 0, 0.002 ],"uom":"mol/m2",
-                            "clamp_max":true,
-                            "clamp_min":true,
-                            "nullValue": [0, 9.969209968386869e+36]
-                        }
-                    }
-                },
-                {
-                    "name": "CO Vertical  column - Near real time",
-                    "id": "S5P_NRTI_L2__CO_4326_0035",
-                    "description": "Sentinel 5P Carbn Monoxide (CO) total column",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 0.001,0.05 ],"uom":"mol/m2",
-                            "clamp_max":true,
-                            "clamp_min":true,
-                            "nullValue": [0, 9.969209968386869e+36]
-                        }
-                    }
-                },
-                {
-                    "name": "CO Vertical  column - Offline",
-                    "id": "S5P_OFFL_L2__CO_4326_0035",
-                    "description": "Sentinel 5P Carbn Monoxide (CO) total column",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 0.001,0.05 ],"uom":"mol/m2",
-                            "clamp_max":true,
-                            "clamp_min":true,
-                            "nullValue": [0, 9.969209968386869e+36]
-                        }
-                    }
-                },
-                {
-                    "name": "O3 tropospheric column - Near real time",
-                    "id": "S5P_NRTI_L2__O3_4326_0035",
-                    "description": "Sentinel 5P Ozone (O3) tropospheric column",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 0.1, 0.25 ],"uom":"mol/m2",
-                            "clamp_max":true,
-                            "clamp_min":true,
-                            "nullValue": [0, 9.969209968386869e+36]
-                        }
-                    }
-                },
-                {
-                    "name": "O3 tropospheric column - Offline",
-                    "id": "S5P_OFFL_L2__O3_4326_0035",
-                    "description": "Sentinel 5P Ozone (O3) tropospheric column",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 0.1, 0.25 ],"uom":"mol/m2",
-                            "clamp_max":true,
-                            "clamp_min":true,
-                            "nullValue": [0, 9.969209968386869e+36]
-                        }
-                    }
-                },
-                {
-                    "name": "Aerosol index - Near real time",
-                    "id": "S5P_NRTI_L2__AER_AI_4326_0035",
-                    "description": "Sentinel 5P UV Aerosol Index 340-480 nm",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ -2, 2 ],"uom":null,
-                            "clamp_max":true,
-                            "clamp_min":true,
-                            "nullValue": [0, 9.969209968386869e+36]
-                        }
-                    }
-                },
-                {
-                    "name": "Aerosol index - Offline",
-                    "id": "S5P_OFFL_L2__AER_AI_4326_0035",
-                    "description": "Sentinel 5P UV Aerosol Index 340-480 nm",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ -2, 2 ],"uom":null,
-                            "clamp_max":true,
-                            "clamp_min":true,
-                            "nullValue": [0, 9.969209968386869e+36]
-                        }
-                    }
-                },
-                {
-                    "name": "PM10 Stations",
-                    "id": "PM10",
-                    "description": "PM10 Stations data",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 0.1, 150 ],"uom":"µg/m3",
-                            "clamp_max":true
-                        }
-                    },
-                    "groundMeasurements": true
-                },
-                {
-                    "name": "SO2 Stations",
-                    "id": "SO2",
-                    "description": "SO2 Stations data",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 0.0, 150 ],"uom":"µg/m3",
-                            "clamp_max":true
-                        }
-                    },
-                    "groundMeasurements": true
-                },
-                {
-                    "name": "Aerosol index QA-values",
-                    "id": "S5P_LEVEL2_QA_AER_AI_4326_0035",
-                    "description": "Quality values for Sentinel 5P UV Aerosol Index 340-480 nm",
-                    "date":
-                    ["Oct. 1, 2018","Dec. 01, 2018"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 0, 100 ],"uom":null,
-                            "clamp_max":true
-                        }
-                    }
-                },
-                {
-                    "name": "Global SO2 forecast",
-                    "id": "Z_CAMS_C_ECMF_TCSO2",
-                    "description": "CAMS ECMWF SO2 Surface forecast",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 0, 0.00005 ],"uom":"kg/m3",
-                        }
-                    }
-                },
-                {
-                    "name": "Global NO2 forecast",
-                    "id": "Z_CAMS_C_ECMF_TCNO2",
-                    "description": "CAMS ECMWF NO2 Surface forecast",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 0, 0.00005 ],"uom":"kg/m3",
-                        }
-                    }
-                },
-                {
-                    "name": "Global O3 forecast",
-                    "id": "Z_CAMS_C_ECMF_GTCO3",
-                    "description": "CAMS ECMWF O3 total column forecast",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 0, 0.01 ],"uom":"kg/m3",
-                        }
-                    }
-                },
-                {
-                    "name": "Global PM10 forecast",
-                    "id": "Z_CAMS_C_ECMF_PM10",
-                    "description": "CAMS ECMWF PM10 Surface forecast",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 0.0, 150 ],"uom":"μg/m3",
-                        }
-                    }
-                },
-                {
-                    "name": "European SO2 analysis and forecast",
-                    "id": "EU_CAMS_SURFACE_SO2_4326_01",
-                    "description": "CAMS EU Regional SO2 surface analysis and forecast",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 0, 0.00000001 ],"uom":"kg/m3",
-                            "clamp_max":true
-                        }
-                    }
-                },
-                {
-                    "name": "European NO2 analysis and forecast",
-                    "id": "EU_CAMS_SURFACE_NO2_4326_01",
-                    "description": "CAMS EU Regional NO2 surface analysis and forecast",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 0, 0.00000001 ],"uom":"kg/m3",
-                            "clamp_max":true
-                        }
-                    }
-                },
-                {
-                    "name": "European O3 analysis and forecast",
-                    "id": "EU_CAMS_SURFACE_O3_4326_01",
-                    "description": "CAMS EU Regional O3 surface analysis and forecast",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 0.0, 0.0000002 ],"uom":"kg/m3",
-                            "clamp_max":true
-                        }
-                    }
-                },
-                {
-                    "name": "European PM10 analysis and forecast",
-                    "id": "EU_CAMS_SURFACE_PM10_4326_01",
-                    "description": "CAMS EU Regional PM10 surface analysis and forecast",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 0, 150 ],"uom":"μg/m3",
-                            "clamp_max":true
-                        }
-                    }
-                },
-                {
-                    "name": "ZAMG WRF-Chem EU dust analysis",
-                    "id": "WRFCHEM_DUSTcol",
-                    "description": "",
-                    "date":
-                    ["May 3, 2018","Oct. 28, 2019"],
-                    "parameters": {
-                        "Parameter1": {
-                            "range":[ 0.0, 200 ],"uom":"mg/m2",
-                        }
-                    }
-                }
-            ];
-
-            
+                    
+                        {
+                            "name": "Sentinel 5P L2 NO2 quality value",
+                            "id": "S5P_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_QA_VALUE_L2_4326_0035",
+                            "date":
+                            [ 
+                                "June 28, 2018",
+                                "Aug. 18, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            100
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "Sentinel 5P L2 NO2 tropospheric column",
+                            "id": "S5P_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN_L2_4326_0035",
+                            "date":
+                            [ 
+                                "June 28, 2018",
+                                "Aug. 18, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            0.0001
+                                        ],
+                                        "uom":"mol m-2",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "Sentinel 5P L2 O3 quality value",
+                            "id": "S5P_OZONE_TOTAL_VERTICAL_COLUMN_QA_VALUE_L2_4326_0035",
+                            "date":
+                            [ 
+                                "July 4, 2018",
+                                "Aug. 18, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            100
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "Sentinel 5P L2 O3 total vertical column",
+                            "id": "S5P_OZONE_TOTAL_VERTICAL_COLUMN_L2_4326_0035",
+                            "date":
+                            [ 
+                                "July 4, 2018",
+                                "Aug. 18, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            0.2
+                                        ],
+                                        "uom":"mol m-2",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "AOT Quality flag from MODIS AQUA",
+                            "id": "MYD04_Land_Ocean_Quality_Flag_4326_005",
+                            "date":
+                            [ 
+                                "Jan. 1, 2017",
+                                "Feb. 5, 2018"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"AOD",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "WRFCHEM - AOD 550nm",
+                            "id": "WRFCHEM_AOD550_4326_005",
+                            "date":
+                            [ 
+                                "Dec. 15, 2017",
+                                "Aug. 21, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0.006,
+                                            10.783
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "WRFCHEM - Dust column",
+                            "id": "WRFCHEM_DUSTcol_4326_005",
+                            "date":
+                            [ 
+                                "Dec. 15, 2017",
+                                "Aug. 21, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            6268.647
+                                        ],
+                                        "uom":"mg/m2",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "WRFCHEM - PM2.5 column",
+                            "id": "WRFCHEM_PM25col_4326_005",
+                            "date":
+                            [ 
+                                "Dec. 15, 2017",
+                                "Aug. 21, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            1.571,
+                                            4060.447
+                                        ],
+                                        "uom":"mg/m2",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "WRFCHEM - PM10 column",
+                            "id": "WRFCHEM_PM10col_4326_005",
+                            "date":
+                            [ 
+                                "Dec. 15, 2017",
+                                "Aug. 21, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            1.572,
+                                            9617.989
+                                        ],
+                                        "uom":"mg/m2",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "WRFCHEM - PM2.5 surface",
+                            "id": "WRFCHEM_PM25surf_4326_005",
+                            "date":
+                            [ 
+                                "Dec. 15, 2017",
+                                "Aug. 21, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0.158,
+                                            1663.152
+                                        ],
+                                        "uom":"µg/m3",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "WRFCHEM - PM10 surface",
+                            "id": "WRFCHEM_PM10surf_4326_005",
+                            "date":
+                            [ 
+                                "Dec. 15, 2017",
+                                "Aug. 21, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0.157,
+                                            4007.677
+                                        ],
+                                        "uom":"µg/m3",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "AOT Cloud fraction over Ocean from MODIS TERRA",
+                            "id": "MOD04_Aerosol_Cloud_Fraction_Ocean_4326_005",
+                            "date":
+                            [ 
+                                "Jan. 1, 2017",
+                                "Feb. 4, 2018"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "AOT Cloud fraction over Ocean from MODIS AQUA",
+                            "id": "MYD04_Aerosol_Cloud_Fraction_Ocean_4326_005",
+                            "date":
+                            [ 
+                                "Jan. 1, 2017",
+                                "Feb. 5, 2018"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "AOT Cloud fraction over Land from MODIS AQUA",
+                            "id": "MYD04_Aerosol_Cloud_Fraction_Land_4326_005",
+                            "date":
+                            [ 
+                                "Jan. 1, 2017",
+                                "Feb. 5, 2018"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "AOT 3Km From MODIS AQUA",
+                            "id": "MYD04_Image_Optical_Depth_Land_And_Ocean_4326_003",
+                            "date":
+                            [ 
+                                "Dec. 18, 2017",
+                                "July 1, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "AOT Cloud fraction over Land from MODIS TERRA",
+                            "id": "MOD04_Aerosol_Cloud_Fraction_Land_4326_005",
+                            "date":
+                            [ 
+                                "Jan. 1, 2017",
+                                "Dec. 28, 2017"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "MOD04 AOD Downscaled",
+                            "id": "MOD04_Image_Optical_Depth_Land_And_Ocean__downscaled_202_4326_005",
+                            "date":
+                            [ 
+                                "Jan. 1, 2013",
+                                "Dec. 31, 2014"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"AOD",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "AOT 3Km From MODIS TERRA",
+                            "id": "MOD04_Image_Optical_Depth_Land_And_Ocean_4326_003",
+                            "date":
+                            [ 
+                                "Dec. 15, 2017",
+                                "June 28, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"AOD",
+                                        
+                                }
+                            }
+                        },
+                    
+                        {
+                            "name": "AOT Quality Flag from MODIS TERRA",
+                            "id": "MOD04_Land_Ocean_Quality_Flag_4326_005",
+                            "date":
+                            [ 
+                                "Oct. 1, 2013",
+                                "Feb. 4, 2018"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            1
+                                        ],
+                                        "uom":"AOD",
+                                        
+                                }
+                            }
+                        },
+                    
+              ];
+                
         </script>
 
         <!-- build:js scripts/vendor/modernizr.js -->
@@ -432,7 +541,7 @@
         <!--<div id="loadscreen" class="modal-backdrop"> <i class="fa fa-spinner fa-spin fa-4x"></i> </div>-->
         <div id="loadscreen" class="modal-backdrop">
             <div id="loading-spacer">
-                <div class="project-title">TOP</div>
+                <div class="project-title">APP4AQ-p2</div>
             </div>
             <div class="sk-folding-cube">
               <div class="sk-cube1 sk-cube"></div>
@@ -484,7 +593,7 @@
 
         <div id="timestamp"></div>
 
-        <div style="position: absolute; top: 15px; right: 310px; z-index: 1030; color: white;" data-toggle="tooltip" title="Usefull for selecting long time series for triggering processing">
+        <div style="position: absolute; top: 15px; right: 310px; z-index: 1030; color: white;" data-toggle="tooltip" title="Useful for selecting long time series for triggering processing">
             <label style="font-weight: normal">
                 <input style="vertical-align: middle; position: relative; top: -3px;" id="stop_visualization" type="checkbox" name="checkbox" value="value"> Disable product load
             </label>

@@ -257,12 +257,11 @@ define(['backbone.marionette',
 						animation: false,
 						orderIndependentTranslucency: false,
 						imageryProvider: layer,
-						/*terrainProvider : new Cesium.CesiumTerrainProvider({
-					        url : '//tiles.maps.eox.at/dem'
-					    }),*/
 						creditContainer: "cesium_attribution",
 						contextOptions: {webgl: {preserveDrawingBuffer: true}},
 						clock: clock,
+						sceneMode: Cesium.SceneMode.SCENE2D,
+						sceneModePicker: false,
 					});
 				}
 
@@ -319,6 +318,15 @@ define(['backbone.marionette',
 				var handler = new Cesium.ScreenSpaceEventHandler(this.map.scene.canvas);
 
 				this.map.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+
+				this.map.scene.camera.setView({
+					destination : Cesium.Rectangle.fromDegrees(-15.0, 18.0, 35.0, 72.0),
+				});
+
+ 				// In order to bound max zoom to Europe
+				this.map.scene.screenSpaceCameraController.maximumZoomDistance = this.map.camera.getMagnitude()*1.0;
+				this.map.scene.screenSpaceCameraController.enableRotate = false;
+				this.map.scene.screenSpaceCameraController.enableTranslate = false;
 
 				handler.setInputAction(function(click) {
 					var pickedObject = self.map.scene.pick(click.position);
@@ -4115,6 +4123,22 @@ define(['backbone.marionette',
 			    	}
 			    }
 			},
+
+			onZoomEurope: function(){
+				this.map.scene.camera.setView({
+					destination : Cesium.Rectangle.fromDegrees(-15.0, 18.0, 35.0, 72.0),
+				});
+				this.map.scene.screenSpaceCameraController.maximumZoomDistance = this.map.camera.getMagnitude()*1.0;
+			},
+
+			onZoomAustria: function(){
+				this.map.scene.camera.setView({
+					destination : Cesium.Rectangle.fromDegrees(7.65, 45.85, 18.1, 49.5),
+				});
+				this.map.scene.screenSpaceCameraController.maximumZoomDistance = this.map.camera.getMagnitude()*1.0;
+			},
+
+
 
 			toggleDebug: function(){
 				this.map.scene.debugShowFramesPerSecond = !this.map.scene.debugShowFramesPerSecond;

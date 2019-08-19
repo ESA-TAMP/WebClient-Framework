@@ -63,6 +63,10 @@ define([
 
 
 			this.cesiumView.listenTo(Communicator.mediator, 'time:change', _.bind(this.cesiumView.onTimeChange, this.cesiumView));
+
+			this.cesiumView.listenTo(Communicator.mediator, 'map:zoom:austria', _.bind(this.cesiumView.onZoomAustria, this.cesiumView));
+			this.cesiumView.listenTo(Communicator.mediator, 'map:zoom:europe', _.bind(this.cesiumView.onZoomEurope, this.cesiumView));
+
  
 			Communicator.reqres.setHandler('map:get:extent', _.bind(this.cesiumView.onGetMapExtent, this.cesiumView));
 

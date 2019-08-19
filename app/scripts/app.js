@@ -174,7 +174,7 @@
 					globals.products.add(
 						new m.LayerModel({
 							name: product.name,
-							description: product.description,
+							description: defaultFor(product.description, ''),
 							visible: product.visible,
                             ordinal: ordinal,
 							timeSlider: product.timeSlider,
@@ -251,7 +251,7 @@
 
 							var args = {
 								name: p.name,
-								description: p.description,
+								description: defaultFor(p.description, ''),
 								visible: defaultFor(p.visible,false),
 								timeSlider: true,
 								timeSliderProtocol: defaultFor(p.timeSliderProtocol, "WPS"),

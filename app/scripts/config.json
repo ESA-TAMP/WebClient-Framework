@@ -163,7 +163,7 @@
     }],
 
     "navBarConfig": {
-        "title": "TOP",
+        "title": "APP4AQ-p2",
         "url": "",
         "items": [{
             "name": "Favourite Layers",
@@ -175,6 +175,16 @@
             "icon": "fa-book",
             "eventToRaise": "ui:open:dataManagement",
             "template": "DataManagement"
+        },{
+            "name": "Area",
+            "icon": "fa-eye",
+            "subitems": [{
+                "name": "Europe",
+                    "eventToRaise": "map:zoom:europe"
+                }, {
+                    "name": "Austria",
+                    "eventToRaise": "map:zoom:austria"
+                }]
         }, {
             "name": "Tools",
             "icon": "fa-wrench",

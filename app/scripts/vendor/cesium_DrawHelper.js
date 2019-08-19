@@ -1036,7 +1036,7 @@ var DrawHelper = (function() {
                     if (cartesian) {
                         var value = getRectangle(firstPoint, ellipsoid.cartesianToCartographic(cartesian));
                         updateRectangle(value);
-                        tooltip.showAt(position, "<p>Drag to change rectangle rectangle</p><p>Click again to finish drawing</p>");
+                        tooltip.showAt(position, "<p>Drag to change rectangle</p><p>Click again to finish drawing</p>");
                     }
                 }
             }
