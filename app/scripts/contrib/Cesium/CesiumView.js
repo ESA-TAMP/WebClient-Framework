@@ -215,6 +215,7 @@ define(['backbone.marionette',
 					"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>");
 
 				this.$el.append('<div type="button" class="btn btn-success darkbutton" id="cesium_save">Save as Image</div>');
+				this.$el.append('<div id="coordinates_label"></div>');
 				
 				var layer;
 				var name = "";
@@ -320,8 +321,10 @@ define(['backbone.marionette',
 				this.map.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
 				this.map.scene.camera.setView({
-					destination : Cesium.Rectangle.fromDegrees(-15.0, 18.0, 35.0, 72.0),
+					destination : Cesium.Rectangle.fromDegrees(-44.0, 18.1, 63.4, 72.1),
 				});
+
+				this.currentArea = [-44.0, 18.1, 63.4, 72.1];
 
  				// In order to bound max zoom to Europe
 				this.map.scene.screenSpaceCameraController.maximumZoomDistance = this.map.camera.getMagnitude()*1.0;
@@ -537,6 +540,48 @@ define(['backbone.marionette',
 
 			    // Remove gazetteer field
 			    $('.cesium-viewer-geocoderContainer').remove();
+
+			    var handler = new Cesium.ScreenSpaceEventHandler(
+	                this.map.scene.canvas
+	            );
+	            handler.setInputAction(function () {
+	                //hide the selectionIndicator
+	                this.map.selectionIndicator.viewModel.selectionIndicatorElement.style.visibility = 'hidden';
+	            }.bind(this), Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+	            handler.setInputAction(function (movement) {
+	                var ellipsoid = Cesium.Ellipsoid.WGS84;
+	                var position = this.map.scene.camera.pickEllipsoid(movement.endPosition, ellipsoid);
+	                $('#coordinates_label').hide();
+	                if (Cesium.defined(position)) {
+	                    var cartographic = ellipsoid.cartesianToCartographic(position);
+	                    var lat = Cesium.Math.toDegrees(cartographic.latitude);
+	                    var lon = Cesium.Math.toDegrees(cartographic.longitude);
+	                    //var height = cartographic.height;
+	                    $('#coordinates_label').show();
+	                    $('#coordinates_label').html(
+	                        'Lat: ' + lat.toFixed(4) + '</br>Lon: ' + lon.toFixed(4)
+	                    );
+	                    // prefill coordinates in bbox edit forms when user already clicked on map to draw a rectangle
+	                    if ($('#bb_selection').text() === "Deactivate") {
+	                        if ($('.twipsy-inner p').length === 2) {
+	                            // could not find a way to hook up on events of external cesium drawing plugin, so watching for when a new tooltip appears
+	                            if (this.bboxEdit === undefined) {
+	                                // first click on globe, save start
+	                                this.bboxEdit = {};
+	                                this.bboxEdit.n = lat;
+	                                this.bboxEdit.w = lon;
+	                            } else {
+	                                // all other mouse movements, save second border, recompute bbox if necessary and save to forms
+	                                this.bboxEdit.e = lon;
+	                                this.bboxEdit.s = lat;
+	                                this.fillBboxFormsWhileDrawing(this.bboxEdit);
+	                            }
+	                        }
+
+	                    }
+	                }
+	            }.bind(this), Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 
 			    // Show Wireframe
 			    //this.map.scene.globe._surface._tileProvider._debug.wireframe = true;
@@ -2734,7 +2779,11 @@ define(['backbone.marionette',
 				        if(this.bboxsel !== null){
 				        	b = this.bboxsel;
 				        	request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
-				        } else {
+				        } else if(typeof this.currentArea !== 'undefined'){
+		                  	// If no bbox was set we use current 
+		                  	// visualized area for filtering
+		                  	b = this.currentArea;
+		                  } else {
 				        	// Always apply global bbox to make sure no weird 
 			                  // coverages are retuned that go over the pole 
 			                  // and things like that
@@ -2790,7 +2839,7 @@ define(['backbone.marionette',
 						                  if(upperCorn[1]>b[3]){
 						                  	upperCorn[1] = b[3];
 						                  }
-					                  }
+					                  } 
 
 					                  // Apply scaling base on number of requested coverages
 					                  var scaleFactor = 1.0;
@@ -4126,8 +4175,9 @@ define(['backbone.marionette',
 
 			onZoomEurope: function(){
 				this.map.scene.camera.setView({
-					destination : Cesium.Rectangle.fromDegrees(-15.0, 18.0, 35.0, 72.0),
+					destination : Cesium.Rectangle.fromDegrees(-44.0, 18.1, 63.4, 72.1),
 				});
+				this.currentArea = [-44.0, 18.1, 63.4, 72.1];
 				this.map.scene.screenSpaceCameraController.maximumZoomDistance = this.map.camera.getMagnitude()*1.0;
 			},
 
@@ -4135,6 +4185,7 @@ define(['backbone.marionette',
 				this.map.scene.camera.setView({
 					destination : Cesium.Rectangle.fromDegrees(7.65, 45.85, 18.1, 49.5),
 				});
+				this.currentArea = [7.66, 45.00, 18.11, 50.4];
 				this.map.scene.screenSpaceCameraController.maximumZoomDistance = this.map.camera.getMagnitude()*1.0;
 			},
 

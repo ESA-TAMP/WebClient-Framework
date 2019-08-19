@@ -20,6 +20,7 @@
       initialize: function(options){
         this.options = options;
         this.bbox = null;
+        this.currentArea = [-44.0, 18.1, 63.4, 72.1];
 
         TimeSlider.prototype.setTimetick = function (date){
 
@@ -57,6 +58,9 @@
         this.listenTo(Communicator.mediator, "date:tick:select", this.onTickSelected);
         this.listenTo(Communicator.mediator, "date:center", this.onDateCenter);
         this.listenTo(Communicator.mediator, "selection:changed", this.onBBoxSelectionChanged);
+
+        this.listenTo(Communicator.mediator, "map:zoom:europe", this.onEuropeSelected);
+        this.listenTo(Communicator.mediator, "map:zoom:austria", this.onAustriaSelected);
         
 
         Communicator.reqres.setHandler('get:time', this.returnTime);
@@ -273,6 +277,51 @@
         }
       },
 
+      onEuropeSelected: function(){
+        this.currentArea = [-44.0, 18.1, 63.4, 72.1];
+        for (var i = 0; i <  this.activeWPSproducts.length; i++) {
+          var currId = this.activeWPSproducts[i];
+          var product = globals.products.find(function(model) {
+            return model.get('download').id === currId;
+          });
+
+          // Deactivate and activate all active wps layers in timeslider
+          this.changeLayer({
+            isBaseLayer: false,
+            visible: false,
+            name: product.get('name')
+          });
+
+          this.changeLayer({
+            isBaseLayer: false,
+            visible: true,
+            name: product.get('name')
+          });
+        }
+      },
+      onAustriaSelected: function(){
+        this.currentArea = [7.66, 45.00, 18.11, 50.4];
+        for (var i = 0; i <  this.activeWPSproducts.length; i++) {
+          var currId = this.activeWPSproducts[i];
+          var product = globals.products.find(function(model) {
+            return model.get('download').id === currId;
+          });
+
+          // Deactivate and activate all active wps layers in timeslider
+          this.changeLayer({
+            isBaseLayer: false,
+            visible: false,
+            name: product.get('name')
+          });
+
+          this.changeLayer({
+            isBaseLayer: false,
+            visible: true,
+            name: product.get('name')
+          });
+        }
+      }, 
+
       onDateSelectionChange: function(opt) {
         this.slider.select(opt.start, opt.end);
       },
@@ -351,6 +400,9 @@
           if (this.bbox !== null){
             var b = this.bbox;
             request += '&bbox='+b.w+','+b.n+','+b.e+','+b.s;
+          } else if (typeof this.currentArea !== 'undefined'){
+            var ar = this.currentArea;
+            request += '&bbox='+ar[1]+','+ar[2]+','+ar[3]+','+ar[0];
           }
 
           var identifier = this.id;
@@ -440,7 +492,8 @@
                   attrs = {
                     id: product.get('download').id,
                     url: product.get('download').url,
-                    bbox: this.bbox
+                    bbox: this.bbox,
+                    currentArea: this.currentArea
                   };
                   
                   this.slider.addDataset({
