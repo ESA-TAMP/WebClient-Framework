@@ -114,7 +114,7 @@
             "name": "Borders and Labels",
             "id": "overlay_base",
             "protocol": "WMTS",
-            "visible": false,
+            "visible": true,
             "urls": [
                 "https://{s}.s2maps-tiles.eu/wmts/?service=WMTS&version=1.0.0&request=GetTile&tilematrix={TileMatrix}&layer=overlay_base&style={Style}&tilerow={TileRow}&tilecol={TileCol}&tilematrixset={TileMatrixSet}&format=image%2Fpng"
             ],

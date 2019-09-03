@@ -39,7 +39,7 @@
             var fetchCollectionListURL  = PRODUCT_URL+'wcs?service=WCS&Request=GetCapabilities&version=2.0.0';
 
 
-            /*var USER_PRODUCTS = [];
+            var USER_PRODUCTS = [];
 
             var request = new XMLHttpRequest();
             request.open('GET', fetchCollectionListURL, false);  // `false` makes the request synchronous
@@ -51,23 +51,270 @@
                 for (col = 0; col  < collections.length; col++) {
                     var colID = collections[col].textContent;
                     console.log(colID);
-                    if(colID.indexOf('S5P') !== -1 || colID.indexOf('CAMS') !== -1){
+                    //if(colID.indexOf('S5P') !== -1 || colID.indexOf('CAMS') !== -1){
                         USER_PRODUCTS.push({
                             "name": colID.replace(/_/g, ' '),
                             "id": colID,
                             "date": ["May 3, 2018","Oct. 28, 2018"],
                             "parameters": {
                                 "Parameter1": {
-                                    "range":[ 0, 100 ],"uom":"",
+                                    "range":[ 0, 0.1 ],"uom":"",
+                                    "nullValue": [0, 9.969209968386869e+36]
                                 }
                             }
                         });
-                    }
+                    //}
                 }
-            }*/
+            }
 
+            /*var USER_PRODUCTS = [
+                    
+                        {
+                            "name": "WRFCHEM_PM25surf_4326_005",
+                            "id": "WRFCHEM_PM25surf_4326_005",
+                            "date":
+                            [ 
+                                "June 28, 2018",
+                                "Aug. 18, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            100
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                        {
+                            "name": "S5P_SULFURDIOXIDE_TOTAL_VERTICAL_COLUMN_QA_VALUE_L2_4326_0035",
+                            "id": "S5P_SULFURDIOXIDE_TOTAL_VERTICAL_COLUMN_QA_VALUE_L2_4326_0035",
+                            "date":
+                            [ 
+                                "June 28, 2018",
+                                "Aug. 18, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            100
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                        {
+                            "name": "WRFCHEM_SO2_D02_4326_0015",
+                            "id": "WRFCHEM_SO2_D02_4326_0015",
+                            "date":
+                            [ 
+                                "June 28, 2018",
+                                "Aug. 18, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            100
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                        {
+                            "name": "WRFCHEM_PM25col_4326_005",
+                            "id": "WRFCHEM_PM25col_4326_005",
+                            "date":
+                            [ 
+                                "June 28, 2018",
+                                "Aug. 18, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            100
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                        {
+                            "name": "WRFCHEM_PM10surf_4326_005",
+                            "id": "WRFCHEM_PM10surf_4326_005",
+                            "date":
+                            [ 
+                                "June 28, 2018",
+                                "Aug. 18, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            100
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                        {
+                            "name": "S5P_OFFLNRTI_L2__O3_4326_0035",
+                            "id": "S5P_OFFLNRTI_L2__O3_4326_0035",
+                            "date":
+                            [ 
+                                "June 28, 2018",
+                                "Aug. 18, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            100
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                        {
+                            "name": "WRFCHEM_PM10col_4326_005",
+                            "id": "WRFCHEM_PM10col_4326_005",
+                            "date":
+                            [ 
+                                "June 28, 2018",
+                                "Aug. 18, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            100
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                        {
+                            "name": "WRFCHEM_SO2_D01_4326_01",
+                            "id": "WRFCHEM_SO2_D01_4326_01",
+                            "date":
+                            [ 
+                                "June 28, 2018",
+                                "Aug. 18, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            100
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                        {
+                            "name": "S5P_OFFLNRTI_L2__SO2_4326_0035",
+                            "id": "S5P_OFFLNRTI_L2__SO2_4326_0035",
+                            "date":
+                            [ 
+                                "June 28, 2018",
+                                "Aug. 18, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            100
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                        {
+                            "name": "S5P_OFFLNRTI_L2__NO2_4326_0035",
+                            "id": "S5P_OFFLNRTI_L2__NO2_4326_0035",
+                            "date":
+                            [ 
+                                "June 28, 2018",
+                                "Aug. 18, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            100
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        },
+                        {
+                            "name": "S5P_OFFLNRTI_L2__AER_AI_4326_0035",
+                            "id": "S5P_OFFLNRTI_L2__AER_AI_4326_0035",
+                            "date":
+                            [ 
+                                "June 28, 2018",
+                                "Aug. 18, 2019"
+                            ],
+                            "parameters":
+                            {
+                                "Parameter1": 
+                                {
+                                        "range": 
+                                        [
+                                            0,
+                                            100
+                                        ],
+                                        "uom":"",
+                                        
+                                }
+                            }
+                        }
+            ];
+            */
 
-            var USER_PRODUCTS = [
+            /*var USER_PRODUCTS = [
                     
                         {
                             "name": "Sentinel 5P L2 NO2 quality value",
@@ -506,7 +753,7 @@
                             }
                         },
                     
-              ];
+              ];*/
                 
         </script>
 

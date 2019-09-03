@@ -154,12 +154,10 @@
                 if (localStorage.getItem('favourite') === null) {
 
                     localStorage.setItem('favourite', JSON.stringify([
-                        'MYD04_Image_Optical_Depth_Land_And_Ocean',
-                        'MOD04_Image_Optical_Depth_Land_And_Ocean',
-                        'WRFCHEM_AOD550',
-                        'WRFCHEM_DUSTcol',
-                        'WRFCHEM_PM25surf',
-                        'WRFCHEM_PM10surf'
+                        'S5P_OFFLNRTI_L2__AER_AI_4326_0035',
+                        'S5P_OFFLNRTI_L2__NO2_4326_0035',
+                        'S5P_OFFLNRTI_L2__O3_4326_0035',
+                        'S5P_OFFLNRTI_L2__SO2_4326_0035'
                     ]));
                 }
 
