@@ -1891,7 +1891,7 @@ define(['backbone.marionette',
 					for (var rd = 0; rd < convArray.length; rd++) {
 						for (var ar = 0; ar < convArray[rd].length; ar++) {
 							for (var nv = 0; nv < nullValue.length; nv++) {
-								if(convArray[rd][ar] === nullValue[nv]){
+								if(convArray[rd][ar] === nullValue[nv] || Number.isNaN(convArray[rd][ar])){
 									convArray[rd][ar] = Number.MIN_VALUE;
 								}
 							}
@@ -2497,7 +2497,7 @@ define(['backbone.marionette',
 						for (var rd = 0; rd < rasdata.length; rd++) {
 							for (var ar = 0; ar < rasdata[rd].length; ar++) {
 								for (var nv = 0; nv < nullValue.length; nv++) {
-									if(rasdata[rd][ar] === nullValue[nv]){
+									if(rasdata[rd][ar] === nullValue[nv] || Number.isNaN(rasdata[rd][ar])){
 										rasdata[rd][ar] = Number.MIN_VALUE;
 									}
 								}
@@ -2783,13 +2783,15 @@ define(['backbone.marionette',
 		                  	// If no bbox was set we use current 
 		                  	// visualized area for filtering
 		                  	b = this.currentArea;
+		                  	b = [b[1], b[0], b[3], b[2]];
+		                  	request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
 		                  } else {
 				        	// Always apply global bbox to make sure no weird 
 			                  // coverages are retuned that go over the pole 
 			                  // and things like that
 			                b = [-90, -180, 90, 180];
+				        	request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
 				        }
-				        request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
 
 			          	$.get(request)
 			              .success(function(resp) {
@@ -2851,14 +2853,14 @@ define(['backbone.marionette',
 					                  	scaleFactor*=0.7;
 					                  }
 					                  if(wcsEndpoint.indexOf('S5P_LEVEL2_QA_AER_AI_4326_0035')!==-1){
-					                  	scaleFactor*=0.05;
+					                  	scaleFactor*=0.5;
 					                  }
 
 					                  wcsEndpoint += '&scale='+scaleFactor;
 
 
 					                  
-					                  wcsEndpoint += '&comprecompression=false';
+					                  wcsEndpoint += '&compression=false';
 
 					                  if(summ.indexOf('<strong>End</strong>') !== -1){
 					                    hasEndTime = true;
