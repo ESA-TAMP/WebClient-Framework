@@ -612,7 +612,7 @@
                 });
 
                 $(document).ajaxError(function( event, request, settings ) {
-                	if(settings.suppressErrors || request.statusText == 'abort') {
+                	if(settings.suppressErrors || request.statusText == 'abort' || request.status == 404) {
 				        return;
 				    }
 

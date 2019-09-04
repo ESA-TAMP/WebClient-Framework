@@ -1782,12 +1782,35 @@ define(['backbone.marionette',
 			},
 
 			loadCoverage: function(request, bbox, cov_id, cur_coll, product, prim){
+
+				var self = this;
+
 				return $.ajax({
 				   dataType:'arraybuffer',
 				   type:'GET',
-				   url: request
+				   url: request,
+				   crossDomain: true
 				})
-				.done(this.onDataReceived.bind(this,bbox, cov_id, cur_coll, product, prim, undefined, undefined, undefined));
+				.done(this.onDataReceived.bind(this,bbox, cov_id, cur_coll, product, prim, undefined, undefined, undefined))
+				.fail(this.onLoadCoverageFailed.bind(this,bbox, cov_id, cur_coll, product, prim, undefined, undefined, undefined));
+			},
+
+			onLoadCoverageFailed: function( bbox, cov_id, cur_coll, product, prim, gt, rasdata, img, data ) {
+				// remove coverage from stack
+				var prodId = product.get('download').id;
+				if(!$.isEmptyObject(this.stackedDataset) && this.stackedDataset[prodId].indexOf(cov_id) !== -1){
+					var idx = this.stackedDataset[prodId].indexOf(cov_id);
+					this.stackedDataset[prodId].splice(idx, 1);
+				}
+
+				this.currentDownload++;
+				if(this.currentDownload == this.downloadTotal){
+					$('#loadingcontrols').empty();
+					$('#loadingcontrols').hide();
+				}
+
+				$('#progressindicator').text(this.currentDownload +' / '+ this.downloadTotal);
+				$('#progressindicator').css('width', Math.round(((this.currentDownload-1)/this.downloadTotal)*100)+'%');
 			},
 
 			onDataReceived: function( bbox, cov_id, cur_coll, product, prim, gt, rasdata, img, data ) {
@@ -2427,7 +2450,8 @@ define(['backbone.marionette',
 				return $.ajax({
 				   dataType:'arraybuffer',
 				   type:'GET',
-				   url: request
+				   url: request,
+				   crossDomain: true
 				})
 				.done(function( data ) {
 
@@ -2460,79 +2484,77 @@ define(['backbone.marionette',
 	                          'There was an error accessing the current dataset ' + cov_id +
 	                        '</div>'
 		                );
-		                return;
-					}
+					} else {
+						var meta = img.getGDALMetadata();
+						// Check if we need to transform data
+						if(meta && meta.hasOwnProperty('SCALE') && meta.hasOwnProperty('OFFSET') 
+							/*&& img.fileDirectory.hasOwnProperty('GDAL_NODATA')*/){
+							//var nodata = Number(img.fileDirectory.GDAL_NODATA.slice(0,-1));
+							var scale = Number(meta.SCALE);
+							var offset = Number(meta.OFFSET);
+							var convRasData = [];
 
-					var meta = img.getGDALMetadata();
+							var unitconv = 1.0;
+							if(product.get('download').id === 'EU_CAMS_SURFACE_PM10_4326_01'){
+								unitconv = 1e9;
+							}
 
-					// Check if we need to transform data
-					if(meta && meta.hasOwnProperty('SCALE') && meta.hasOwnProperty('OFFSET') 
-						/*&& img.fileDirectory.hasOwnProperty('GDAL_NODATA')*/){
-						//var nodata = Number(img.fileDirectory.GDAL_NODATA.slice(0,-1));
-						var scale = Number(meta.SCALE);
-						var offset = Number(meta.OFFSET);
-						var convRasData = [];
+							if(!isNaN(offset) && !isNaN(scale)){
 
-						var unitconv = 1.0;
-						if(product.get('download').id === 'EU_CAMS_SURFACE_PM10_4326_01'){
-							unitconv = 1e9;
+								for (var i = 0; i < rasdata.length; i++) {
+									var convArr = [];
+									for (var rd = 0; rd < rasdata[i].length; rd++) {
+										convArr.push(
+											(offset + (rasdata[i][rd] * scale)) * unitconv
+										);
+									}
+									convRasData.push(convArr);
+								}
+								rasdata = convRasData;
+							}
 						}
 
-						if(!isNaN(offset) && !isNaN(scale)){
+						if (img.getWidth()==1 && img.getHeight()==1) {
+							// This is a 1D "column"
+							var meta = img.getGDALMetadata();
+							var heights;
+							if(meta && meta.hasOwnProperty('VERTICAL_LEVELS')){
+								heights = meta.VERTICAL_LEVELS.split(',').map(Number);
+							}
+							// TODO: Super dirty hack because data is weird and they dont want it to be visualized like this
+							if(heights[heights.length-1]>99999){
+								heights.pop();
+								rasdata.pop();
+							}
+
+							//var line = [];
+							//console.log(rasdata.length);
+							var cov_item = (_.find(self.currentCoverages, function(item) {
+								return item.identifier == cov_id; 
+							}));
+							var starttime = cov_item.starttime;
+							var endtime = cov_item.endtime;
 
 							for (var i = 0; i < rasdata.length; i++) {
-								var convArr = [];
-								for (var rd = 0; rd < rasdata[i].length; rd++) {
-									convArr.push(
-										(offset + (rasdata[i][rd] * scale)) * unitconv
-									);
-								}
-								convRasData.push(convArr);
+								//line.push(rasdata[i][0]);
+								var height = heights[i];
+								self.timeseries.push({
+									starttime:starttime,
+									endtime: endtime,
+									val:rasdata[i][0],
+									height: height
+								});
 							}
-							rasdata = convRasData;
-						}
-					}
-
-					if (img.getWidth()==1 && img.getHeight()==1) {
-						// This is a 1D "column"
-						var meta = img.getGDALMetadata();
-						var heights;
-						if(meta && meta.hasOwnProperty('VERTICAL_LEVELS')){
-							heights = meta.VERTICAL_LEVELS.split(',').map(Number);
-						}
-						// TODO: Super dirty hack because data is weird and they dont want it to be visualized like this
-						if(heights[heights.length-1]>99999){
-							heights.pop();
-							rasdata.pop();
-						}
-
-						//var line = [];
-						//console.log(rasdata.length);
-						var cov_item = (_.find(self.currentCoverages, function(item) {
-							return item.identifier == cov_id; 
-						}));
-						var starttime = cov_item.starttime;
-						var endtime = cov_item.endtime;
-
-						for (var i = 0; i < rasdata.length; i++) {
-							//line.push(rasdata[i][0]);
-							var height = heights[i];
-							self.timeseries.push({
-								starttime:starttime,
-								endtime: endtime,
-								val:rasdata[i][0],
-								height: height
-							});
-						}
-						//self.timeseries.push({id:cov_id, data:line});
-					}else{
-						// 2D coverage for animation
-						if(typeof rasdata !== 'undefined' && rasdata.length>0){
-							self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
-							if(self.stackedDataset.hasOwnProperty(cur_coll)){
-								self.stackedDataset[cur_coll].push(cov_id);
-							} else {
-								self.stackedDataset[cur_coll] = [cov_id];
+							//self.timeseries.push({id:cov_id, data:line});
+						}else{
+							// 2D coverage for animation
+							if(typeof rasdata !== 'undefined' && rasdata.length>0){
+								self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
+								if(self.stackedDataset.hasOwnProperty(cur_coll)){
+									self.stackedDataset[cur_coll].push(cov_id);
+								} else {
+									self.stackedDataset[cur_coll] = [cov_id];
+								}
 							}
 						}
 					}
@@ -2545,7 +2567,16 @@ define(['backbone.marionette',
 
 					$('#progressindicator').text(self.currentDownload +' / '+ self.downloadTotal);
 					$('#progressindicator').css('width', Math.round(((self.currentDownload-1)/self.downloadTotal)*100)+'%');
+				})
+				.fail(function(resp){
+					self.currentDownload++;
+					if(self.currentDownload == self.downloadTotal){
+						$('#loadingcontrols').empty();
+						$('#loadingcontrols').hide();
+					}
 
+					$('#progressindicator').text(self.currentDownload +' / '+ self.downloadTotal);
+					$('#progressindicator').css('width', Math.round(((self.currentDownload-1)/self.downloadTotal)*100)+'%');
 				});
 			},
 
@@ -2808,6 +2839,8 @@ define(['backbone.marionette',
 
 					                  
 					                  wcsEndpoint += '&compression=false';
+					                  wcsEndpoint += '&filter=false';
+					                  
 
 					                  if(summ.indexOf('<strong>End</strong>') !== -1){
 					                    hasEndTime = true;
@@ -2838,6 +2871,8 @@ define(['backbone.marionette',
 				              	}
 			              	}
 
+
+
 			              	// here we need to remove all "older" coverages
 			              	if(self.currentCoverages.hasOwnProperty(identifier)){
 				              	for (var cc=0; cc<self.currentCoverages[identifier].length; cc++){
@@ -2853,6 +2888,25 @@ define(['backbone.marionette',
 				              			if(self.p_plot.datasetCollection.hasOwnProperty(self.currentCoverages[identifier][cc].identifier)){
 				              				self.p_plot.removeDataset(self.currentCoverages[identifier][cc].identifier);
 				              			}
+				              		}
+				              	}
+			              	}
+
+			              	// clean stacked dataset
+			              	if(self.stackedDataset.hasOwnProperty(identifier)){
+			              		
+			              		for (var i = self.stackedDataset[identifier].length - 1; i >= 0; i--) {
+
+				              		// Iterate current set to see if available
+				              		var stillActive = false;
+				              		for (var cd = 0; cd < coverages.data.length; cd++) {
+				              			if(self.stackedDataset[identifier][i] === coverages.data[cd].identifier){
+				              				stillActive = true;
+				              			}
+				              		}
+				              		if(!stillActive){
+				              			// check if available if yes remove coverage
+				              			self.stackedDataset[identifier].splice(i,1);
 				              		}
 				              	}
 			              	}
@@ -3034,6 +3088,11 @@ define(['backbone.marionette',
 											}else{
 												deferreds.push(self.addCoverage(request, cov_id, collId, product));
 											}
+											if(self.stackedDataset.hasOwnProperty(collId)){
+												self.stackedDataset[collId].push(cov_id);
+											} else {
+												self.stackedDataset[collId] = [cov_id];
+											}
 										}
 									}
 								}
@@ -3045,7 +3104,16 @@ define(['backbone.marionette',
 							$.when.apply($, deferreds)
 								.then(function(){
 
-									if(self.timeseries.length >0){
+								}).fail(function(resp){
+								    // Probably want to catch failure
+								    $("#error-messages").append(
+			                              '<div class="alert alert-warning alert-info">'+
+			                              '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>'+
+			                              '<Strong>Information:</Strong> Some of the requested coverages have no data over the selected area.'+
+			                            '</div>'
+				                    );
+								}).always(function(){
+								    if(self.timeseries.length >0){
 
 										self.timeseries = _.filter(self.timeseries, function(obj){ return obj.height != 9.99e+29; });
 
@@ -3064,13 +3132,22 @@ define(['backbone.marionette',
 
 										if (stacked){
 											var to_play = coverages.data;
+											// remove coverages that were not loaded correctly
+											to_play = to_play.filter(function(cov){
+												return self.stackedDataset[collId].indexOf(cov.identifier) !== -1;
+											});
 											var prim_to_render = cur_coll._primitives[0];
 											var play_length = to_play.length;
 											var play_index = play_length-1;
 											var fps = 15;
 
+
 											self.primitiveToRender[collection] = cur_coll._primitives[0];
 											self.dataToRender[collection] = coverages.data;
+
+											/*if(play_length == 0){
+												return;
+											}*/
 
 											$('#playercontrols').show();
 											
@@ -3216,12 +3293,6 @@ define(['backbone.marionette',
 
 										}
 									}
-
-								}).fail(function(){
-								    // Probably want to catch failure
-								}).always(function(){
-								    // Or use always if you want to do the same thing
-								    // whether the call succeeds or fails
 							});
 
 							if (deferreds.length > 0){
