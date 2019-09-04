@@ -2797,11 +2797,17 @@ define(['backbone.marionette',
 					                  	scaleFactor*=0.05;
 					                  }
 
+					                  if(wcsEndpoint.indexOf('S5P_OFFL_L2__CH4')!==-1){
+					                  	scaleFactor=0.2;
+					                  }
+
+					                  
+
 					                  wcsEndpoint += '&scale='+scaleFactor;
 
 
 					                  
-					                  wcsEndpoint += '&comprecompression=false';
+					                  wcsEndpoint += '&compression=false';
 
 					                  if(summ.indexOf('<strong>End</strong>') !== -1){
 					                    hasEndTime = true;
