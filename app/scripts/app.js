@@ -196,7 +196,7 @@
 							model: product.model,
 							coefficients_range: product.coefficients_range,
 							satellite: product.satellite,
-							clamps: Cesium.defaultFor(product.clamps, [false, false]),
+							clamps: Cesium.defaultFor(product.clamps, [false, true]),
                             favourite: favourite
 						})
 					);
@@ -230,7 +230,7 @@
 							for (var j = pKeys.length - 1; j >= 0; j--) {
 								p.parameters[pKeys[j]]["colorscale"] = defaultFor(p.parameters[pKeys[j]]["colorscale"], "viridis");
 								p.parameters[pKeys[j]]["clamp_min"] = defaultFor(p.parameters[pKeys[j]]["clamp_min"], false);
-								p.parameters[pKeys[j]]["clamp_max"] = defaultFor(p.parameters[pKeys[j]]["clamp_max"], false);
+								p.parameters[pKeys[j]]["clamp_max"] = defaultFor(p.parameters[pKeys[j]]["clamp_max"], true);
 							}
 						}
 
@@ -279,7 +279,7 @@
 							}
 
 							globals.products.add(new m.LayerModel(args));
-							console.log("Added user product " + p.name );
+							console.log("Added user product " + p.id );
 						}
 					}
 				}
