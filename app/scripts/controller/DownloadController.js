@@ -27,6 +27,8 @@
 	        this.listenTo(Communicator.mediator, "dialog:open:download", this.onDownloadToolOpen);
 	        this.listenTo(Communicator.mediator, "analytics:set:filter", this.onDownloadSetFilter);
 	        this.listenTo(Communicator.mediator, "dialog:open:download:filter", this.onDownloadToolFilterOpen);
+	        this.listenTo(Communicator.mediator, "map:zoom:austria", this.onZoomAustria);
+	        this.listenTo(Communicator.mediator, "map:zoom:europe", this.onZoomEurope);
 		},
 
 		onChangeLayer: function (options) {
@@ -61,6 +63,26 @@
 	          this.model.set('AoI', null);
 	        }
             this.checkDownload();
+		},
+
+		onZoomEurope: function(){
+			//this.currentArea = [-44.0, 18.1, 63.4, 72.1];
+			this.model.set('AoI', {
+				s: 18.1,
+				w: -44.0, 
+				n: 72.1, 
+				e:  63.4
+			});
+		},
+
+		onZoomAustria: function(){
+			//this.currentArea = [7.66, 45.00, 18.11, 50.4];
+			this.model.set('AoI', {
+				s: 45.00,
+				w: 7.66, 
+				n: 50.4, 
+				e: 18.11
+			});
 		},
 
 		checkDownload: function() {

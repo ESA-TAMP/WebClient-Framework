@@ -323,6 +323,7 @@ define(['backbone.marionette',
 				this.map.scene.camera.setView({
 					destination : Cesium.Rectangle.fromDegrees(-44.0, 18.1, 63.4, 72.1),
 				});
+				Communicator.mediator.trigger('map:zoom:europe');
 
 				this.currentArea = [-44.0, 18.1, 63.4, 72.1];
 
@@ -2857,10 +2858,8 @@ define(['backbone.marionette',
 					                  }
 
 					                  wcsEndpoint += '&scale='+scaleFactor;
-
-
-					                  
-					                  wcsEndpoint += '&compression=false';
+					                  wcsEndpoint += '&comprecompression=false';
+					                  wcsEndpoint += '&filter=false';
 
 					                  if(summ.indexOf('<strong>End</strong>') !== -1){
 					                    hasEndTime = true;

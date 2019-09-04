@@ -78,56 +78,80 @@
           }
         });
 
-        var request = 
-          PRODUCT_URL+'pycsw/pycsw/csw.py?mode=opensearch'+
-          '&service=CSW&version=2.0.2&request=GetRecords&elementsetname=brief'+
-          '&typenames=csw:Record&resulttype=results'+
-          '&time='+getISODateTimeString(this.model.get("ToI").start)+'/'+
-          getISODateTimeString(this.model.get("ToI").end)+
-          '&q='+coverageSets.join(';')+
-          '&maxrecords=100'+
-          '&outputFormat=application/json';
+        if(coverageSets.length>0){
 
-        var that = this;
+          var request = 
+            PRODUCT_URL+'pycsw/pycsw/csw.py?mode=opensearch'+
+            '&service=CSW&version=2.0.2&request=GetRecords&elementsetname=brief'+
+            '&typenames=csw:Record&resulttype=results'+
+            '&time='+getISODateTimeString(this.model.get("ToI").start)+'/'+
+            getISODateTimeString(this.model.get("ToI").end)+
+            '&q='+coverageSets.join(';')+
+            '&maxrecords=100'+
+            '&outputFormat=application/json';
 
-        $.get(request)
-          .success(function(resp) {
-            var coverages = [];
+          var bbox = this.model.get("AoI");
+          var b = null;
+          if(bbox){
+            b = [bbox.s, bbox.w, bbox.n, bbox.e ];
+            request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
+          }
 
-            if(resp.hasOwnProperty('atom:feed') && resp['atom:feed'].hasOwnProperty('atom:entry')){
-              var entries = resp['atom:feed']['atom:entry'];
-              if(!Array.isArray(entries)){
-                entries = [entries];
-              }
+          var that = this;
 
-              if(typeof entries !== 'undefined'){
+          $.get(request)
 
-                for( var ee=0; ee<entries.length; ee++ ){
-                  var bboxCont = entries[ee]['http://www.georss.org/georss:where']['gml:Envelope'];
-                  var lowCorn = bboxCont['gml:lowerCorner'].split(' ').map(parseFloat);
-                  var upperCorn = bboxCont['gml:upperCorner'].split(' ').map(parseFloat);
-                  //var id = entries[ee]['atom:id'];
-                  var id = entries[ee]['atom:title'];
-                  var summ = entries[ee]['atom:summary'];
-                  var wcsEndpoint = entries[ee]['atom:source'];
+            .success(function(resp) {
 
-                  var spl = summ.replace(/ *\<[^>]*\> */g, " ").split(/[\s]+/);
-                  var start = spl[7];
-                  var end = spl[9];
+              var coverages = [];
 
-                  var id = spl[2].replace('.tif', '');
-
-                  coverages.push({
-                    'coverageId': id,
-                    'url': PRODUCT_URL+wcsEndpoint,
-                    'timePeriod': start+'/'+end
-                  })
+              if(resp.hasOwnProperty('atom:feed') && resp['atom:feed'].hasOwnProperty('atom:entry')){
+                var entries = resp['atom:feed']['atom:entry'];
+                if(!Array.isArray(entries)){
+                  entries = [entries];
                 }
 
-                that.coverages.reset(coverages);
+                if(typeof entries !== 'undefined'){
+
+                  for( var ee=0; ee<entries.length; ee++ ){
+                    var bboxCont = entries[ee]['http://www.georss.org/georss:where']['gml:Envelope'];
+                    var lowCorn = bboxCont['gml:lowerCorner'].split(' ').map(parseFloat);
+                    var upperCorn = bboxCont['gml:upperCorner'].split(' ').map(parseFloat);
+                    //var id = entries[ee]['atom:id'];
+                    var id = entries[ee]['atom:title'];
+                    var summ = entries[ee]['atom:summary'];
+                    var wcsEndpoint = entries[ee]['atom:source'];
+
+                    var spl = summ.replace(/ *\<[^>]*\> */g, " ").split(/[\s]+/);
+                    var start = spl[7];
+                    var end = spl[9];
+
+                    var id = spl[2].replace('.tif', '');
+
+                    if(b!==null){
+                      wcsEndpoint = wcsEndpoint +
+                                '&subset=Lat('+b[0]+','+b[2]+')'+
+                                '&subset=Long('+b[1]+','+b[3]+')';
+                    }
+
+                    var coverage = {
+                      'coverageId': id,
+                      'url': PRODUCT_URL+wcsEndpoint,
+                      'timePeriod': start+'/'+end,
+                    };
+                    if(b!==null){
+                      coverage.bbox = b.map(function(a){return a.toFixed(4);}).join(',');
+                    }
+                    coverages.push(coverage)
+                  }
+
+                  that.coverages.reset(coverages);
+                }
               }
-            }
-          });
+            });
+
+        }
+
       },
 
       onFormatSelected: function(evt){
