@@ -1878,7 +1878,13 @@ define(['backbone.marionette',
 					var offset = Number(meta.OFFSET);
 
 					var unitconv = 1.0;
-					if(product.get('download').id === 'EU_CAMS_SURFACE_PM10_4326_01'){
+					var conversionCollections = [
+						/*'EU_CAMS_SURFACE_SO2_G_4326_01',
+						'EU_CAMS_SURFACE_NO2_G_4326_01',
+						'EU_CAMS_SURFACE_O3_G_4326_01',
+						'EU_CAMS_SURFACE_PM10_G_4326_01'*/
+					];
+					if(conversionCollections.indexOf(product.get('download').id)!==-1){
 						unitconv = 1e9;
 					}
 
@@ -1886,7 +1892,23 @@ define(['backbone.marionette',
 
 						for (var i = 0; i < rasdata.length; i++) {
 							for (var rd = 0; rd < rasdata[i].length; rd++) {
-								convArray[i][rd] = (offset + (rasdata[i][rd] * scale)) * unitconv
+								convArray[i][rd] = (offset + (rasdata[i][rd] * scale)) * unitconv;
+							}
+						}
+					}
+				} else {
+
+					var conversionCollections = [
+						'EU_CAMS_SURFACE_SO2_G_4326_01',
+						'EU_CAMS_SURFACE_NO2_G_4326_01',
+						'EU_CAMS_SURFACE_O3_G_4326_01',
+						'EU_CAMS_SURFACE_PM10_G_4326_01'
+					];
+					if(conversionCollections.indexOf(product.get('download').id)!==-1){
+						var unitconv = 1e9;
+						for (var i = 0; i < rasdata.length; i++) {
+							for (var rd = 0; rd < rasdata[i].length; rd++) {
+								convArray[i][rd] = rasdata[i][rd] * unitconv;
 							}
 						}
 					}
