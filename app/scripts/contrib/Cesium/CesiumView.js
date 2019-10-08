@@ -3518,7 +3518,11 @@ define(['backbone.marionette',
 	                    xAxis.tickValues(
 	                        d3.range(rangeMin,rangeMax+step, step)
 	                    );
-	                    xAxis.tickFormat(d3.format('g'));
+	                    //xAxis.tickFormat(d3.format('g'));
+	                    var tickformat = d3.format('g');
+				        xAxis.tickFormat(function(d){
+				            return tickformat(d.toFixed(4));
+				        });
 	                }
 
 	                var g = svgContainer.append('g')
@@ -3699,7 +3703,7 @@ define(['backbone.marionette',
 
             		if(product.get("download").id==layer){
             			if(product.get("views")[0].protocol == "WCS"){
-            				this.checkColorscale(product.get('download').id);
+            				self.checkColorscale(product.get('download').id);
 
             				var cur_coll = self.coverages_collections[product.get("download").id];
 
