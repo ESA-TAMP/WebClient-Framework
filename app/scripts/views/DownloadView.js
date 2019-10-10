@@ -45,12 +45,14 @@
         "click #btn-select-all-coverages": "onSelectAllCoveragesClicked",
         "click #btn-invert-coverage-selection": "onInvertCoverageSelectionClicked",
         'change input[type="checkbox"]': "onCoverageSelected",
-        "click #btn-start-download": "onStartDownloadClicked"
+        "click #btn-start-download": "onStartDownloadClicked",
+        'change #select-output-format': "onFormatSelected"
       },
 
       initialize: function(options) {
 
         this.coverages = new Backbone.Collection([]);
+        this.currentArea = false;
 
       },
       onShow: function(view){
@@ -67,46 +69,105 @@
         $downloadList.children().remove();
 
 
-        var coverageSets = _.map(this.model.get('products'), function(product, key) {
-          var set = new EOCoverageSet([]);
-          var options = {};
+        var coverageSets = [];
+        var layerActive = false;
+        _.map(this.model.get('products'), function(product, key) {
+          coverageSets.push(product.get('download').id);
+          if(product.get('visible')){
+            layerActive = true;
+          }
+        });
 
-          if(product.get('timeSlider')){
-            options = {
-                subsetTime: [
-                  getISODateTimeString(this.model.get("ToI").start),
-                  getISODateTimeString(this.model.get("ToI").end)
-                ]
-            };
-          } //TODO: Check what to set if timeslider not activated
+        if(coverageSets.length>0){
+
+          var request = 
+            PRODUCT_URL+'pycsw/pycsw/csw.py?mode=opensearch'+
+            '&service=CSW&version=2.0.2&request=GetRecords&elementsetname=brief'+
+            '&typenames=csw:Record&resulttype=results'+
+            '&time='+getISODateTimeString(this.model.get("ToI").start)+'/'+
+            getISODateTimeString(this.model.get("ToI").end)+
+            '&q='+coverageSets.join(';')+
+            '&maxrecords=100'+
+            '&outputFormat=application/json';
 
           var bbox = this.model.get("AoI");
+          var b = null;
           if(bbox){
-            options.subsetCRS = "http://www.opengis.net/def/crs/EPSG/0/4326";
-            options.subsetX = [bbox.w, bbox.e];
-            options.subsetY = [bbox.s, bbox.n];
+            b = [bbox.s, bbox.w, bbox.n, bbox.e ];
+            request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
           }
 
-          // TODO: Check for download protocol !
-          set.url = WCS.EO.KVP.describeEOCoverageSetURL(product.get('download').url, key, options);
-          return set;
-        }, this);
+          var that = this;
 
-        // dispatch WCS DescribeEOCoverageSet requests
-        var deferreds = _.invoke(coverageSets, "fetch");
+          $.get(request)
 
-        $.when.apply($, deferreds).done(_.bind(function() {
+            .success(function(resp) {
 
+              var coverages = [];
 
-          _.each(coverageSets, function(set) {
-            set.each(function(model) {
-              model.set("url", set.url)
+              if(resp.hasOwnProperty('atom:feed') && resp['atom:feed'].hasOwnProperty('atom:entry')){
+                var entries = resp['atom:feed']['atom:entry'];
+                if(!Array.isArray(entries)){
+                  entries = [entries];
+                }
+
+                if(typeof entries !== 'undefined'){
+
+                  for( var ee=0; ee<entries.length; ee++ ){
+                    var bboxCont = entries[ee]['http://www.georss.org/georss:where']['gml:Envelope'];
+                    var lowCorn = bboxCont['gml:lowerCorner'].split(' ').map(parseFloat);
+                    var upperCorn = bboxCont['gml:upperCorner'].split(' ').map(parseFloat);
+                    //var id = entries[ee]['atom:id'];
+                    var id = entries[ee]['atom:title'];
+                    var summ = entries[ee]['atom:summary'];
+                    var wcsEndpoint = entries[ee]['atom:source'];
+
+                    var spl = summ.replace(/ *\<[^>]*\> */g, " ").split(/[\s]+/);
+                    var start = spl[7];
+                    var end = spl[9];
+
+                    var id = spl[2].replace('.tif', '');
+
+                    if(b!==null){
+                      wcsEndpoint = wcsEndpoint +
+                                '&subset=Lat('+b[0]+','+b[2]+')'+
+                                '&subset=Long('+b[1]+','+b[3]+')';
+                    }
+
+                    var coverage = {
+                      'coverageId': id,
+                      'url': PRODUCT_URL+wcsEndpoint,
+                      'timePeriod': start+'/'+end,
+                    };
+                    if(b!==null){
+                      coverage.bbox = b.map(function(a){return a.toFixed(4);}).join(',');
+                    }
+                    coverages.push(coverage)
+                  }
+
+                  that.coverages.reset(coverages);
+                }
+              }
             });
-          });
 
-          var coverage = _.flatten(_.pluck(coverageSets, "models"));
-          this.coverages.reset(coverage);
-        }, this));
+        }
+
+      },
+
+      onFormatSelected: function(evt){
+        var format = evt.target.value;
+        if(format === 'image/tiff'){
+          this.coverages.each(function(cov){
+            cov.set('url', cov.get('url').replace('application/x-netcdf', format));
+          })
+        } else {
+          this.coverages.each(function(cov){
+            cov.set('url', cov.get('url').replace('image/tiff', format));
+          })
+        }
+        var $downloadList = this.$("#download-list");
+        $downloadList.children().remove();
+        this.onCoveragesReset();
       },
 
       onSelectAllCoveragesClicked: function() {
