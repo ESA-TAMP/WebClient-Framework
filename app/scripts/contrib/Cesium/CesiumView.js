@@ -2534,6 +2534,22 @@ define(['backbone.marionette',
 								}
 								rasdata = convRasData;
 							}
+						} else {
+
+							var conversionCollections = [
+								'EU_CAMS_SURFACE_SO2_G_4326_01',
+								'EU_CAMS_SURFACE_NO2_G_4326_01',
+								'EU_CAMS_SURFACE_O3_G_4326_01',
+								'EU_CAMS_SURFACE_PM10_G_4326_01'
+							];
+							if(conversionCollections.indexOf(product.get('download').id)!==-1){
+								var unitconv = 1e9;
+								for (var i = 0; i < rasdata.length; i++) {
+									for (var rd = 0; rd < rasdata[i].length; rd++) {
+										convArray[i][rd] = rasdata[i][rd] * unitconv;
+									}
+								}
+							}
 						}
 
 						if (img.getWidth()==1 && img.getHeight()==1) {
