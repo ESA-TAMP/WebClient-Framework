@@ -1848,8 +1848,8 @@ define(['backbone.marionette',
 	                return;
 				}
 				var meta = img.getGDALMetadata();
+				
 				var self = this;
-
 				// First convert array so that we can modify values
 				var convArray = [];
 
@@ -1878,12 +1878,7 @@ define(['backbone.marionette',
 					var offset = Number(meta.OFFSET);
 
 					var unitconv = 1.0;
-					var conversionCollections = [
-						/*'EU_CAMS_SURFACE_SO2_G_4326_01',
-						'EU_CAMS_SURFACE_NO2_G_4326_01',
-						'EU_CAMS_SURFACE_O3_G_4326_01',
-						'EU_CAMS_SURFACE_PM10_G_4326_01'*/
-					];
+					var conversionCollections = [];
 					if(conversionCollections.indexOf(product.get('download').id)!==-1){
 						unitconv = 1e9;
 					}
@@ -1913,9 +1908,7 @@ define(['backbone.marionette',
 						}
 					}
 				}
-
 				rasdata = convArray;
-
 
 				// Check if the GeoTIFF is a vertical curtain
 				if(meta && meta.hasOwnProperty('COORDINATES') && meta.hasOwnProperty('HEIGHT_LEVELS') &&
@@ -2508,31 +2501,46 @@ define(['backbone.marionette',
 		                );
 					} else {
 						var meta = img.getGDALMetadata();
+						// First convert array so that we can modify values
+						var convArray = [];
+
+						for (var i = 0; i < rasdata.length; i++) {
+							convArray.push(Array.from(rasdata[i]));
+						}
+
+						if(nullValue){
+							for (var rd = 0; rd < convArray.length; rd++) {
+								for (var ar = 0; ar < convArray[rd].length; ar++) {
+									for (var nv = 0; nv < nullValue.length; nv++) {
+										if(convArray[rd][ar] === nullValue[nv]){
+											convArray[rd][ar] = Number.MIN_VALUE;
+										}
+									}
+								}
+							}
+						}
+
 						// Check if we need to transform data
+						
 						if(meta && meta.hasOwnProperty('SCALE') && meta.hasOwnProperty('OFFSET') 
 							/*&& img.fileDirectory.hasOwnProperty('GDAL_NODATA')*/){
 							//var nodata = Number(img.fileDirectory.GDAL_NODATA.slice(0,-1));
 							var scale = Number(meta.SCALE);
 							var offset = Number(meta.OFFSET);
-							var convRasData = [];
 
 							var unitconv = 1.0;
-							if(product.get('download').id === 'EU_CAMS_SURFACE_PM10_4326_01'){
+							var conversionCollections = [];
+							if(conversionCollections.indexOf(product.get('download').id)!==-1){
 								unitconv = 1e9;
 							}
 
 							if(!isNaN(offset) && !isNaN(scale)){
 
 								for (var i = 0; i < rasdata.length; i++) {
-									var convArr = [];
 									for (var rd = 0; rd < rasdata[i].length; rd++) {
-										convArr.push(
-											(offset + (rasdata[i][rd] * scale)) * unitconv
-										);
+										convArray[i][rd] = (offset + (rasdata[i][rd] * scale)) * unitconv;
 									}
-									convRasData.push(convArr);
 								}
-								rasdata = convRasData;
 							}
 						} else {
 
@@ -2551,6 +2559,7 @@ define(['backbone.marionette',
 								}
 							}
 						}
+						rasdata = convArray;
 
 						if (img.getWidth()==1 && img.getHeight()==1) {
 							// This is a 1D "column"
