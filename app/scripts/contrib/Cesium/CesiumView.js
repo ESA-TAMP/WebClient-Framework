@@ -3518,11 +3518,14 @@ define(['backbone.marionette',
 	                    xAxis.tickValues(
 	                        d3.range(rangeMin,rangeMax+step, step)
 	                    );
-	                    //xAxis.tickFormat(d3.format('g'));
-	                    var tickformat = d3.format('g');
-				        xAxis.tickFormat(function(d){
-				            return tickformat(d.toFixed(4));
-				        });
+	                    var expFormat = d3.format('e');
+						xAxis.tickFormat(function(v){
+							if ((v >= 0.01 && v<100) || (v<=-0.01 && v>-100) || v===0) {
+								return v;
+							} else {
+								return expFormat(v).toUpperCase();
+							}
+						});
 	                }
 
 	                var g = svgContainer.append('g')
