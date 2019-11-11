@@ -28,7 +28,8 @@
     "jqueryui-touch-punch": "*",
     "FileSaver.js": "eligrey/FileSaver.js#~1.2.0",
     "canvas-toBlob.js": "eligrey/canvas-toBlob.js",
-    "Blob.js": "eligrey/Blob.js"
+    "Blob.js": "eligrey/Blob.js",
+    "graphly": "eox-a/graphly#322c37ba2f8b986d0e3cefa7e44f254098ca4190"
   },
   "devDependencies": {
     "Keypress": "~2.0.0"

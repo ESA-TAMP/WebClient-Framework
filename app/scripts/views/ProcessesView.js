@@ -8,13 +8,12 @@
     'globals',
     'hbs!tmpl/Processes',
     'hbs!tmpl/wps_pep_execute',
-    'hbs!tmpl/wps_execute_interpolation',
     'underscore',
     'plotty',
     'geotiff',
     'libcoverage'
   ],
-  function( Backbone, Communicator, globals, TmplProcesses, Tmpl_wps_pep_execute, Tmpl_wps_pep_execute_interpolation ) {
+  function( Backbone, Communicator, globals, TmplProcesses, Tmpl_wps_pep_execute ) {
 
     var ProcessesView = Backbone.Marionette.ItemView.extend({
       tagName: "div",
@@ -422,47 +421,6 @@
         });
 
         $('#interpolation').click(function(){
-          var sels = Communicator.reqres.request('selections:get:all');
-
-          // TODO: Process only for one product
-          if(sels.actProd.length == 1){
-            if(confirm("Are you sure you want to continue? This process will create an entire new collection.")){
-
-              var current_product;
-              globals.products.each(function(product) {
-                if(product.get('download').id == sels.actProd[0]){
-                  current_product = product;
-                }
-              });
-
-              var collection_id = current_product.get('process_id');
-
-              var options = {
-                wps_process: 'execute_pep_interpolation',
-                process: 'convert',
-                collection: collection_id
-              };
-
-              var req_data = Tmpl_wps_pep_execute_interpolation(options);
-
-              $.ajax({
-                type: "POST",
-                url: that.wps_url,
-                data: req_data,
-                success: function(resp_data) {
-                  alert("Collection creation was triggered, the collection will appear the next time the client is opened and processing is finished");
-                }
-              });
-            }
-
-          }else{
-            $("#error-messages").append(
-              '<div class="alert alert-warning alert-danger">'+
-                '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>'+
-                '<strong>Info:</strong> Please make sure (only) one appropiate collection has been selected from the Layers menu before executing this process.' +
-              '</div>'
-            );
-          }
         });
 
         // Assessment tools
