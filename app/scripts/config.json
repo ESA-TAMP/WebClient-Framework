@@ -164,7 +164,7 @@
 
     "navBarConfig": {
         "title": "TOP",
-        "url": "",
+        "url": "http://top-platform.eu/",
         "items": [{
             "name": "Favourite Layers",
             "icon": "fa-globe",
@@ -180,6 +180,10 @@
             "icon": "fa-wrench",
             "eventToRaise": "ui:open:toolselection",
             "template": "ToolSelection"
+        }, {
+            "name": "Jupyter",
+            "icon": "fa-desktop",
+            "url": "https://jup.top-platform.eu/"
         }, {
             "name": "About",
             "icon": "fa-info-circle",

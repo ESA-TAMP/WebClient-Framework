@@ -1896,8 +1896,7 @@ define(['backbone.marionette',
 					var conversionCollections = [
 						'EU_CAMS_SURFACE_SO2_G_4326_01',
 						'EU_CAMS_SURFACE_NO2_G_4326_01',
-						'EU_CAMS_SURFACE_O3_G_4326_01',
-						'EU_CAMS_SURFACE_PM10_G_4326_01'
+						'EU_CAMS_SURFACE_O3_G_4326_01'
 					];
 					if(conversionCollections.indexOf(product.get('download').id)!==-1){
 						var unitconv = 1e9;
@@ -2547,8 +2546,7 @@ define(['backbone.marionette',
 							var conversionCollections = [
 								'EU_CAMS_SURFACE_SO2_G_4326_01',
 								'EU_CAMS_SURFACE_NO2_G_4326_01',
-								'EU_CAMS_SURFACE_O3_G_4326_01',
-								'EU_CAMS_SURFACE_PM10_G_4326_01'
+								'EU_CAMS_SURFACE_O3_G_4326_01'
 							];
 							if(conversionCollections.indexOf(product.get('download').id)!==-1){
 								var unitconv = 1e9;
