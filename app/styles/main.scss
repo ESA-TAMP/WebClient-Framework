@@ -563,3 +563,36 @@ button[active=active] {
   margin-left: 10px !important; 
   float: left;
 }
+
+.navbar {
+  background: linear-gradient(45deg, #dbc2bc, #895E53);
+  color: white;
+}
+
+.navbar-inverse {
+    border: none!important;
+}
+
+.navbar-brand{
+  font-family: "Montserrat", sans-serif;
+  font-weight: 300;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: white !important;
+}
+
+.navbar-nav a {
+  color: #fff !important;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 400;
+}
+
+.navbar-nav a:hover {
+  text-shadow: 0 0 1px white;
+}
+
+.prodLoadContainer {
+  color: #fff !important;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 400;
+}

@@ -165,6 +165,9 @@
 
                 var favourites = JSON.parse(localStorage.getItem('favourite'));
 
+                globals.products.fetch();
+
+/*
 				_.each(config.mapConfig.products, function(product) {
 					var p_color = product.color ? product.color : autoColor.getColor();
                     var favourite = false;
@@ -289,6 +292,8 @@
 				var productcolors = d3.scale.ordinal().domain(domain).range(range);
 
 				globals.objects.add('productcolors', productcolors);
+
+				*/
 	      	
 				//Overlays are loaded and added to the global collection
 				_.each(config.mapConfig.overlays, function(overlay) {
@@ -409,7 +414,7 @@
                 });*/
 
                 this.favouritesView = new v.LayerSelectionView({
-                    collection:globals.products.favourites(),
+                    collection: globals.products,
                     itemView: v.LayerItemView.extend({
                         template: {
                             type:'handlebars',

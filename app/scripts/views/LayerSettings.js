@@ -82,6 +82,12 @@
 				this.$("#range_min").val(options[this.selected].range[0]);
 				this.$("#range_max").val(options[this.selected].range[1]);
 
+				// Set the step size
+				// TODO: How many steps do we want to allow? Is 120 ok?
+				var step_size = Math.abs(options[this.selected].range[1]-options[this.selected].range[0])/120;
+				this.$("#range_min_slider").attr("step", step_size);
+				this.$("#range_max_slider").attr("step", step_size);
+
 				// Set the range sliders
 				this.$("#range_min_slider").attr("max", options[this.selected].range[1]);
 				this.$("#range_min_slider").attr("min", options[this.selected].range[0]);
@@ -120,15 +126,6 @@
 					that.model.set("parameters", options);
 					Communicator.mediator.trigger("layer:parameters:changed", that.model.get("download").id);
 				});
-
-
-
-				// Set the step size
-				// TODO: How many steps do we want to allow? Is 120 ok?
-				var step_size = Math.abs(options[this.selected].range[1]-options[this.selected].range[0])/120;
-				this.$("#range_min_slider").attr("step", step_size);
-				this.$("#range_max_slider").attr("step", step_size);
-
 
 				this.$("#range_min_slider").on("input change", function(){
 					var newrange = [parseFloat(this.value), options[that.selected].range[1]];
@@ -359,15 +356,15 @@
 					this.$("#range_min_slider").attr("min", options[this.selected].range[0]);
 					this.$("#range_min_slider").attr("value", options[this.selected].range[0]);
 
-					this.$("#range_max_slider").attr("max", options[this.selected].range[1]);
-					this.$("#range_max_slider").attr("min", options[this.selected].range[0]);
-					this.$("#range_max_slider").attr("value", options[this.selected].range[1]);
-
 					// Set the step size
 					// TODO: How many steps do we want to allow? Is 120 ok?
 					var step_size = Math.abs(options[this.selected].range[1]-options[this.selected].range[0])/120;
 					this.$("#range_min_slider").attr("step", step_size);
 					this.$("#range_max_slider").attr("step", step_size);
+
+					this.$("#range_max_slider").attr("max", options[this.selected].range[1]);
+					this.$("#range_max_slider").attr("min", options[this.selected].range[0]);
+					this.$("#range_max_slider").attr("value", options[this.selected].range[1]);
 
 					if(options[this.selected].hasOwnProperty("logarithmic"))
 						this.createScale(options[this.selected].logarithmic);
