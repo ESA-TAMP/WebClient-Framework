@@ -1,0 +1,24 @@
+<div class="input-group" id={{identifier}} style="margin:7px">
+  <span class="form-control">
+      {{created}}
+  </span>
+  <span class="input-group-addon">
+    <div class="progress {{status}}" style="margin-bottom:0px!important; width:250px;">
+      <!--<div class="progress-bar" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:{{percentage}}%"></div>-->
+      <span class="progresslabel">{{status}}</span>
+    </div>
+  </span>
+  <span class="input-group-addon">
+    <a class="collapse_object collapsed" style="text-decoration:none" data-toggle="collapse" href="#collapse-{{identifier}}">
+      <i class="fa fa-chevron-down" aria-hidden="true"></i> 
+      <i class="fa fa-chevron-up" aria-hidden="true"></i>
+      Process details
+    </a>
+  </span>
+</div>
+<div id="collapse-{{identifier}}" class="panel-collapse collapse">
+  <div class="panel-body">
+    <div>Details:</div>
+    <div> {{inputParameters}} </div>
+  </div>
+</div>

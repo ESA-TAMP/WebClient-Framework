@@ -1,0 +1,63 @@
+<?xml version="1.0"?><wps:Execute version="1.0.0" service="WPS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.opengis.net/wps/1.0.0" xmlns:wfs="http://www.opengis.net/wfs" xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc" xmlns:wcs="http://www.opengis.net/wcs/1.1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsAll.xsd">
+  <ows:Identifier>pmm</ows:Identifier>
+  <wps:DataInputs>
+    <wps:Input>
+      <ows:Identifier>collections</ows:Identifier>
+      <wps:Data>
+        <wps:LiteralData>{{collections}}</wps:LiteralData>
+      </wps:Data>
+    </wps:Input>
+    <wps:Input>
+      <ows:Identifier>resolution</ows:Identifier>
+      <wps:Data>
+        <wps:LiteralData>{{resolution}}</wps:LiteralData>
+      </wps:Data>
+    </wps:Input>
+    <wps:Input>
+      <ows:Identifier>projection</ows:Identifier>
+      <wps:Data>
+        <wps:LiteralData>{{projection}}</wps:LiteralData>
+      </wps:Data>
+    </wps:Input>
+    <wps:Input>
+      <ows:Identifier>bbox</ows:Identifier>
+      <wps:Data>
+        <wps:LiteralData>{{maxlat}},{{minlon}},{{minlat}},{{maxlon}}</wps:LiteralData>
+      </wps:Data>
+    </wps:Input>
+    <wps:Input>
+      <ows:Identifier>timerange</ows:Identifier>
+      <wps:Data>
+        <wps:LiteralData>{{timerange}}</wps:LiteralData>
+      </wps:Data>
+    </wps:Input>
+    <wps:Input>
+      <ows:Identifier>prefix</ows:Identifier>
+      <wps:Data>
+        <wps:LiteralData>{{prefix}}</wps:LiteralData>
+      </wps:Data>
+    </wps:Input>
+    {{if timeaggre}}
+    <wps:Input>
+      <ows:Identifier>timeaggre</ows:Identifier>
+      <wps:Data>
+        <wps:LiteralData>{{timeaggre}}</wps:LiteralData>
+      </wps:Data>
+    </wps:Input>{{/if}}
+  </wps:DataInputs>
+  <wps:ResponseForm>
+    <wps:RawDataOutput mimeType="text/plain">
+      <ows:Identifier>output</ows:Identifier>
+    </wps:RawDataOutput>
+  </wps:ResponseForm>
+</wps:Execute>
+
+{{!-- 
+collections: string --> ids separated by ","
+resolution: float
+projection: string --> "latlon" or "sinusoidal"
+bbox: two otions: 1--> string "maxlat, minlon, minlat, maxlon" or 2 --> list of floats 
+timerange: list --> [ "1900-01-01T00:00:00", "2100-12-31T23:59:59" ]
+prefix: string
+timeaggre: diferent to timerange, optional time homogenizaion list [ "1900-01-01T00:00:00", "2100-12-31T23:59:59" ]
+--}}

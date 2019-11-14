@@ -11,6 +11,13 @@ define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, Objec
     var clientInterfaceHost = 'http://80.158.47.58/en';
     var Products = Backbone.Collection.extend({
         url: clientInterfaceHost+'/api/dave/collections/',
+        fetchCollection: function() {
+            var self = this;
+            self.fetch();
+            this.timeout = setTimeout(function() {
+                self.fetchCollection();
+            }, 15000 );
+        },
         parse: function(response) {
             var self = this;
             _.each(response, function(item, index) {
@@ -80,6 +87,13 @@ define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, Objec
 
     var Jobs  = Backbone.Collection.extend({
         url: clientInterfaceHost+'/api/dave/jobs',
+        fetchCollection: function() {
+            var self = this;
+            self.fetch();
+            this.timeout = setTimeout(function() {
+                self.fetchCollection();
+            }, 15000 );
+        },
     });
 
     var swarm_model = Backbone.Model.extend({data:[]});

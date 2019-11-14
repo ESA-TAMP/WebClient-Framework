@@ -17,6 +17,7 @@
             	this.listenTo(Communicator.mediator, "dialog:open:about", this.onDialogOpenAbout);
             	this.listenTo(Communicator.mediator, "ui:open:layercontrol", this.onLayerControlOpen);
             	this.listenTo(Communicator.mediator, "ui:open:dataManagement", this.onDataManagementOpen);
+            	this.listenTo(Communicator.mediator, "ui:open:processManagement", this.onProcessManagementOpen);
             	this.listenTo(Communicator.mediator, "ui:open:toolselection", this.onToolSelectionOpen);
 				this.listenTo(Communicator.mediator, "ui:open:options", this.onOptionsOpen);
 				this.listenTo(Communicator.mediator, "ui:open:storybanner", this.StoryBannerOpen);
@@ -61,6 +62,17 @@
 	                App.dataManagementLayout.products.show(App.productsView);
 				} else {
 					App.dataManagementLayout.close();
+                }
+               
+			},
+			onProcessManagementOpen: function(event){
+				//We have to render the layout before we can
+                //call show() on the layout's regions
+                if (_.isUndefined(App.processManagementLayout.isClosed) || App.processManagementLayout.isClosed) {
+				  	App.rightSideBar.show(App.processManagementLayout);
+	                App.processManagementLayout.processList.show(App.processesView);
+				} else {
+					App.processManagementLayout.close();
                 }
                
 			},

@@ -9,6 +9,7 @@
 			'regions/DialogRegion', 'regions/UIRegion',
 			'layouts/LayerControlLayout',
             'layouts/DataManagementLayout',
+            'layouts/ProcessManagementLayout',
 			'layouts/ToolControlLayout',
 			'layouts/OptionsLayout',
 			'core/SplitView/WindowView',
@@ -24,7 +25,8 @@
 		],
 
 		function(Backbone, globals, DialogRegion,
-			UIRegion, LayerControlLayout, DataManagementLayout, ToolControlLayout, OptionsLayout, WindowView, Communicator) {
+			UIRegion, LayerControlLayout, DataManagementLayout, ProcessManagementLayout,
+			ToolControlLayout, OptionsLayout, WindowView, Communicator) {
 
 		var Application = Backbone.Marionette.Application.extend({
 			initialize: function(options) {
@@ -165,136 +167,8 @@
 
                 var favourites = JSON.parse(localStorage.getItem('favourite'));
 
-                globals.products.fetch();
+                globals.products.fetchCollection();
 
-/*
-				_.each(config.mapConfig.products, function(product) {
-					var p_color = product.color ? product.color : autoColor.getColor();
-                    var favourite = false;
-                    if(favourites.indexOf(product.download.id)!=-1){
-                        favourite = true;
-                    }
-					globals.products.add(
-						new m.LayerModel({
-							name: product.name,
-							description: product.description,
-							visible: product.visible,
-                            ordinal: ordinal,
-							timeSlider: product.timeSlider,
-							// Default to WMS if no protocol is defined
-							timeSliderProtocol: (product.timeSliderProtocol) ? product.timeSliderProtocol : "WMS",
-							color: p_color,
-							//time: products.time, // Is set in TimeSliderView on time change.
-							opacity: (product.opacity) ? product.opacity : 1,
-							views: product.views,
-							view: {isBaseLayer: false},
-							download: {
-								id: product.download.id,
-								protocol: product.download.protocol,
-								url: product.download.url
-							},
-							processes: product.processes,
-							unit: product.unit,
-							parameters: product.parameters,
-							height: product.height,
-							outlines: product.outlines,
-							model: product.model,
-							coefficients_range: product.coefficients_range,
-							satellite: product.satellite,
-							clamps: Cesium.defaultFor(product.clamps, [false, false]),
-                            favourite: favourite
-						})
-					);
-
-					if(product.processes){
-						domain.push(product.processes[0].layer_id);
-						range.push(p_color);
-					}
-					
-					console.log("Added product " + product.name );
-				}, this);
-
-				this.productServer = PRODUCT_URL;//defaultFor(PRODUCT_URL, "http://vtdas-dave.zamg.ac.at/davprc/ows");
-				var additional_products = [];
-
-				if (typeof USER_PRODUCTS !== 'undefined') {
-
-					USER_PRODUCTS = _.uniq(USER_PRODUCTS, function(p){
-						return p.id;
-					});
-
-					USER_PRODUCTS = _.sortBy(USER_PRODUCTS, function(i){return i.name.toLowerCase();}).reverse();
-
-					for (var i = USER_PRODUCTS.length - 1; i >= 0; i--) {
-
-						var p = USER_PRODUCTS[i];
-
-						var pKeys = _.keys(p.parameters);
-						if(pKeys.length>0){
-							p.parameters[pKeys[0]]["selected"]=true;
-							for (var j = pKeys.length - 1; j >= 0; j--) {
-								p.parameters[pKeys[j]]["colorscale"] = defaultFor(p.parameters[pKeys[j]]["colorscale"], "viridis");
-								p.parameters[pKeys[j]]["clamp_min"] = defaultFor(p.parameters[pKeys[j]]["clamp_min"], false);
-								p.parameters[pKeys[j]]["clamp_max"] = defaultFor(p.parameters[pKeys[j]]["clamp_max"], false);
-							}
-						}
-
-						if (p.id != "None" && p.id != ""){
-
-							var ground_measurements = defaultFor(p.groundMeasurements, false);
-							var wcs_id = p.id;//.split('_').slice(0,-2).join('_');
-							var c_start_date = new Date(p.date[0].replace(/\./g,' '));
-							var c_end_date = new Date(p.date[1].replace(/\./g,' '));
-							c_end_date.setHours(23,59,59,999);
-
-                            var favourite = false;
-                            if(favourites.indexOf(wcs_id)!=-1){
-                                favourite = true;
-                            }
-
-							var args = {
-								name: p.name,
-								description: p.description,
-								visible: defaultFor(p.visible,false),
-								timeSlider: true,
-								timeSliderProtocol: defaultFor(p.timeSliderProtocol, "WPS"),
-								timeRange: [c_start_date, c_end_date],
-								color: defaultFor(p.color, autoColor.getColor()),
-								opacity: defaultFor(p.opacity, 1),
-								process_id: p.id,
-								views: defaultFor(p.views, [{
-									"id": wcs_id,
-					                "protocol": "WCS",
-					                "urls": [this.productServer]
-								}]),
-								view: {isBaseLayer: false},
-								download: {
-									id: wcs_id,
-									protocol: "WCS",
-									url: this.productServer
-								},
-								processes: [],
-								parameters: p.parameters,
-                                favourite: favourite
-							};
-
-							if(ground_measurements){
-								args['ground_measurements'] = true;
-								args['timeSliderProtocol'] = 'KVP';
-							}
-
-							globals.products.add(new m.LayerModel(args));
-							console.log("Added user product " + p.name );
-						}
-					}
-				}
-
-				var productcolors = d3.scale.ordinal().domain(domain).range(range);
-
-				globals.objects.add('productcolors', productcolors);
-
-				*/
-	      	
 				//Overlays are loaded and added to the global collection
 				_.each(config.mapConfig.overlays, function(overlay) {
 
@@ -409,9 +283,18 @@
                 	className: "sortable"
                 });
 
-                /*this.productsView.setFilter(function (child, index, collection) {
-                  return false;
-                });*/
+                globals.jobs.fetchCollection();
+
+                this.processesView = new v.LayerSelectionView({
+                	collection: globals.jobs,
+                	itemView: v.LayerItemView.extend({
+                		template: {
+                			type:'handlebars',
+                			template: t.ProcessItem},
+                		className: "sortable-layer"
+                	}),
+                	className: "sortable"
+                });
 
                 this.favouritesView = new v.LayerSelectionView({
                     collection: globals.products,
@@ -451,6 +334,7 @@
 
                 // Create layout that will hold the child views
                 this.dataManagementLayout = new DataManagementLayout();
+                this.processManagementLayout = new ProcessManagementLayout();
 
 
                 // Define collection of selection tools
@@ -544,7 +428,7 @@
                 this.timeSliderView = new v.TimeSliderView(config.timeSlider);
 
 
-                this.processesView = new v.ProcessesView();
+                //this.processesView = new v.ProcessesView();
 
                 // Open layers panel as it is basically always used when opening client
                 Communicator.mediator.trigger("ui:open:layercontrol");

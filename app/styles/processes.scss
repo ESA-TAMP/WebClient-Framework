@@ -1,7 +1,7 @@
 
 
 #processes{
-	width: 23.8em;
+    width: 23.8em;
     top: 10em;
     left: 29.5em;
     font-size: .9em;
@@ -9,10 +9,39 @@
 }
 
 #processes .panel-body button{
-	margin-bottom: 10px;
+    margin-bottom: 10px;
 }
 
 .darkbutton{
-	background-color: #333 !important;
+    background-color: #333 !important;
     border-color: #444 !important;
+}
+
+.progresslabel{
+    padding-top: 4px;
+    display: inline-block;
+}
+
+
+.progress.Failed{
+    background-color: #ffb4b4!important;
+}
+
+.progress.Started{
+    background-color: #a8cad0!important;
+}
+
+.progress.Succeeded{
+    background-color: #b5ccae!important;
+}
+
+.collapse_object.collapsed>.fa.fa-chevron-down{
+    display: inline-block;
+}
+
+.collapse_object.collapsed>.fa.fa-chevron-up{
+    display: none;
+}
+.collapse_object>.fa.fa-chevron-down{
+    display: none;
 }

@@ -176,6 +176,11 @@
             "eventToRaise": "ui:open:dataManagement",
             "template": "DataManagement"
         }, {
+            "name": "Processes",
+            "icon": "fa-gears",
+            "eventToRaise": "ui:open:processManagement",
+            "template": "LayerControl"
+        }, {
             "name": "Tools",
             "icon": "fa-wrench",
             "eventToRaise": "ui:open:toolselection",
@@ -280,6 +285,9 @@
     }, {
         "id": "DataItem",
         "template": "hbs!tmpl/DataItem"
+    }, {
+        "id": "ProcessItem",
+        "template": "hbs!tmpl/ProcessItem"
     }],
 
     "selectionTools": [{

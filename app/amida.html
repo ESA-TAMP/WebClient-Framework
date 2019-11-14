@@ -1,0 +1,287 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> 
+<html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+        {% load staticfiles %}
+         <link rel="stylesheet" href="{% static 'dave_client/styles/main.css' %}">
+         <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,700|Open+Sans:300,300i,400,400i,700,700i" rel="stylesheet">
+
+        {% if user.is_authenticated %}
+        
+            <!-- Possible path configurations if dependency files are on different paths -->
+            <script type="text/javascript">
+
+                var CONFIG_URL = "{% static 'dave_client/scripts/config.json' %}";
+                CESIUM_BASE_URL = "{% static 'dave_client/bower_components/cesium/Build/Cesium/' %}";
+                var require = {
+                    baseUrl : "{% static 'dave_client/scripts/' %}"
+                };
+
+                var PRODUCT_URL = "http://vtapp4aq.zamg.ac.at/";
+                var fetchCollectionListURL  = PRODUCT_URL+'wcs?service=WCS&Request=GetCapabilities&version=2.0.0';
+
+
+                var USER_PRODUCTS = [
+                {
+                    "name": "Sentinel-5P Aerosol Index",
+                    "id": "S5P_OFFLNRTI_L2__AER_AI_4326_0035",
+                    "description": "Offline and Near real time L2 Sentinel 5P UV Aerosol Index 340-480 nm",
+                    "date": ["June 28, 2018","Aug. 18, 2019"],
+                    "parameters":{
+                        "Parameter1":{
+                            "range": [0,10],
+                            "nullValue": [0, 9.969209968386869e+36],
+                            "uom":""/*,
+                            "clamp_max":true,
+                            "clamp_min":true,*/
+                        }
+                    }
+                },
+                {
+                    "name": "Sentinel-5P NO2 tropospheric column",
+                    "id": "S5P_OFFLNRTI_L2__NO2_4326_0035",
+                    "description": "Offline and Near real time Sentinel 5P Nitrogen Dioxide (NO2) tropospheric columns",
+                    "date": ["June 28, 2018","Aug. 18, 2019"],
+                    "parameters":{
+                        "Parameter1":{
+                            "range": [0,0.0005],
+                            "nullValue": [0, 9.969209968386869e+36],
+                            "uom":"mol/m2"
+                        }
+                    }
+                },
+                {
+                    "name": "Sentinel-5P O3 tropospheric column",
+                    "id": "S5P_OFFLNRTI_L2__O3_4326_0035",
+                    "description": "Offline and Near real time Sentinel 5P Ozone (O3) tropospheric column",
+                    "date": ["June 28, 2018","Aug. 18, 2019"],
+                    "parameters":{
+                        "Parameter1":{
+                            "range": [0,0.2],
+                            "nullValue": [0, 9.969209968386869e+36],
+                            "uom":"mol/m2"
+                        }
+                    }
+                },
+                {
+                    "name": "Sentinel-5P SO2 total column",
+                    "id": "S5P_OFFLNRTI_L2__SO2_4326_0035",
+                    "description": "Offline and Near real time Sentinel 5P Sulfur Dioxide (SO2) total column",
+                    "date": ["June 28, 2018","Aug. 18, 2019"],
+                    "parameters":{
+                        "Parameter1":{
+                            "range": [0,0.003],
+                            "nullValue": [0, 9.969209968386869e+36],
+                            "uom":""
+                        }
+                    }
+                },
+                {
+                    "name": "WRFCHEM AOD550",
+                    "id": "WRFCHEM_AOD550_4326_005",
+                    "description": "ZAMG WRF-Chem EU",
+                    "date": ["June 28, 2018","Aug. 18, 2019"],
+                    "parameters":{
+                        "Parameter1":{
+                            "range": [0,2],
+                            "nullValue": [0, 9.969209968386869e+36],
+                            "uom":"mol/m2"
+                        }
+                    }
+                },
+                {
+                    "name": "WRFCHEM Dust column",
+                    "id": "WRFCHEM_DUSTcol_4326_005",
+                    "description": "ZAMG WRF-Chem EU",
+                    "date": ["June 28, 2018","Aug. 18, 2019"],
+                    "parameters":{
+                        "Parameter1":{
+                            "range": [0,100],
+                            "nullValue": [0, 9.969209968386869e+36],
+                            "uom":"mg/m2"
+                        }
+                    }
+                },
+                {
+                    "name": "WRFCHEM PM10 column",
+                    "id": "WRFCHEM_PM10col_4326_005",
+                    "description": "ZAMG WRF-Chem EU",
+                    "date": ["June 28, 2018","Aug. 18, 2019"],
+                    "parameters":{
+                        "Parameter1":{
+                            "range": [0,500],
+                            "nullValue": [0, 9.969209968386869e+36],
+                            "uom":"mg/m2"
+                        }
+                    }
+                },
+                {
+                    "name": "WRFCHEM PM10 surface",
+                    "id": "WRFCHEM_PM10surf_4326_005",
+                    "description": "ZAMG WRF-Chem EU",
+                    "date": ["June 28, 2018","Aug. 18, 2019"],
+                    "parameters":{
+                        "Parameter1":{
+                            "range": [0,500],
+                            "nullValue": [0, 9.969209968386869e+36],
+                            "uom":"ug/m3"
+                        }
+                    }
+                },
+                {
+                    "name": "WRFCHEM PM25 column",
+                    "id": "WRFCHEM_PM25col_4326_005",
+                    "description": "ZAMG WRF-Chem EU",
+                    "date": ["June 28, 2018","Aug. 18, 2019"],
+                    "parameters":{
+                        "Parameter1":{
+                            "range": [0,500],
+                            "nullValue": [0, 9.969209968386869e+36],
+                            "uom":"mg/m2"
+                        }
+                    }
+                },
+                {
+                    "name": "WRFCHEM PM25 surfave",
+                    "id": "WRFCHEM_PM25surf_4326_005",
+                    "description": "ZAMG WRF-Chem EU",
+                    "date": ["June 28, 2018","Aug. 18, 2019"],
+                    "parameters":{
+                        "Parameter1":{
+                            "range": [0,500],
+                            "nullValue": [0, 9.969209968386869e+36],
+                            "uom":"ug/m3"
+                        }
+                    }
+                }
+
+            ];
+
+            </script>
+        
+
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+        <![endif]-->
+
+        <div id="content">
+            <div id="main"></div>
+            <div id="viewContent"></div>
+            <div id="leftSideBar"></div>
+            <div id="rightSideBar"></div>
+            <div id="optionsBar"></div>
+            <div id="topBar"></div>
+            <div id="bottomBar"></div>
+        </div>
+
+        <div id="storyView" style="z-index: 0;"></div>
+
+        <!--<div id="loadscreen" class="modal-backdrop"> <i class="fa fa-spinner fa-spin fa-4x"></i> </div>-->
+        <div id="loadscreen" class="modal-backdrop">
+            <div id="loading-spacer">
+                <div class="project-title">AMiDA</div>
+            </div>
+            <div class="sk-folding-cube">
+              <div class="sk-cube1 sk-cube"></div>
+              <div class="sk-cube2 sk-cube"></div>
+              <div class="sk-cube4 sk-cube"></div>
+              <div class="sk-cube3 sk-cube"></div>
+            </div>
+        </div>
+
+        <!-- HIDDEN DOWNLOAD DIV -->
+        <div id="div-downloads">
+          <iframe name="iframe-download-post" id="iframe-download-post"></iframe>
+        </div>
+
+        <!-- HIDDEN X3DOM DIV -->
+        <div id="x3dom-hidden" style="display:none">
+            <div id="x3dom-wrapper">
+                <div id="progressbar"></div>
+                <X3D id="x3d" showlog="false" showstat="false" showprogress="false">
+                    <scene id="x3dScene"></scene>
+                </X3D>
+      
+                <div id='x3domUI'></div>
+            </div>
+        </div>
+
+        <script id="rbv-empty-view-template" type="text/html">
+          <i class="sprite sprite-scatter"></i> Please select an Area of Interest (AoI) in one of the MapViewer!
+        </script>
+
+        <div id="preload">
+           <img src="images/glyphicons.png" width="1" height="1" alt="Preload image" />
+        </div>
+
+        <div id="error-messages"></div>
+
+        <div id="pngdataurl"></div>
+
+        <div id="playercontrols" style="pointer-events: none;">
+            <div class="btn-group" role="group" aria-label="..." style="pointer-events: all;">
+              <button type="button" class="btn btn-default" id="step-back-button"><i class="fa fa-step-backward"></i></button>
+              <button type="button" class="btn btn-default" id="play-button"><i class="fa fa-play"></i></button>
+              <button type="button" class="btn btn-default" id="fast-play-button"><i class="fa fa-forward"></i></button>
+              <button type="button" class="btn btn-default" id="step-forward-button"><i class="fa fa-step-forward"></i></button>
+            </div>
+        </div>
+
+        <div id="pickingresults"></div>
+
+        <div id="timestamp"></div>
+
+        <div class="prodLoadContainer" style="position: absolute; top: 15px; right: 310px; z-index: 1030; color: white;" data-toggle="tooltip" title="Useful for selecting long time series for triggering processing">
+            <label style="font-weight: normal">
+                <input style="vertical-align: middle; position: relative; top: -3px;" id="stop_visualization" type="checkbox" name="checkbox" value="value"> Disable product load
+            </label>
+        </div>
+
+        <div id="loadingcontrols" style="pointer-events: none; text-align: center;"></div>
+
+
+
+
+        <div id="terrain_attribution">
+            <p style="float: right"><a href="javascript:;" onclick="toggle(terrain_attribution)">×</a></p>
+            <p>Terrain map data</p>
+            <ul>
+                <li>OpenStreetMap © <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap contributors</a></li>
+                <li>NaturalEarth <a href="http://www.naturalearthdata.com/about/terms-of-use/" target="_blank">public domain</a></li>
+                <li>EU-DEM © Produced using Copernicus data and information<br>funded by the European Union</li>
+                <li>SRTM © <a href="http://nasa.gov" target="_blank">NASA</a></li>
+                <li>GTOPO30</li>
+                <li>CleanTOPO2 public domain</li>
+                <li>GlobCover © <a href="http://esa.int" target="_blank">ESA</a></li>
+            </ul>
+            <p>Terrain map design © <a href="http://eox.at" target="_blank">EOX IT Services GmbH</a></p>
+        </div>
+
+        <script>
+            // Used to display/hide terrain attribution
+            function toggle(e) { e.style.display = (e.style.display == 'block' ? 'none' : 'block'); }
+        </script>
+
+        <script data-main="{% static 'dave_client/scripts/init.js' %}" src="{% static 'dave_client/bower_components/requirejs/require.js' %}"></script>
+            
+        {% else %}
+        </head>
+        <body>
+            <div style="font-size: 2em;color: white; margin-top: 20%; text-align: center;">
+                Please go to the <a href="/">AMiDA Portal</a> and log in to use this service.
+           </div>
+        {%endif%}
+
+    </body>
+</html>

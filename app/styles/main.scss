@@ -36,6 +36,12 @@ html, body {
 
 body {
   background-color: $default-background !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 400;
+}
+
+h1, h2, h3, h4{
+  font-family: "Montserrat", sans-serif !important;
 }
 
 ul, li {
