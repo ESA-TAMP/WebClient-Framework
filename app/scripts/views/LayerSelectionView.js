@@ -26,7 +26,10 @@
 			},
 
 			onShow: function(view){
-
+				this.listenTo(this.collection, 'add', this.itemadded);
+				this.listenTo(this.collection, 'remove', this.itemRemoved);
+				this.listenTo(this.collection, 'change', this.itemchanged);
+				/*"add", "remove" and "change"*/
 				this.listenTo(Communicator.mediator, "productCollection:updateSort", this.updateSort);
 				this.listenTo(Communicator.mediator, "map:layer:change", this.onLayerSelectionChange);
 
@@ -37,6 +40,24 @@
 						ui.item.trigger('drop', ui.item.index());
 		        	}
 			    });
+			},
+
+			itemaChanged(item){
+				console.log('Item changed');
+				console.log(item);
+				this.render();
+			},
+
+			itemadded(item){
+				console.log('Item added');
+				console.log(item);
+				this.render();
+			},
+
+			itemRemoved(item){
+				console.log('Item removed');
+				console.log(item);
+				this.render();
 			},
 
 			updateSort: function(options) {         

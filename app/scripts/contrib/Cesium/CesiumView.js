@@ -2791,7 +2791,7 @@ define(['backbone.marionette',
 
 
 		    			var request = 
-				            PRODUCT_URL+'pycsw/pycsw/csw.py?mode=opensearch'+
+				            product.get('provider')+'pycsw/pycsw/csw.py?mode=opensearch'+
 				            '&service=CSW&version=2.0.2&request=GetRecords&elementsetname=brief'+
 				            '&typenames=csw:Record&resulttype=results'+
 				            '&time='+getISODateTimeString(this.begin_time)+'/'+getISODateTimeString(this.end_time)+
@@ -3049,7 +3049,7 @@ define(['backbone.marionette',
 
 								var bbox = coverages.data[i].bbox;
 
-								var request = PRODUCT_URL+coverages.data[i].wcsEndpoint;
+								var request = product.get('provider')+coverages.data[i].wcsEndpoint;
 								//bbox = bbox.substring(1, bbox.length - 1).split(",").map(parseFloat);
 								//var request = url + "?service=WCS&request=GetCoverage&version=2.0.1&coverageid="+coverages.data[i].identifier;
 

@@ -340,7 +340,7 @@
       fetchWPS: function(start, end, params, callback){
 
           var request = 
-            PRODUCT_URL+'pycsw/pycsw/csw.py?mode=opensearch'+
+            this.url+'pycsw/pycsw/csw.py?mode=opensearch'+
             '&service=CSW&version=2.0.2&request=GetRecords&elementsetname=brief'+
             '&typenames=csw:Record&resulttype=results'+
             '&time='+getISODateTimeString(start)+'/'+getISODateTimeString(end)+
@@ -439,7 +439,7 @@
                 case "WPS":
                   attrs = {
                     id: product.get('download').id,
-                    url: product.get('download').url,
+                    url: product.get('provider'),
                     bbox: this.bbox
                   };
                   

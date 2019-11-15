@@ -21,7 +21,6 @@
                 processList: '#processList'
             },
             className: 'panel panel-default datamanagement not-selectable',
-            events: {},
 
             onShow: function(view){
                 this.$('.close').on('click', _.bind(this.onClose, this));
