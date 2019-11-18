@@ -45,3 +45,29 @@
 .collapse_object>.fa.fa-chevron-down{
     display: none;
 }
+
+.processlabel{
+    float: left;
+    margin-right: 15px;
+}
+
+#processcontainer{
+    width:100%;
+    margin-bottom:15px;
+    margin-top: 20px;
+}
+
+#processcontainer .form-group{
+    padding-top: 0px!important;
+    padding-bottom: 0px!important;
+}
+
+#processList{
+    max-height: 200px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.form-group button.ui-datepicker-trigger {
+    display: none;
+}

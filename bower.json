@@ -29,7 +29,9 @@
     "FileSaver.js": "eligrey/FileSaver.js#~1.2.0",
     "canvas-toBlob.js": "eligrey/canvas-toBlob.js",
     "Blob.js": "eligrey/Blob.js",
-    "graphly": "eox-a/graphly#322c37ba2f8b986d0e3cefa7e44f254098ca4190"
+    "graphly": "eox-a/graphly#322c37ba2f8b986d0e3cefa7e44f254098ca4190",
+    "datetimepicker": "xdan/datetimepicker#^2.5.20",
+    "moment": "^2.24.0"
   },
   "devDependencies": {
     "Keypress": "~2.0.0"

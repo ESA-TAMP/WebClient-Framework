@@ -63,6 +63,9 @@
             graphly: {
                 deps: ['d3', 'plotty']
             },
+            datetimepicker: {
+                deps: ['jquery', 'jquery-mousewheel','php-date-formatter']
+            }
         },
 
         paths: {
@@ -112,8 +115,12 @@
             'marionette.handlebars': '../bower_components/backbone.marionette.handlebars/backbone.marionette.handlebars.min',
 
             papaparse: '../bower_components/papaparse/papaparse.min',
-			geotiff: '../bower_components/geotiffjs/index',
-            plotty: '../bower_components/plotty/dist/plotty.min'
+            geotiff: '../bower_components/geotiffjs/index',
+            plotty: '../bower_components/plotty/dist/plotty.min',
+            datetimepicker: '../bower_components/datetimepicker/build/jquery.datetimepicker.full.min',
+            'jquery-mousewheel': '../bower_components/jquery-mousewheel/jquery.mousewheel.min',
+            'php-date-formatter': '../bower_components/php-date-formatter/js/php-date-formatter.min',
+
 
         },
 
