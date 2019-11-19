@@ -8,13 +8,14 @@
         'communicator',
         'hbs!tmpl/ProcessManagement',
         'hbs!tmpl/pmmForm',
+        'hbs!tmpl/kvp_template',
         'app',
         'globals',
         'underscore',
         'datetimepicker'
     ],
 
-    function( Backbone, Communicator, ProcessManagementTmpl, pmmFormTmpl, App, globals ) {
+    function( Backbone, Communicator, ProcessManagementTmpl, pmmFormTmpl, kvpTmpl, App, globals ) {
 
         var ProcessManagementLayout = Backbone.Marionette.Layout.extend({
 
@@ -58,21 +59,40 @@
             },
 
             renderProcessOptions(processId){
-                console.log(processId);
+                var options = {
+                    prefix: 'myColl_'+Math.floor(Math.random()*100),
+                    resolution: '0.1'
+                };
+                
+                var activecollections = globals.products.where({visible: true});
+                
                 $('#processcontainer').empty();
                 switch(processId){
                 case 'pmm':
-                    $('#processcontainer').append(pmmFormTmpl({
-                        collections: true,
-                        resolution: true,
-                        projection: true,
-                        bbox: true,
-                        timerange_start: true,
-                        timerange_end: true,
-                        prefix: true,
-                        timeaggre_start: true,
-                        timeaggre_end: true
-                    }));
+                    if (activecollections.length>0){
+                        options.collections = activecollections.map(
+                            function(m){return m.get('id');}
+                        ).join(',');
+                    } else {
+                        options.collections = '';
+                    }
+
+                    var sels = Communicator.reqres.request('selections:get:all');
+
+                    var sel_time = sels.time;
+                    options.timerange_start = getISODateTimeString(sel_time.start);
+                    options.timerange_end = getISODateTimeString(sel_time.end);
+
+                    // Get current bbox
+                    var bbox = sels.geo;
+                    var bboxstring = '-180,180,-90,90';
+                    if(bbox !== null){
+                        bboxstring = bbox.w.toFixed(3)+','+bbox.e.toFixed(3)+','+
+                        bbox.s.toFixed(3)+','+bbox.n.toFixed(3);
+                    }
+                    options.bbox = bboxstring;
+
+                    $('#processcontainer').append(pmmFormTmpl(options));
                     break;
                 }
 
@@ -82,9 +102,8 @@
 
                 $.datetimepicker.setDateFormatter({
                     parseDate: function (date, format) {
-                        console.log(format);
                         var d = new Date(date);
-                        return d.isValid() ? d.toDate() : false;
+                        return date instanceof Date ? d : false;
                     },
                     
                     formatDate: function (date, format) {
@@ -102,11 +121,51 @@
                     format: 'ISO8601'
                 });
 
-
-                var baseprocessingURL = 'https://wps-eo4sdcr.adamplatform.eu/wps/wps?';
+                var baseprocessingURL = 'https://amida.adamplatform.eu/wps/wps?';
                 baseprocessingURL+='service=WPS&version=2.0.0&request=execute&Identifier=pmm&storeExecuteResponse=true&status=true&datainputs=';
 
-                'collections=XXXX;resolution=0.1;projection=latlon;bbox=-5.1,31.2,-13.3,39.4;timerange=2010-10-01T00:00:00,2010-10-31T23:59:59;prefix=test_;timeaggre=2018-06-01T00:00:00,2018-06-04T00:00:00,2018-06-08T00:00:00,2018-06-12T00:00:00'
+                $('#processForm').submit(function(e){
+                    e.preventDefault();
+                });
+
+                $('#startProcess').click(function(e){
+                    var form = document.getElementById('processForm');
+                    form.classList.add('was-validated');
+                    if (form.checkValidity() === true) {
+                        var inputs = {};
+                        $('form#processForm :input').each(function(){
+                            inputs[$(this).attr('id')] = $(this).val();
+                        });
+                        // Reformat specific fields
+                        if(inputs.hasOwnProperty('timerange_start') && inputs.hasOwnProperty('timerange_end')){
+                            inputs.timerange = inputs.timerange_start+'/'+inputs.timerange_end;
+                            delete inputs.timerange_start;
+                            delete inputs.timerange_end;
+                        }
+                        // Check for selected projeciton
+                        inputs.projection = $( '#projection option:selected' ).val();
+                        var url = baseprocessingURL + kvpTmpl({values: inputs});
+                        $('#startProcess').attr('disabled', true);
+                        $.get(url)
+                            .done(function(){
+                                $('#processForm').append('<label id="requestlabel" for="startProcess" class="getstatuslabel success">Request sent successfully</label>');
+                                setTimeout(function(){
+                                    $('#requestlabel').remove();
+                                    $('#startProcess').attr('disabled', false);
+                                }, 5000);
+                            })
+                            .error(function(){
+                                $('#processForm').append('<label id="requestlabel" for="startProcess" class="getstatuslabel failed">Error sending request</label>');
+                                setTimeout(function(){
+                                    $('#requestlabel').remove();
+                                    $('#startProcess').attr('disabled', false);
+                                }, 5000);
+                            });
+                    }
+                    
+                    //var processRequest = baseprocessingURL;
+                    //$.get()
+                });
 
 
             },

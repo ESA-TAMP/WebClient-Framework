@@ -364,6 +364,9 @@ module.exports = function (grunt) {
                         'bower_components/plotty/dist/plotty.min.js',
                         'bower_components/geotiffjs/index.js',
                         'bower_components/graphly/dist/graphly.min.js',
+                        'bower_components/datetimepicker/build/jquery.datetimepicker.full.min',
+                        'bower_components/jquery-mousewheel/jquery.mousewheel.min',
+                        'bower_components/php-date-formatter/js/php-date-formatter.min',
                         'scripts/vendor/**',
                     ]
                 },{

@@ -71,3 +71,17 @@
 .form-group button.ui-datepicker-trigger {
     display: none;
 }
+
+.getstatuslabel{
+    float: right;
+    margin-top: 9px;
+    margin-right: 10px;
+}
+
+.getstatuslabel.success {
+    color: #589246;
+}
+
+.getstatuslabel.failed {
+    color: #c56363;
+}
