@@ -2,7 +2,7 @@
 // globals
 define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, ObjectStore) {
 
-    var refreshtime = 50000; // 5 seconds
+    var refreshtime = 5000; // 5 seconds
     var autoColor = {
         colors : d3.scale.category10(),
         index : 0,
