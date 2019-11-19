@@ -58,7 +58,7 @@
                 });
             },
 
-            renderProcessOptions(processId){
+            renderProcessOptions: function(processId){
                 var options = {
                     prefix: 'myColl_'+Math.floor(Math.random()*100),
                     resolution: '0.1'

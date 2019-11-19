@@ -42,25 +42,25 @@
 			    });
 			},
 
-			itemaChanged(item){
+			itemaChanged: function(item){
 				console.log('Item changed');
 				console.log(item);
 				this.render();
 			},
 
-			itemadded(item){
+			itemadded: function(item){
 				console.log('Item added');
 				console.log(item);
 				this.render();
 			},
 
-			itemRemoved(item){
+			itemRemoved: function(item){
 				console.log('Item removed');
 				console.log(item);
 				this.render();
 			},
 
-			updateSort: function(options) {         
+			updateSort: function(options) {
 		        this.collection.remove(options.model);
 
 		        this.collection.each(function (model, index) {
