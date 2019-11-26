@@ -98,6 +98,32 @@
                     }
                 },
                 {
+                    "name": "Sentinel-5P NO2 tropospheric column (QA > 50)",
+                    "id": "S5P_OFFL_L2_NO2_PRODUCT_QA_VALUE_50_4326_0035",
+                    "description": "Offline and Near real time Sentinel 5P Nitrogen Dioxide (NO2) tropospheric columns with QA > 50",
+                    "date": ["June 28, 2018","Aug. 18, 2019"],
+                    "parameters":{
+                        "Parameter1":{
+                            "range": [0,0.0005],
+                            "nullValue": [0, 9.969209968386869e+36],
+                            "uom":"mol/m2"
+                        }
+                    }
+                },
+                {
+                    "name": "Sentinel-5P NO2 tropospheric column (QA > 75)",
+                    "id": "S5P_OFFL_L2_NO2_PRODUCT_QA_VALUE_75_4326_0035",
+                    "description": "Offline and Near real time Sentinel 5P Nitrogen Dioxide (NO2) tropospheric columns with QA > 75",
+                    "date": ["June 28, 2018","Aug. 18, 2019"],
+                    "parameters":{
+                        "Parameter1":{
+                            "range": [0,0.0005],
+                            "nullValue": [0, 9.969209968386869e+36],
+                            "uom":"mol/m2"
+                        }
+                    }
+                },
+                {
                     "name": "Sentinel-5P O3 tropospheric column",
                     "id": "S5P_OFFLNRTI_L2__O3_4326_0035",
                     "description": "Offline and Near real time Sentinel 5P Ozone (O3) tropospheric column",
@@ -114,6 +140,32 @@
                     "name": "Sentinel-5P SO2 total column",
                     "id": "S5P_OFFLNRTI_L2__SO2_4326_0035",
                     "description": "Offline and Near real time Sentinel 5P Sulfur Dioxide (SO2) total column",
+                    "date": ["June 28, 2018","Aug. 18, 2019"],
+                    "parameters":{
+                        "Parameter1":{
+                            "range": [0,0.003],
+                            "nullValue": [0, 9.969209968386869e+36],
+                            "uom":""
+                        }
+                    }
+                },
+                {
+                    "name": "Sentinel-5P SO2 total column (QA > 50)",
+                    "id": "S5P_OFFL_L2_SO2_PRODUCT_QA_VALUE_50_4326_0035",
+                    "description": "Offline and Near real time Sentinel 5P Sulfur Dioxide (SO2) total column with QA > 50",
+                    "date": ["June 28, 2018","Aug. 18, 2019"],
+                    "parameters":{
+                        "Parameter1":{
+                            "range": [0,0.003],
+                            "nullValue": [0, 9.969209968386869e+36],
+                            "uom":""
+                        }
+                    }
+                },
+                {
+                    "name": "Sentinel-5P SO2 total column (QA > 75)",
+                    "id": "S5P_OFFL_L2_SO2_PRODUCT_QA_VALUE_75_4326_0035",
+                    "description": "Offline and Near real time Sentinel 5P Sulfur Dioxide (SO2) total column with QA > 75",
                     "date": ["June 28, 2018","Aug. 18, 2019"],
                     "parameters":{
                         "Parameter1":{
@@ -189,7 +241,7 @@
                     }
                 },
                 {
-                    "name": "WRFCHEM PM25 surfave",
+                    "name": "WRFCHEM PM25 surface",
                     "id": "WRFCHEM_PM25surf_4326_005",
                     "description": "ZAMG WRF-Chem EU",
                     "date": ["June 28, 2018","Aug. 18, 2019"],
@@ -200,8 +252,72 @@
                             "uom":"ug/m3"
                         }
                     }
+                },
+                {
+                    "name": "WRFCHEM Europe PM10",
+                    "id": "WRFCHEM_E_PM_10",
+                    "description": "ZAMG WRF-Chem EU",
+                    "date": ["June 28, 2018","Aug. 18, 2019"],
+                    "parameters":{
+                        "Parameter1":{
+                            "range": [0,10],
+                            "nullValue": [0, 9.969209968386869e+36],
+                            "uom":"mg/m2"
+                        }
+                    }
+                },
+                {
+                    "name": "WRFCHEM Europe PM25",
+                    "id": "WRFCHEM_E_PM_25",
+                    "description": "ZAMG WRF-Chem EU",
+                    "date": ["June 28, 2018","Aug. 18, 2019"],
+                    "parameters":{
+                        "Parameter1":{
+                            "range": [0,0.0005],
+                            "nullValue": [0, 9.969209968386869e+36],
+                            "uom":"mg/m2"
+                        }
+                    }
+                },
+                {
+                    "name": "WRFCHEM Europe SO2",
+                    "id": "WRFCHEM_E_SO2",
+                    "description": "ZAMG WRF-Chem EU",
+                    "date": ["June 28, 2018","Aug. 18, 2019"],
+                    "parameters":{
+                        "Parameter1":{
+                            "range": [0,10],
+                            "nullValue": [0, 9.969209968386869e+36],
+                            "uom":""
+                        }
+                    }
+                },
+                {
+                    "name": "WRFCHEM Europe NO2",
+                    "id": "WRFCHEM_E_NO2",
+                    "description": "ZAMG WRF-Chem EU",
+                    "date": ["June 28, 2018","Aug. 18, 2019"],
+                    "parameters":{
+                        "Parameter1":{
+                            "range": [0,0.0005],
+                            "nullValue": [0, 9.969209968386869e+36],
+                            "uom":"mol/m2"
+                        }
+                    }
+                },
+                {
+                    "name": "WRFCHEM Europe NO",
+                    "id": "WRFCHEM_E_NO",
+                    "description": "ZAMG WRF-Chem EU",
+                    "date": ["June 28, 2018","Aug. 18, 2019"],
+                    "parameters":{
+                        "Parameter1":{
+                            "range": [0,50],
+                            "nullValue": [0, 9.969209968386869e+36],
+                            "uom":null
+                        }
+                    }
                 }
-
             ];
 
         </script>

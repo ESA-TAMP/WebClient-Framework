@@ -1514,7 +1514,7 @@ define(['backbone.marionette',
 					            }
 							}else{
 								//Manage custom attribution (remove deactivated layers)
-								$("#"+product.get("name")).remove();
+								//$("#"+product.get("name")).remove();
 							}
 						}
 						if(product.get("model") && product.get("download").id == options.id){
@@ -2858,7 +2858,7 @@ define(['backbone.marionette',
 					                  //scaleFactor -= (entries.length/100)/2;
 					                  //scaleFactor = 0.6;
 
-					                  if(wcsEndpoint.indexOf('WRFCHEM')!==-1){
+					                  if(wcsEndpoint.indexOf('WRFCHEM')!==-1 && wcsEndpoint.indexOf('WRFCHEM_E')===-1){
 					                  	scaleFactor*=0.7;
 					                  }
 					                  if(wcsEndpoint.indexOf('S5P_LEVEL2_QA_AER_AI_4326_0035')!==-1){
