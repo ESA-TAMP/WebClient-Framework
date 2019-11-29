@@ -272,7 +272,8 @@
 								},
 								processes: [],
 								parameters: p.parameters,
-                                favourite: favourite
+                                favourite: favourite,
+                                coveragesCollection: {}
 							};
 
 							if(ground_measurements){

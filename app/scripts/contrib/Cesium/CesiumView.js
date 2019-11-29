@@ -571,7 +571,6 @@ define(['backbone.marionette',
                     }
                 }, this);
 
-                
                 //Go through all defined baselayer and add them to the map
                 globals.baseLayers.each(function(baselayer) {
                     if (baselayer.get("name")!=name){
@@ -584,9 +583,8 @@ define(['backbone.marionette',
                     }
                 }, this);
 
-                //this.map.scene.imageryLayers.add(this.productLayerCollection);
                 // Go through all products and add them to the map
-                _.each(globals.products.last(globals.products.length).reverse(), function(product){
+                /*_.each(globals.products.last(globals.products.length).reverse(), function(product){
                     var layer = this.createLayer(product);
                     if (layer) {
                         var imagerylayer = this.map.scene.imageryLayers.addImageryProvider(layer);
@@ -608,7 +606,7 @@ define(['backbone.marionette',
                             //Communicator.mediator.trigger('timeslider:add:layer', options);
                         }
                     }
-                }, this);
+                }, this);*/
 
                 // Go through all overlays and add them to the map
                 globals.overlays.each(function(overlay){
@@ -1062,9 +1060,7 @@ define(['backbone.marionette',
                     domain: [30000,60000]
                 });
 
-                this.plot.setNoDataValue(Number.MIN_VALUE);
-
-                //this.plot.setClamp(true, true);
+                //this.plot.setNoDataValue(Number.MIN_VALUE);
 
                 this.isClosed = false;
                 $("#cesium_save").on("click", this.onSaveImage.bind(this));
@@ -1089,9 +1085,7 @@ define(['backbone.marionette',
                         colorAxis: [ null ],
                     },
                     displayParameterLabel: false,
-                    debounceActive: false,
-                    /*colorAxisTickFormat: 'customExp',
-                    defaultAxisTickFormat: 'customExp'*/
+                    debounceActive: false
                 });
 
                 return this;
@@ -1248,9 +1242,12 @@ define(['backbone.marionette',
 
             onSortProducts: function(productLayers) {
 
+                // TODO: Go through all imagery layers from products and sort them as
+                // needed
+
 
                 // Search for moved layer
-                var layer_moved = null;
+                /*var layer_moved = null;
                 var to_move = 0;
                 globals.products.each(function(product) {
                     var ces_layer = product.get("ces_layer");
@@ -1271,9 +1268,15 @@ define(['backbone.marionette',
                         this.map.scene.imageryLayers.lower(layer_moved);
                     else if(to_move>0)
                         this.map.scene.imageryLayers.raise(layer_moved);
-                }
+                }*/
 
-                
+                // Move overlays to top
+                globals.overlays.each(function(overlay){
+                    var ces_layer = overlay.get('ces_layer');
+                    if( ces_layer ){
+                        this.map.scene.imageryLayers.raiseToTop(ces_layer);
+                    }
+                }, this);
                 console.log("Map products sorted");
             },
 
@@ -1332,11 +1335,11 @@ define(['backbone.marionette',
             },
 
             changeLayer: function(options) {
-                // Seems for some reason that a layer needs to be as shown at all times
-                // or cesium will throw an error, so first activate the new layer, then 
-                // deactivate the others
+
                 if (options.isBaseLayer){
-                    
+                    // Seems for some reason that a layer needs to be as shown at all times
+                    // or cesium will throw an error, so first activate the new layer, then 
+                    // deactivate the others
                     globals.baseLayers.each(function(baselayer) {
                         var ces_layer = baselayer.get("ces_layer");
                         if (ces_layer) {
@@ -1390,15 +1393,11 @@ define(['backbone.marionette',
                     globals.products.each(function(product) {
                         if(product.get("download").id==options.id){
                             // TODO: This if method is only for testing and has to be reviewed
-                            if(product.get("views")[0].protocol == "CZML"){
+                            if (product.get("views")[0].protocol == "WCS"){
+                                this.checkCoverageLayers(product, options.visible);
 
-                            }else if (product.get("views")[0].protocol == "WCS"){
-                                this.checkCoverages(product, options.visible);
-
-                            }else if (product.get("views")[0].protocol == "WPS"){
-                                this.checkShc(product, options.visible);
-                                
-                            }else if (product.get("views")[0].protocol == "WMS" || product.get("views")[0].protocol == "WMTS" ){
+                            }else if (product.get("views")[0].protocol == "WMS" ||
+                                      product.get("views")[0].protocol == "WMTS" ){
 
                                 var parameters = product.get("parameters");
                                 var coeff_range = product.get("coefficients_range");
@@ -1412,36 +1411,21 @@ define(['backbone.marionette',
                                     });
                                     var style = parameters[band].colorscale;
                                     var range = parameters[band].range;
+                                    var ces_layer = product.get("ces_layer");
+                                    if(band)
+                                        ces_layer.imageryProvider.updateProperties("dim_bands", band);
+                                    if(range)
+                                        ces_layer.imageryProvider.updateProperties("dim_range", (range[0]+","+range[1]));
+                                    if(style)
+                                        ces_layer.imageryProvider.updateProperties("styles", style);
+                                    if(coeff_range)
+                                        ces_layer.imageryProvider.updateProperties("dim_coeff", (coeff_range[0]+","+coeff_range[1]));
 
-                                    if (band == "Fieldlines"){
-                                        if(options.visible){
-                                            this.activeFL.push(product.get("download").id);
-                                        }else{
-                                            if (this.activeFL.indexOf(product.get('download').id)!=-1){
-                                                this.activeFL.splice(this.activeFL.indexOf(product.get('name')), 1);
-                                            }
-                                        }
-                                        this.checkFieldLines();
-                                    }else{
-                                        var ces_layer = product.get("ces_layer");
-                                        if(band)
-                                            ces_layer.imageryProvider.updateProperties("dim_bands", band);
-                                        if(range)
-                                            ces_layer.imageryProvider.updateProperties("dim_range", (range[0]+","+range[1]));
-                                        if(style)
-                                            ces_layer.imageryProvider.updateProperties("styles", style);
-                                        if(coeff_range)
-                                            ces_layer.imageryProvider.updateProperties("dim_coeff", (coeff_range[0]+","+coeff_range[1]));
-
-                                        ces_layer.show = options.visible;
-                                    }
+                                    ces_layer.show = options.visible;
                                 }else{
                                     var ces_layer = product.get("ces_layer");
                                     ces_layer.show = options.visible;
                                 }
-                                
-
-                                
                             }
                             if(options.visible){
                                 // Manage custom attribution element (add attribution for active baselayer)
@@ -1456,39 +1440,8 @@ define(['backbone.marionette',
                                 $("#"+product.get("name")).remove();
                             }
                         }
-                        if(product.get("model") && product.get("download").id == options.id){
-                            if(options.visible){
-                                this.activeModels.push(product.get("download").id);
-                                // Iterate over active Swarm products
-                                globals.products.each(function(product) {
-                                    //if(product.get("satellite") == "Swarm")
-                                        //this.checkLayerFeatures(product, product.get("visible"));
-                                },this);
-                            }else{
-                                if (this.activeModels.indexOf(product.get('name'))!=-1)
-                                    this.activeModels.splice(this.activeModels.indexOf(product.get('name')), 1);
-
-                                if (this.activeModels.length != 2){
-                                    if(this.difference_image)   
-                                        this.map.scene.imageryLayers.remove(this.difference_image);
-                                    this.difference_image = null;
-
-                                    if($("#colorlegend").is(":visible"))
-                                        $("#colorlegend").hide();
-                                }
-
-                            }
-
-                            // Compare models if two are selected
-                            if (this.activeModels.length == 2){
-                            }
-
-                        }
                     }, this);
                 }
-
-
-
             },
 
             onMapShowResult: function (data, collection_id, o_collection_id, type) {
@@ -1588,154 +1541,59 @@ define(['backbone.marionette',
             },
 
 
-            checkShc: function(product, visible){
-                if(visible){
-
-                    if(product.get('shc') != null){
-
-                        var parameters = product.get("parameters");
-                        var band;
-                        var keys = _.keys(parameters);
-                        _.each(keys, function(key){
-                            if(parameters[key].selected)
-                                band = key;
-                        });
-                        var style = parameters[band].colorscale;
-                        var range = parameters[band].range;
-                        var imageURI;
-                        var self = this;
-                        var imagelayer;
-
-                        var ces_layer = product.get("ces_layer");
-                        var index = this.map.scene.imageryLayers.indexOf(ces_layer);
-                        
-                        var url = product.get("views")[0].urls[0];
-
-                        var coefficients_range = product.get("coefficients_range");
-
-                        $.post(url, Tmpl_eval_model({
-                            "model": "Custom_Model",
-                            "variable": band,
-                            "begin_time": getISODateTimeString(this.begin_time),
-                            "end_time": getISODateTimeString(this.end_time),
-                            "elevation": product.get("height"),
-                            "coeff_min": coefficients_range[0],
-                            "coeff_max": coefficients_range[1],
-                            "shc": product.get('shc'),
-                            "height": 512,
-                            "width": 1024,
-                            "style": style,
-                            "range_min": range[0],
-                            "range_max": range[1],
-                        }))
-
-                            .done(function( data ) {
-                                that.map.scene.imageryLayers.remove(ces_layer);
-                                imageURI = "data:image/gif;base64,"+data;
-                                var imagelayer = new Cesium.SingleTileImageryProvider({url: imageURI});
-                                ces_layer = that.map.scene.imageryLayers.addImageryProvider(imagelayer, index);
-                                product.set("ces_layer", ces_layer);
-                                // TODO: Hack to position layer at correct index, adding imagery provider  
-                                // with index does not seem to be working
-                                var ces_index = that.map.scene.imageryLayers.indexOf(ces_layer);
-                                var to_move = index - ces_index;
-                                for(var i=0; i<Math.abs(to_move); ++i){
-                                    if(to_move < 0)
-                                        that.map.scene.imageryLayers.lower(ces_layer);
-                                    else if(to_move>0)
-                                        that.map.scene.imageryLayers.raise(ces_layer);
-                                }
-                            });
-                    }
-                }else{
-                    var ces_layer = product.get("ces_layer");
-                    ces_layer.show = visible;
-                }
-            },
-
             createCurtain: function(appearance, positions, cov_id, cur_coll, alpha, height){
-
-                /*var newmat = new Cesium.Material({
-                    fabric : {
-                        uniforms : {
-                            image : image,
-                            repeat : new Cesium.Cartesian2(-1.0, -1.0),
-                            alpha : alpha
-                        },
-                        components : {
-                            diffuse : 'texture2D(image, fract(repeat * materialInput.st)).rgb',
-                            alpha : 'texture2D(image, fract(repeat * materialInput.st)).a * alpha'
-                        }
-                    },
-                    flat: true,
-                    translucent : true
-                });*/
-
-
-                ;
-
                 var heights = [];
                 for (var i = (positions.length/2) - 1; i >= 0; i--) {
                     heights.push(height);
                 };
-
-
                 var wall = new Cesium.WallGeometry({
                     positions : Cesium.Cartesian3.fromDegreesArray(positions),
                     maximumHeights : heights,
                 });
-
                 var wallGeometry = Cesium.WallGeometry.createGeometry(wall);
-
                 var instance = new Cesium.GeometryInstance({
                   geometry : wallGeometry
                 });
-
                 var prim = new Cesium.Primitive({
                   geometryInstances : [instance],
                   appearance : appearance,
                   releaseGeometryInstances: false,
                   asynchronous: false
                 });
-
                 prim["cov_id"] = cov_id;
-
                 cur_coll.add(prim);
-
-
             },
 
-            createPrimitive: function(image, bbox, cov_id, cur_coll, alpha, height){
+            createSingleTileImageryProvider: function(image, bbox){
+
+                var imgProv = new Cesium.SingleTileImageryProvider({
+                    url : image,
+                    rectangle : Cesium.Rectangle.fromDegrees(
+                        bbox[0],bbox[1],bbox[2],bbox[3]
+                    )
+                });
+                return imgProv;
+            },
+
+            createRectanglePrimitive: function(image, bbox, cov_id, cur_coll, alpha, height){
 
                 height = defaultFor(height, (this.global_product_height));
                 alpha = defaultFor(alpha, 0.98);
-
 
                 // Cesium has some issue ordering things when alpha is equal to 1
                 if(alpha==1){alpha=0.98;}
 
                 // Check for antimeridian crossing if there is do some wrapping
-                /*if( (bbox[2] - bbox[0] > 180) &&
+                if( (bbox[2] - bbox[0] > 180) &&
                     (bbox[0]!=-180 && bbox[2]!=180) &&
                     (bbox[0]!=0 && bbox[2]!=360) ){
                     var tmp = bbox[0] + 360;
                     bbox[0] = bbox[2];
                     bbox[2] = tmp;
-                }*/
+                }
                 // TODO: Do we need this check here?
 
-
-                this.imgProv = this.map.scene.imageryLayers.addImageryProvider(
-                    new Cesium.SingleTileImageryProvider({
-                        url : image,
-                        rectangle : Cesium.Rectangle.fromDegrees(
-                            bbox[0],bbox[1],bbox[2],bbox[3]
-                        )
-                    }),
-                    2
-                );
-
-                /*var instance = new Cesium.GeometryInstance({
+                var instance = new Cesium.GeometryInstance({
                   geometry : new Cesium.RectangleGeometry({
                     rectangle : Cesium.Rectangle.fromDegrees(bbox[0],bbox[1],bbox[2],bbox[3]),
                     vertexFormat : Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT,
@@ -1762,7 +1620,7 @@ define(['backbone.marionette',
                 prim["cov_id"] = cov_id;
                 prim["height"] = height/ELEVATION_EXAGERATION;
 
-                cur_coll.add(prim);*/
+                cur_coll.add(prim);
                 
             },
 
@@ -1795,15 +1653,23 @@ define(['backbone.marionette',
             loadCoverage: function(request, bbox, cov_id, cur_coll, product, prim){
 
                 var self = this;
-
                 return $.ajax({
                    dataType:'arraybuffer',
                    type:'GET',
                    url: request,
                    crossDomain: true
                 })
-                .done(this.onDataReceived.bind(this,bbox, cov_id, cur_coll, product, prim, undefined, undefined, undefined))
-                .fail(this.onLoadCoverageFailed.bind(this,bbox, cov_id, cur_coll, product, prim, undefined, undefined, undefined));
+                .done(
+                    this.onDataReceived.bind(
+                        this,bbox, cov_id, cur_coll, product, prim,
+                        undefined, undefined, undefined
+                    )
+                )
+                .fail(
+                    this.onLoadCoverageFailed.bind(
+                        this,bbox, cov_id, cur_coll, product, prim,
+                        undefined, undefined, undefined)
+                    );
             },
 
             onLoadCoverageFailed: function( bbox, cov_id, cur_coll, product, prim, gt, rasdata, img, data ) {
@@ -1824,43 +1690,8 @@ define(['backbone.marionette',
                 $('#progressindicator').css('width', Math.round(((this.currentDownload-1)/this.downloadTotal)*100)+'%');
             },
 
-            onDataReceived: function( bbox, cov_id, cur_coll, product, prim, gt, rasdata, img, data ) {
+            applyDataTransform: function(meta, nullValue, rasdata, product){
 
-                var parameters = product.get("parameters");
-                var keys = _.keys(parameters);
-                var band = keys[0];
-                // TODO: TAMP only uses one band, but this could create problems in other data models
-                /*_.each(keys, function(key){
-                    if(parameters[key].selected)
-                        band = key;
-                });*/
-                var colorscale = parameters[band].colorscale;
-                var clamp_min = defaultFor(parameters[band].clamp_min, false);
-                var clamp_max = defaultFor(parameters[band].clamp_max, false);
-                var clamp = [clamp_min, clamp_max];
-                var outlines = product.get("outlines");
-                var range = parameters[band].range;
-                var alpha = product.get("opacity");
-                var nullValue = defaultFor(parameters[band].nullValue, false);
-
-
-
-                if(gt === undefined){gt = GeoTIFF.parse(data)}
-                if(img === undefined) {img = gt.getImage(0);}
-                if(rasdata === undefined) {rasdata = img.readRasters();}
-                if(rasdata === undefined) {
-                    // Something went wrong reading the tiff, show message and stop here
-                    $("#error-messages").append(
-                          '<div class="alert alert-warning alert-info">'+
-                          '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>'+
-                          'There was an error accessing the current dataset ' + cov_id +
-                        '</div>'
-                    );
-                    return;
-                }
-                var meta = img.getGDALMetadata();
-                
-                var self = this;
                 // First convert array so that we can modify values
                 var convArray = [];
 
@@ -1881,7 +1712,6 @@ define(['backbone.marionette',
                 }
 
                 // Check if we need to transform data
-                
                 if(meta && meta.hasOwnProperty('SCALE') && meta.hasOwnProperty('OFFSET') 
                     /*&& img.fileDirectory.hasOwnProperty('GDAL_NODATA')*/){
                     //var nodata = Number(img.fileDirectory.GDAL_NODATA.slice(0,-1));
@@ -1918,13 +1748,12 @@ define(['backbone.marionette',
                         }
                     }
                 }
-                rasdata = convArray;
+                return convArray;
+            },
 
-                // Check if the GeoTIFF is a vertical curtain
-                if(meta && meta.hasOwnProperty('COORDINATES') && meta.hasOwnProperty('HEIGHT_LEVELS') &&
-                    meta.hasOwnProperty('HEIGHT_LEVELS_NUMBER')){
+            onVerticalCurtainDataReceived: function(meta, cov_id, rasdata, img, prim){
 
-                    var coords = meta.COORDINATES.split(',');
+                var coords = meta.COORDINATES.split(',');
                     var positions = [];
                     for (var i = coords.length - 1; i >= 0; i--) {
                         positions = positions.concat($.trim(coords[i]).split(' ').map(Number));
@@ -1932,15 +1761,15 @@ define(['backbone.marionette',
                     var height = meta.HEIGHT_LEVELS.split(' ');
                     height = Number(height[height.length-1])*ELEVATION_EXAGERATION/10;
 
-                    self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
-                    self.p_plot.setDomain(range);
-                    self.p_plot.setNoDataValue(Number.MIN_VALUE);
-                    self.p_plot.setClamp(clamp[0],clamp[1]);
+                    this.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
+                    this.p_plot.setDomain(range);
+                    this.p_plot.setNoDataValue(Number.MIN_VALUE);
+                    this.p_plot.setClamp(clamp[0],clamp[1]);
                     this.p_plot.setColorScale(colorscale);
-                    self.p_plot.renderDataset(cov_id);
+                    this.p_plot.renderDataset(cov_id);
                     if (prim){
                         prim["cov_id"] = cov_id;
-                        prim.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+                        prim.appearance.material._textures.image.copyFrom(this.p_plot.canvas);
                     }else{
                         var newmat = new Cesium.Material.fromType('Image', {
                             image : self.p_plot.canvas.toDataURL(),
@@ -1953,12 +1782,488 @@ define(['backbone.marionette',
                             material : newmat
                         });
 
-                        self.createCurtain(imageAppeareance, positions, cov_id, cur_coll, alpha, height);
+                        this.createCurtain(imageAppeareance, positions, cov_id, cur_coll, alpha, height);
                         
                     }
+            },
+
+            onDataColumnReceived: function(meta, rasdata, heights){
+
+                var cov_bb = _.find(this.currentCoverages, function(o){
+                    return o.identifier == cov_id;
+                }).bbox;
+
+                cov_bb = cov_bb.substring(1, cov_bb.length - 1).split(",").map(parseFloat);
+                var pos = new Cesium.Cartesian3.fromDegrees(
+                    cov_bb[0] + ((cov_bb[2]-cov_bb[0])/2),
+                    cov_bb[1] + ((cov_bb[3]-cov_bb[1])/2)
+                );
+                var bil_coll = cur_coll.add(new Cesium.BillboardCollection());
+                bil_coll.add({
+                    position : pos,
+                    verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                    image : pinimage
+                });
+                cur_coll.show = true;
+
+                var cov_item = (_.find(this.currentCoverages, function(item) {
+                    return item.identifier == cov_id; 
+                }));
+                var starttime = cov_item.starttime;
+                var endtime = cov_item.endtime;
+
+                if(meta && meta.hasOwnProperty('GLOBAL_MIN') && meta.hasOwnProperty('GLOBAL_MAX')){
+                    this.timeseriesRange = [Number(meta.GLOBAL_MIN), Number(meta.GLOBAL_MAX)];
+                }
+
+                for (var i = 0; i < rasdata.length; i++) {
+                    var height = heights[i];
+                    this.timeseries.push({
+                        starttime:starttime,
+                        endtime: endtime,
+                        val:rasdata[i][0],
+                        height: height
+                    });
+                }
+            },
+
+            onVolumeDataReceived: function(meta, cov_id, rasdata, img, prim, heights){
+
+                $("#xSelectionRange").off();
+                $("#ySelectionRange").off();
+                $("#zSelectionRange").off();
+                $("#volumeVisualization").off();
+                $('#volumecontrols').empty();
+                $('#volumecontrols').show();
+
+                $('#volumecontrols').append('<div style="display:inline;">Display Volume</div>');
+
+                var checked = '';
+                if(this.volumeVisualization) {checked = 'checked';}
+                var elem = '<input type="checkbox" id="volumeVisualization" class="sliceCheckbox" '+checked+'/>'
+                $('#volumecontrols').append(elem);
+
+                $("#volumeVisualization").on("input change",  function(evt){
+
+                    if(this.volumeVisualization){
+                        for (var i = 0; i < rasdata.length; i++) {
+                            this.p_plot.removeDataset(cov_id+"_"+i);
+                        }
+                    }else{
+                        this.p_plot.removeDataset(cov_id+'_sliceX');
+                        this.p_plot.removeDataset(cov_id+'_sliceY');
+                        this.p_plot.removeDataset(cov_id+'_sliceZ');
+                    }
+
+                    this.volumeVisualization = $("#volumeVisualization").is(':checked');
+
+                    cur_coll.removeAll();
+                    this.onDataReceived(bbox, cov_id, cur_coll, product, prim, gt, rasdata ,img, data );
+                });
+
+                if(this.volumeVisualization){
+                    $('#volumecontrols').css('height', 43);
+
+                    for (var i = 0; i < rasdata.length; i++) {
+                        this.p_plot.addDataset((cov_id+"_"+i), rasdata[i], img.getWidth(), img.getHeight());
+                        this.p_plot.setDomain(range);
+                        this.p_plot.setNoDataValue(Number.MIN_VALUE);
+                        this.p_plot.setClamp(clamp[0],clamp[1]);
+                        this.p_plot.setColorScale(colorscale);
+                        this.p_plot.renderDataset((cov_id+"_"+i));
+                        var height = i*18000;
+                        if (i<=heights.length){
+                            height = heights[i]*ELEVATION_EXAGERATION;
+                        }
+                        this.createPrimitive(this.p_plot.canvas.toDataURL(), bbox, (cov_id+"_"+i), cur_coll, alpha, height);
+                    }
+                }else{
+                    $('#volumecontrols').css('height', 220);
+                    var imgX = img.getWidth();
+                    var imgY = img.getHeight();
+                    var imgZ = rasdata.length;
+
+
+                    var xSelection = Math.floor(imgX/2);
+                    var ySelection = Math.floor(imgY/2);
+                    var zSelection = Math.floor(imgZ/2);
+
+                    // Creation of "curtains" for X and Y axis
+                    
+                    var latStep = Math.abs(bbox[3]-bbox[1])/imgY;
+                    var lonStep = Math.abs(bbox[2]-bbox[0])/imgX;
+
+                    var xSlicePositions = [
+                        (bbox[0] + lonStep*xSelection) , bbox[1],
+                        (bbox[0] + lonStep*xSelection) , bbox[3],
+                    ];
+                    
+                    var height = heights[heights.length-1]*ELEVATION_EXAGERATION;
+
+                    var sliceX = new Float32Array(imgY*imgZ);
+
+                    for (var z = 0; z < imgZ; z++) {
+                        for (var y = 0; y < imgY; y++) {
+                            sliceX[((imgZ-z) * imgY) + (imgY-y)] = rasdata[z][(y * imgX) + xSelection];
+                        }
+                    }
+
+                    this.p_plot.addDataset(cov_id+"_"+'sliceX', sliceX, imgY, imgZ);
+                    this.p_plot.setDomain(range);
+                    this.p_plot.setNoDataValue(Number.MIN_VALUE);
+                    this.p_plot.setClamp(clamp[0],clamp[1]);
+                    this.p_plot.setColorScale(colorscale);
+                    this.p_plot.renderDataset(cov_id+"_"+'sliceX');
+
+                    var xMaterial = new Cesium.Material.fromType('Image', {
+                        image : this.p_plot.canvas.toDataURL(),
+                        color: new Cesium.Color(1, 1, 1, alpha)
+                    })
+
+                    var xSliceAppeareance = new Cesium.MaterialAppearance({
+                        translucent : true,
+                        flat: true,
+                        material : xMaterial
+                      })
+
+                    this.createCurtain(xSliceAppeareance,
+                        xSlicePositions, (cov_id+"_"+'sliceX'),
+                        cur_coll, alpha,
+                        height
+                    );
+
+                    var label = $("<label>").attr('for', 'xSelectionRange');
+                    label.text((bbox[0] + lonStep*xSelection).toFixed(2)+' Longitude');
+                    $('#volumecontrols').append('<input type="range" id="xSelectionRange">');
+                    $('#volumecontrols').append(label);
+                    $("#xSelectionRange").addClass("volumeSlider");
+                    $("#xSelectionRange").attr("max", imgX-1);
+                    $("#xSelectionRange").attr("min", 0);
+                    $("#xSelectionRange").attr("value", xSelection);
+                    $("#xSelectionRange").attr("step", 1);
+
+                    $('#volumecontrols').append('<input type="checkbox" id="showXSlice" class="sliceCheckbox" checked/>');
+
+                    $("#showXSlice").on("input change", {
+                        cur_coll: cur_coll,
+                        id: (cov_id+"_"+'sliceX')
+                    }, function(evt){
+                        var d = evt.data;
+                        for (var i = d.cur_coll._primitives.length - 1; i >= 0; i--) {
+                            if(d.cur_coll._primitives[i].cov_id === d.id){
+                                d.cur_coll.get(i).show = $("#showXSlice").is(':checked');
+                            }
+                        }
+                    });
+
+                    $("#xSelectionRange").on("input change", 
+                        {
+                            id: (cov_id+"_"+'sliceX'), lonStep: lonStep,
+                            cur_coll: cur_coll, plot: this.p_plot,
+                            imgX: imgX, imgY: imgY, imgZ: imgZ,
+                            rasdata: rasdata, height: height,
+                            alpha: alpha, bbox: bbox,
+                            imageAppeareance: xSliceAppeareance,
+                            label: label
+                        },
+                        function(evt){
+                            var d = evt.data;
+
+                            var xSelection = Number($(this).val());
+                            var slice = new Float32Array(d.imgY*d.imgZ);
+
+                            for (var z = 0; z < d.imgZ; z++) {
+                                for (var y = 0; y < d.imgY; y++) {
+                                    slice[((d.imgZ-z) * d.imgY) + (d.imgY-y)] = d.rasdata[z][(y * d.imgX) + xSelection];
+                                }
+                            }
+
+                            for (var i = d.cur_coll._primitives.length - 1; i >= 0; i--) {
+                                if(d.cur_coll._primitives[i].cov_id === d.id){
+                                    d.cur_coll.remove(d.cur_coll.get(i));
+                                }
+                            }
+                            
+
+                            var positions = [
+                                (bbox[0] + lonStep*xSelection) , bbox[1],
+                                (bbox[0] + lonStep*xSelection) , bbox[3],
+                            ];
+
+                            d.label.text((bbox[0] + lonStep*xSelection).toFixed(2)+' Longitude');
+
+                            d.plot.removeDataset(d.id);
+                            d.plot.addDataset(d.id, slice, d.imgY, d.imgZ);
+                            d.plot.renderDataset(d.id);
+                            d.imageAppeareance.material._textures.image.copyFrom(d.plot.canvas);
+
+                            this.createCurtain(d.imageAppeareance,
+                                positions, d.id,
+                                d.cur_coll, d.alpha,
+                                d.height
+                            );
+
+                        }
+                    );
+
+
+                    var lat = (bbox[1] + latStep*ySelection);
+
+                    var ySlicePositions = [];
+                    for (var x = 0; x < imgX; x++) {
+                        ySlicePositions.push(bbox[0]+x*lonStep, lat);
+                    }
+
+                    var sliceY = new Float32Array(imgX*imgZ);
+
+                    for (var z = 0; z < imgZ; z++) {
+                        for (var x = 0; x < imgX; x++) {
+                            sliceY[((imgZ-z) * imgX) + (imgX-x)] = rasdata[z][(ySelection * imgX) + x];
+                        }
+                    }
+
+                    this.p_plot.addDataset(cov_id+"_"+'sliceY', sliceY, imgX, imgZ);
+                    this.p_plot.setDomain(range);
+                    this.p_plot.setNoDataValue(Number.MIN_VALUE);
+                    this.p_plot.setClamp(clamp[0],clamp[1]);
+                    this.p_plot.setColorScale(colorscale);
+                    this.p_plot.renderDataset(cov_id+"_"+'sliceY');
+
+                    var yMaterial = new Cesium.Material.fromType('Image', {
+                        image : this.p_plot.canvas.toDataURL(),
+                        color: new Cesium.Color(1, 1, 1, alpha)
+                    })
+
+                    var ySliceAppeareance = new Cesium.MaterialAppearance({
+                        translucent : true,
+                        flat: true,
+                        material : yMaterial
+                      })
+
+                    this.createCurtain(ySliceAppeareance,
+                        ySlicePositions, (cov_id+"_"+'sliceY'),
+                        cur_coll, alpha,
+                        height
+                    );
+
+                    var yLabel = $("<label>").attr('for', 'ySelectionRange');
+                    yLabel.text((bbox[1] + lonStep*xSelection).toFixed(2)+' Latitude');
+                    $('#volumecontrols').append('<input type="range" id="ySelectionRange">');
+                    $('#volumecontrols').append(yLabel);
+                    $("#ySelectionRange").addClass("volumeSlider");
+                    $("#ySelectionRange").attr("max", imgY-1);
+                    $("#ySelectionRange").attr("min", 0);
+                    $("#ySelectionRange").attr("value", ySelection);
+                    $("#ySelectionRange").attr("step", 1);
+
+                    $('#volumecontrols').append('<input type="checkbox" id="showYSlice" class="sliceCheckbox" checked/>');
+                    $("#showYSlice").on("input change", {
+                        cur_coll: cur_coll,
+                        id: (cov_id+"_"+'sliceY')
+                    }, function(evt){
+                        var d = evt.data;
+                        for (var i = d.cur_coll._primitives.length - 1; i >= 0; i--) {
+                            if(d.cur_coll._primitives[i].cov_id === d.id){
+                                d.cur_coll.get(i).show = $("#showYSlice").is(':checked');
+                            }
+                        }
+                    });
+
+                    $("#ySelectionRange").on("input change", 
+                        {
+                            id: (cov_id+"_"+'sliceY'),
+                            latStep: latStep, cur_coll: cur_coll,
+                            plot: this.p_plot,
+                            imgX: imgX, imgY: imgY, imgZ: imgZ,
+                            rasdata: rasdata, height: height,
+                            alpha: alpha, bbox: bbox,
+                            imageAppeareance: ySliceAppeareance,
+                            label: yLabel
+                        },
+                        function(evt){
+                            var d = evt.data;
+
+                            var ySelection = Number($(this).val());
+                            
+                            for (var i = d.cur_coll._primitives.length - 1; i >= 0; i--) {
+                                if(d.cur_coll._primitives[i].cov_id === d.id){
+                                    d.cur_coll.remove(d.cur_coll.get(i));
+                                }
+                            }
+                            var lat = (bbox[1] + latStep*ySelection);
+
+                            var ySlicePositions = [];
+                            for (var x = 0; x < imgX; x++) {
+                                ySlicePositions.push(bbox[0]+x*lonStep, lat);
+                            }
+
+                            var sliceY = new Float32Array(imgX*imgZ);
+
+                            for (var z = 0; z < imgZ; z++) {
+                                for (var x = 0; x < imgX; x++) {
+                                    sliceY[((imgZ-z) * imgX) + x] = rasdata[z][((imgY-ySelection) * imgX) + x];
+                                }
+                            }
+
+                            d.label.text((bbox[1] + latStep*ySelection).toFixed(2)+' Latitude');
+
+                            d.plot.removeDataset(d.id);
+                            d.plot.addDataset(d.id, sliceY, d.imgX, d.imgZ);
+                            d.plot.renderDataset(d.id);
+                            d.imageAppeareance.material._textures.image.copyFrom(d.plot.canvas);
+
+                            this.createCurtain(d.imageAppeareance,
+                                ySlicePositions, d.id,
+                                d.cur_coll, d.alpha,
+                                d.height
+                            );
+
+                        }
+                    );
+
+                    // Creation of height slice
+                    this.p_plot.addDataset((cov_id+'_sliceZ'), rasdata[zSelection], imgX, imgY);
+                    this.p_plot.setDomain(range);
+                    this.p_plot.setNoDataValue(Number.MIN_VALUE);
+                    this.p_plot.setClamp(clamp[0],clamp[1]);
+                    this.p_plot.setColorScale(colorscale);
+                    this.p_plot.renderDataset((cov_id+'_sliceZ'));
+
+                    var heightZ = 0;
+
+                    if (zSelection<=heights.length){
+                        heightZ = heights[zSelection]*ELEVATION_EXAGERATION;
+                    }
+
+                    var zMaterial = new Cesium.Material.fromType('Image', {
+                        image : this.p_plot.canvas.toDataURL(),
+                        color: new Cesium.Color(1, 1, 1, alpha)
+                    })
+
+                    var zSliceAppeareance = new Cesium.MaterialAppearance({
+                        translucent : true,
+                        flat: true,
+                        material : zMaterial
+                      })
+
+                    this.createAppereancePrimitive(zSliceAppeareance, bbox, (cov_id+'_sliceZ'), cur_coll, alpha, heightZ);
+
+                    var zLabel = $("<label>").attr('for', 'zSelectionRange');
+                    zLabel.text((height).toFixed(2)+' Height');
+                    $('#volumecontrols').append('<input type="range" id="zSelectionRange">');
+                    $('#volumecontrols').append(zLabel);
+                    $("#zSelectionRange").addClass("volumeSlider");
+                    $("#zSelectionRange").attr("max", imgZ-1);
+                    $("#zSelectionRange").attr("min", 0);
+                    $("#zSelectionRange").attr("value", zSelection);
+                    $("#zSelectionRange").attr("step", 1);
+
+                    $('#volumecontrols').append('<input type="checkbox" id="showZSlice" class="sliceCheckbox" checked/>');
+                    $("#showZSlice").on("input change", {
+                        cur_coll: cur_coll,
+                        id: (cov_id+"_"+'sliceZ')
+                    }, function(evt){
+                        var d = evt.data;
+                        for (var i = d.cur_coll._primitives.length - 1; i >= 0; i--) {
+                            if(d.cur_coll._primitives[i].cov_id === d.id){
+                                d.cur_coll.get(i).show = $("#showZSlice").is(':checked');
+                            }
+                        }
+                    });
+
+                    $("#zSelectionRange").on("input change", 
+                        {
+                            id: (cov_id+'_sliceZ'),
+                            heights: heights,
+                            cur_coll: cur_coll,
+                            plot: this.p_plot,
+                            imgX: imgX, imgY: imgY, imgZ: imgZ,
+                            rasdata: rasdata, height: height,
+                            alpha: alpha, bbox: bbox,
+                            imageAppeareance: zSliceAppeareance,
+                            label: zLabel
+                        },
+                        function(evt){
+                            var d = evt.data;
+
+                            var zSelection = Number($(this).val());
+                            
+                            for (var i = d.cur_coll._primitives.length - 1; i >= 0; i--) {
+                                if(d.cur_coll._primitives[i].cov_id === d.id){
+                                    d.cur_coll.remove(d.cur_coll.get(i));
+                                }
+                            }
+                            
+                            d.plot.removeDataset(d.id);
+                            d.plot.addDataset(d.id, rasdata[zSelection], d.imgX, d.imgY);
+                            d.plot.renderDataset(d.id);
+                            d.imageAppeareance.material._textures.image.copyFrom(d.plot.canvas);
+
+                            var heightZ = 0;
+
+                            if (zSelection<=heights.length){
+                                heightZ = heights[zSelection]*ELEVATION_EXAGERATION;
+                            }
+
+                            d.label.text((heightZ).toFixed(2)+' Height');
+
+                            this.createAppereancePrimitive(zSliceAppeareance, bbox, (cov_id+'_sliceZ'), cur_coll, alpha, heightZ);
+
+                        }
+                    );
+                }
+            },
+
+            onDataReceived: function( bbox, cov_id, cur_coll, product, imageryLayer, gt, rasdata, img, data ) {
+
+                var parameters = product.get("parameters");
+                var keys = _.keys(parameters);
+                var band = keys[0];
+                // TODO: TAMP only uses one band, but this could create problems in other data models
+                /*_.each(keys, function(key){
+                    if(parameters[key].selected)
+                        band = key;
+                });*/
+                var colorscale = parameters[band].colorscale;
+                var clamp_min = defaultFor(parameters[band].clamp_min, false);
+                var clamp_max = defaultFor(parameters[band].clamp_max, false);
+                var clamp = [clamp_min, clamp_max];
+                var outlines = product.get("outlines");
+                var range = parameters[band].range;
+                var alpha = product.get("opacity");
+                var nullValue = defaultFor(parameters[band].nullValue, false);
+
+
+
+                if(gt === undefined){gt = GeoTIFF.parse(data)}
+                if(img === undefined) {img = gt.getImage(0);}
+                if(rasdata === undefined) {rasdata = img.readRasters();}
+                if(rasdata === undefined) {
+                    // Something went wrong reading the tiff, show message and stop here
+                    $("#error-messages").append(
+                          '<div class="alert alert-warning alert-info">'+
+                          '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>'+
+                          'There was an error accessing the dataset ' + cov_id +
+                        '</div>'
+                    );
+                    return;
+                }
+                var meta = img.getGDALMetadata();
+                
+                var self = this;
+                
+                rasdata = this.applyDataTransform(meta, nullValue, rasdata, product);
+
+                // Check if the GeoTIFF is a vertical curtain
+                if(meta && meta.hasOwnProperty('COORDINATES') && 
+                    meta.hasOwnProperty('HEIGHT_LEVELS') &&
+                    meta.hasOwnProperty('HEIGHT_LEVELS_NUMBER')){
+
+                    this.onVerticalCurtainDataReceived(
+                        meta, cov_id, rasdata, img, prim
+                    );
 
                 }else{
-
 
                     // Check if we have a multilayered tif
                     // There are two types of multilayered tif: volumes and "columns" (e.g. lidar)
@@ -1971,505 +2276,55 @@ define(['backbone.marionette',
                             heights = meta.VERTICAL_LEVELS.split(',').map(Number);
                         }
 
-
                         if (img.getWidth()==1 && img.getHeight()==1) {
                             // This is a 1D "column"
-
-                            //var line = [];
-                            var cov_bb = _.find(self.currentCoverages, function(o){return o.identifier == cov_id;}).bbox;
-                            cov_bb = cov_bb.substring(1, cov_bb.length - 1).split(",").map(parseFloat);
-                            var pos = new Cesium.Cartesian3.fromDegrees(
-                                cov_bb[0] + ((cov_bb[2]-cov_bb[0])/2),
-                                cov_bb[1] + ((cov_bb[3]-cov_bb[1])/2)
-                            );
-                            var bil_coll = cur_coll.add(new Cesium.BillboardCollection());
-                            bil_coll.add({
-                                position : pos,
-                                verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-                                image : pinimage
-                            });
-                            cur_coll.show = true;
-
-                            var cov_item = (_.find(self.currentCoverages, function(item) {
-                                return item.identifier == cov_id; 
-                            }));
-                            var starttime = cov_item.starttime;
-                            var endtime = cov_item.endtime;
-
-                            if(meta && meta.hasOwnProperty('GLOBAL_MIN') && meta.hasOwnProperty('GLOBAL_MAX')){
-                                self.timeseriesRange = [Number(meta.GLOBAL_MIN), Number(meta.GLOBAL_MAX)];
-                            }
-
-                            for (var i = 0; i < rasdata.length; i++) {
-                                //line.push(rasdata[i][0]);
-                                var height = heights[i];
-                                self.timeseries.push({
-                                    starttime:starttime,
-                                    endtime: endtime,
-                                    val:rasdata[i][0],
-                                    height: height
-                                });
-                            }
-                            //self.timeseries.push({id:cov_id, data:line});
-
+                            this.onDataColumnReceived(meta, rasdata, heights);
                         }else{
                             // This is a volume
-                            // TODO: Super dirty hack because data is weird and they dont want it to be visualized like this
-                            if(heights[heights.length-1]>99999){
-                                heights.pop();
-                                rasdata.pop();
-                            }
-
-                            //self.volumeVisualization = true;
-
-                            $("#xSelectionRange").off();
-                            $("#ySelectionRange").off();
-                            $("#zSelectionRange").off();
-                            $("#volumeVisualization").off();
-                            $('#volumecontrols').empty();
-                            $('#volumecontrols').show();
-
-                            $('#volumecontrols').append('<div style="display:inline;">Display Volume</div>');
-
-                            var checked = '';
-                            if(self.volumeVisualization) {checked = 'checked';}
-                            var elem = '<input type="checkbox" id="volumeVisualization" class="sliceCheckbox" '+checked+'/>'
-                            $('#volumecontrols').append(elem);
-
-                            $("#volumeVisualization").on("input change",  function(evt){
-
-                                if(self.volumeVisualization){
-                                    for (var i = 0; i < rasdata.length; i++) {
-                                        self.p_plot.removeDataset(cov_id+"_"+i);
-                                    }
-                                }else{
-                                    self.p_plot.removeDataset(cov_id+'_sliceX');
-                                    self.p_plot.removeDataset(cov_id+'_sliceY');
-                                    self.p_plot.removeDataset(cov_id+'_sliceZ');
-                                }
-
-                                self.volumeVisualization = $("#volumeVisualization").is(':checked');
-
-                                cur_coll.removeAll();
-                                self.onDataReceived(bbox, cov_id, cur_coll, product, prim, gt, rasdata ,img, data );
-                            });
-
-                            if(self.volumeVisualization){
-                                $('#volumecontrols').css('height', 43);
-
-                                for (var i = 0; i < rasdata.length; i++) {
-                                    self.p_plot.addDataset((cov_id+"_"+i), rasdata[i], img.getWidth(), img.getHeight());
-                                    self.p_plot.setDomain(range);
-                                    self.p_plot.setNoDataValue(Number.MIN_VALUE);
-                                    self.p_plot.setClamp(clamp[0],clamp[1]);
-                                    this.p_plot.setColorScale(colorscale);
-                                    self.p_plot.renderDataset((cov_id+"_"+i));
-                                    var height = i*18000;
-                                    if (i<=heights.length){
-                                        height = heights[i]*ELEVATION_EXAGERATION;
-                                    }
-                                    self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, (cov_id+"_"+i), cur_coll, alpha, height);
-                                }
-                            }else{
-                                $('#volumecontrols').css('height', 220);
-                                var imgX = img.getWidth();
-                                var imgY = img.getHeight();
-                                var imgZ = rasdata.length;
-
-
-                                var xSelection = Math.floor(imgX/2);
-                                var ySelection = Math.floor(imgY/2);
-                                var zSelection = Math.floor(imgZ/2);
-
-                                // Creation of "curtains" for X and Y axis
-                                
-                                var latStep = Math.abs(bbox[3]-bbox[1])/imgY;
-                                var lonStep = Math.abs(bbox[2]-bbox[0])/imgX;
-
-                                var xSlicePositions = [
-                                    (bbox[0] + lonStep*xSelection) , bbox[1],
-                                    (bbox[0] + lonStep*xSelection) , bbox[3],
-                                ];
-                                
-                                var height = heights[heights.length-1]*ELEVATION_EXAGERATION;
-
-                                var sliceX = new Float32Array(imgY*imgZ);
-
-                                for (var z = 0; z < imgZ; z++) {
-                                    for (var y = 0; y < imgY; y++) {
-                                        sliceX[((imgZ-z) * imgY) + (imgY-y)] = rasdata[z][(y * imgX) + xSelection];
-                                    }
-                                }
-
-                                self.p_plot.addDataset(cov_id+"_"+'sliceX', sliceX, imgY, imgZ);
-                                self.p_plot.setDomain(range);
-                                self.p_plot.setNoDataValue(Number.MIN_VALUE);
-                                self.p_plot.setClamp(clamp[0],clamp[1]);
-                                this.p_plot.setColorScale(colorscale);
-                                self.p_plot.renderDataset(cov_id+"_"+'sliceX');
-
-                                var xMaterial = new Cesium.Material.fromType('Image', {
-                                    image : self.p_plot.canvas.toDataURL(),
-                                    color: new Cesium.Color(1, 1, 1, alpha)
-                                })
-
-                                var xSliceAppeareance = new Cesium.MaterialAppearance({
-                                    translucent : true,
-                                    flat: true,
-                                    material : xMaterial
-                                  })
-
-                                self.createCurtain(xSliceAppeareance,
-                                    xSlicePositions, (cov_id+"_"+'sliceX'),
-                                    cur_coll, alpha,
-                                    height
-                                );
-
-                                /*$("#xSelectionRange").off();
-                                $("#ySelectionRange").off();
-                                $("#zSelectionRange").off();
-                                $("#volumeVisualization").off();
-                                $('#volumecontrols').empty();
-                                $('#volumecontrols').show();
-                                $('#volumecontrols').append('<div>Display Volume</div>');
-
-                                $('#volumecontrols').append('<input type="checkbox" id="volumeVisualization" class="sliceCheckbox"/>');
-
-                                $("#volumeVisualization").on("input change",  function(evt){
-                                    self.volumeVisualization = $("#volumeVisualization").is(':checked');
-                                    cur_coll.removeAll();
-                                    self.onDataReceived(bbox, cov_id, range, cur_coll, alpha, clamp, prim, data);
-                                });*/
-
-                                var label = $("<label>").attr('for', 'xSelectionRange');
-                                label.text((bbox[0] + lonStep*xSelection).toFixed(2)+' Longitude');
-                                $('#volumecontrols').append('<input type="range" id="xSelectionRange">');
-                                $('#volumecontrols').append(label);
-                                $("#xSelectionRange").addClass("volumeSlider");
-                                $("#xSelectionRange").attr("max", imgX-1);
-                                $("#xSelectionRange").attr("min", 0);
-                                $("#xSelectionRange").attr("value", xSelection);
-                                $("#xSelectionRange").attr("step", 1);
-
-                                $('#volumecontrols').append('<input type="checkbox" id="showXSlice" class="sliceCheckbox" checked/>');
-
-                                $("#showXSlice").on("input change", {
-                                    cur_coll: cur_coll,
-                                    id: (cov_id+"_"+'sliceX')
-                                }, function(evt){
-                                    var d = evt.data;
-                                    for (var i = d.cur_coll._primitives.length - 1; i >= 0; i--) {
-                                        if(d.cur_coll._primitives[i].cov_id === d.id){
-                                            d.cur_coll.get(i).show = $("#showXSlice").is(':checked');
-                                        }
-                                    }
-                                });
-
-                                $("#xSelectionRange").on("input change", 
-                                    {
-                                        id: (cov_id+"_"+'sliceX'),
-                                        lonStep: lonStep,
-                                        cur_coll: cur_coll,
-                                        plot: self.p_plot,
-                                        imgX: imgX,
-                                        imgY: imgY,
-                                        imgZ: imgZ,
-                                        rasdata: rasdata,
-                                        height: height,
-                                        alpha: alpha,
-                                        bbox: bbox,
-                                        imageAppeareance: xSliceAppeareance,
-                                        label: label
-                                    },
-                                    function(evt){
-                                        var d = evt.data;
-
-                                        var xSelection = Number($(this).val());
-                                        var slice = new Float32Array(d.imgY*d.imgZ);
-
-                                        for (var z = 0; z < d.imgZ; z++) {
-                                            for (var y = 0; y < d.imgY; y++) {
-                                                slice[((d.imgZ-z) * d.imgY) + (d.imgY-y)] = d.rasdata[z][(y * d.imgX) + xSelection];
-                                            }
-                                        }
-
-                                        for (var i = d.cur_coll._primitives.length - 1; i >= 0; i--) {
-                                            if(d.cur_coll._primitives[i].cov_id === d.id){
-                                                d.cur_coll.remove(d.cur_coll.get(i));
-                                            }
-                                        }
-                                        
-
-                                        var positions = [
-                                            (bbox[0] + lonStep*xSelection) , bbox[1],
-                                            (bbox[0] + lonStep*xSelection) , bbox[3],
-                                        ];
-
-                                        d.label.text((bbox[0] + lonStep*xSelection).toFixed(2)+' Longitude');
-
-                                        d.plot.removeDataset(d.id);
-                                        d.plot.addDataset(d.id, slice, d.imgY, d.imgZ);
-                                        d.plot.renderDataset(d.id);
-                                        d.imageAppeareance.material._textures.image.copyFrom(d.plot.canvas);
-
-                                        self.createCurtain(d.imageAppeareance,
-                                            positions, d.id,
-                                            d.cur_coll, d.alpha,
-                                            d.height
-                                        );
-
-                                    }
-                                );
-
-
-                                var lat = (bbox[1] + latStep*ySelection);
-
-                                var ySlicePositions = [];
-                                for (var x = 0; x < imgX; x++) {
-                                    ySlicePositions.push(bbox[0]+x*lonStep, lat);
-                                }
-
-                                var sliceY = new Float32Array(imgX*imgZ);
-
-                                for (var z = 0; z < imgZ; z++) {
-                                    for (var x = 0; x < imgX; x++) {
-                                        sliceY[((imgZ-z) * imgX) + (imgX-x)] = rasdata[z][(ySelection * imgX) + x];
-                                    }
-                                }
-
-                                self.p_plot.addDataset(cov_id+"_"+'sliceY', sliceY, imgX, imgZ);
-                                self.p_plot.setDomain(range);
-                                self.p_plot.setNoDataValue(Number.MIN_VALUE);
-                                self.p_plot.setClamp(clamp[0],clamp[1]);
-                                this.p_plot.setColorScale(colorscale);
-                                self.p_plot.renderDataset(cov_id+"_"+'sliceY');
-
-                                var yMaterial = new Cesium.Material.fromType('Image', {
-                                    image : self.p_plot.canvas.toDataURL(),
-                                    color: new Cesium.Color(1, 1, 1, alpha)
-                                })
-
-                                var ySliceAppeareance = new Cesium.MaterialAppearance({
-                                    translucent : true,
-                                    flat: true,
-                                    material : yMaterial
-                                  })
-
-                                self.createCurtain(ySliceAppeareance,
-                                    ySlicePositions, (cov_id+"_"+'sliceY'),
-                                    cur_coll, alpha,
-                                    height
-                                );
-
-                                var yLabel = $("<label>").attr('for', 'ySelectionRange');
-                                yLabel.text((bbox[1] + lonStep*xSelection).toFixed(2)+' Latitude');
-                                $('#volumecontrols').append('<input type="range" id="ySelectionRange">');
-                                $('#volumecontrols').append(yLabel);
-                                $("#ySelectionRange").addClass("volumeSlider");
-                                $("#ySelectionRange").attr("max", imgY-1);
-                                $("#ySelectionRange").attr("min", 0);
-                                $("#ySelectionRange").attr("value", ySelection);
-                                $("#ySelectionRange").attr("step", 1);
-
-                                $('#volumecontrols').append('<input type="checkbox" id="showYSlice" class="sliceCheckbox" checked/>');
-                                $("#showYSlice").on("input change", {
-                                    cur_coll: cur_coll,
-                                    id: (cov_id+"_"+'sliceY')
-                                }, function(evt){
-                                    var d = evt.data;
-                                    for (var i = d.cur_coll._primitives.length - 1; i >= 0; i--) {
-                                        if(d.cur_coll._primitives[i].cov_id === d.id){
-                                            d.cur_coll.get(i).show = $("#showYSlice").is(':checked');
-                                        }
-                                    }
-                                });
-
-                                $("#ySelectionRange").on("input change", 
-                                    {
-                                        id: (cov_id+"_"+'sliceY'),
-                                        latStep: latStep,
-                                        cur_coll: cur_coll,
-                                        plot: self.p_plot,
-                                        imgX: imgX,
-                                        imgY: imgY,
-                                        imgZ: imgZ,
-                                        rasdata: rasdata,
-                                        height: height,
-                                        alpha: alpha,
-                                        bbox: bbox,
-                                        imageAppeareance: ySliceAppeareance,
-                                        label: yLabel
-                                    },
-                                    function(evt){
-                                        var d = evt.data;
-
-                                        var ySelection = Number($(this).val());
-                                        
-                                        for (var i = d.cur_coll._primitives.length - 1; i >= 0; i--) {
-                                            if(d.cur_coll._primitives[i].cov_id === d.id){
-                                                d.cur_coll.remove(d.cur_coll.get(i));
-                                            }
-                                        }
-                                        var lat = (bbox[1] + latStep*ySelection);
-
-                                        var ySlicePositions = [];
-                                        for (var x = 0; x < imgX; x++) {
-                                            ySlicePositions.push(bbox[0]+x*lonStep, lat);
-                                        }
-
-                                        var sliceY = new Float32Array(imgX*imgZ);
-
-                                        for (var z = 0; z < imgZ; z++) {
-                                            for (var x = 0; x < imgX; x++) {
-                                                sliceY[((imgZ-z) * imgX) + x] = rasdata[z][((imgY-ySelection) * imgX) + x];
-                                            }
-                                        }
-
-                                        d.label.text((bbox[1] + latStep*ySelection).toFixed(2)+' Latitude');
-
-                                        d.plot.removeDataset(d.id);
-                                        d.plot.addDataset(d.id, sliceY, d.imgX, d.imgZ);
-                                        d.plot.renderDataset(d.id);
-                                        d.imageAppeareance.material._textures.image.copyFrom(d.plot.canvas);
-
-                                        self.createCurtain(d.imageAppeareance,
-                                            ySlicePositions, d.id,
-                                            d.cur_coll, d.alpha,
-                                            d.height
-                                        );
-
-                                    }
-                                );
-
-                                // Creation of height slice
-                                self.p_plot.addDataset((cov_id+'_sliceZ'), rasdata[zSelection], imgX, imgY);
-                                self.p_plot.setDomain(range);
-                                self.p_plot.setNoDataValue(Number.MIN_VALUE);
-                                self.p_plot.setClamp(clamp[0],clamp[1]);
-                                this.p_plot.setColorScale(colorscale);
-                                self.p_plot.renderDataset((cov_id+'_sliceZ'));
-
-                                var heightZ = 0;
-
-                                if (zSelection<=heights.length){
-                                    heightZ = heights[zSelection]*ELEVATION_EXAGERATION;
-                                }
-
-                                var zMaterial = new Cesium.Material.fromType('Image', {
-                                    image : self.p_plot.canvas.toDataURL(),
-                                    color: new Cesium.Color(1, 1, 1, alpha)
-                                })
-
-                                var zSliceAppeareance = new Cesium.MaterialAppearance({
-                                    translucent : true,
-                                    flat: true,
-                                    material : zMaterial
-                                  })
-
-                                self.createAppereancePrimitive(zSliceAppeareance, bbox, (cov_id+'_sliceZ'), cur_coll, alpha, heightZ);
-
-                                var zLabel = $("<label>").attr('for', 'zSelectionRange');
-                                zLabel.text((height).toFixed(2)+' Height');
-                                $('#volumecontrols').append('<input type="range" id="zSelectionRange">');
-                                $('#volumecontrols').append(zLabel);
-                                $("#zSelectionRange").addClass("volumeSlider");
-                                $("#zSelectionRange").attr("max", imgZ-1);
-                                $("#zSelectionRange").attr("min", 0);
-                                $("#zSelectionRange").attr("value", zSelection);
-                                $("#zSelectionRange").attr("step", 1);
-
-                                $('#volumecontrols').append('<input type="checkbox" id="showZSlice" class="sliceCheckbox" checked/>');
-                                $("#showZSlice").on("input change", {
-                                    cur_coll: cur_coll,
-                                    id: (cov_id+"_"+'sliceZ')
-                                }, function(evt){
-                                    var d = evt.data;
-                                    for (var i = d.cur_coll._primitives.length - 1; i >= 0; i--) {
-                                        if(d.cur_coll._primitives[i].cov_id === d.id){
-                                            d.cur_coll.get(i).show = $("#showZSlice").is(':checked');
-                                        }
-                                    }
-                                });
-
-                                $("#zSelectionRange").on("input change", 
-                                    {
-                                        id: (cov_id+'_sliceZ'),
-                                        heights: heights,
-                                        cur_coll: cur_coll,
-                                        plot: self.p_plot,
-                                        imgX: imgX,
-                                        imgY: imgY,
-                                        imgZ: imgZ,
-                                        rasdata: rasdata,
-                                        height: height,
-                                        alpha: alpha,
-                                        bbox: bbox,
-                                        imageAppeareance: zSliceAppeareance,
-                                        label: zLabel
-                                    },
-                                    function(evt){
-                                        var d = evt.data;
-
-                                        var zSelection = Number($(this).val());
-                                        
-                                        for (var i = d.cur_coll._primitives.length - 1; i >= 0; i--) {
-                                            if(d.cur_coll._primitives[i].cov_id === d.id){
-                                                d.cur_coll.remove(d.cur_coll.get(i));
-                                            }
-                                        }
-                                        
-                                        d.plot.removeDataset(d.id);
-                                        d.plot.addDataset(d.id, rasdata[zSelection], d.imgX, d.imgY);
-                                        d.plot.renderDataset(d.id);
-                                        d.imageAppeareance.material._textures.image.copyFrom(d.plot.canvas);
-
-                                        var heightZ = 0;
-
-                                        if (zSelection<=heights.length){
-                                            heightZ = heights[zSelection]*ELEVATION_EXAGERATION;
-                                        }
-
-                                        d.label.text((heightZ).toFixed(2)+' Height');
-
-                                        self.createAppereancePrimitive(zSliceAppeareance, bbox, (cov_id+'_sliceZ'), cur_coll, alpha, heightZ);
-
-                                    }
-                                );
-
-                            }
+                            this.onVolumeDataReceived(
+                                meta, cov_id, rasdata, img, prim, heights
+                            );
                         }
 
                     }else{
-                        // Not a volume so create just one primitive
-                        self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
-                        self.p_plot.setDomain(range);
-                        self.p_plot.setNoDataValue(Number.MIN_VALUE);
-                        self.p_plot.setClamp(clamp[0],clamp[1]);
+                        // This is a single coverage so we need to either create 
+                        // imagery layer or update current one if already existing
+                        this.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
+                        this.p_plot.setDomain(range);
+                        this.p_plot.setNoDataValue(Number.MIN_VALUE);
+                        this.p_plot.setClamp(clamp[0],clamp[1]);
                         this.p_plot.setColorScale(colorscale);
-                        self.p_plot.renderDataset(cov_id);
-                        if(this.imgProv){
-                            this.imgProv._imageryCache["[0,0,0]"].texture.copyFrom(self.p_plot.canvas);
-                        }else{
-                            self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, cov_id, cur_coll, alpha);
-                        }
-                        /*if (prim){
-                            prim["cov_id"] = cov_id;
-                            prim.appearance.material._textures.image.copyFrom(self.p_plot.canvas);
-                        }else{
-                            self.createPrimitive(self.p_plot.canvas.toDataURL(), bbox, cov_id, cur_coll, alpha);
-                        }*/
+                        this.p_plot.renderDataset(cov_id);
 
+                        // If imagery layer provided update texture if not 
+                        // create new imagery layer
+                        if(imageryLayer){
+                            imageryLayer._imageryCache["[0,0,0]"].texture.copyFrom(this.p_plot.canvas);
+                        }else{
+                            // TODO consider in which index we should ingest layer
+                            var imgProv = this.createSingleTileImageryProvider(
+                                this.p_plot.canvas.toDataURL(), bbox
+                            );
+                            imageryLayer = this.map.scene.imageryLayers.addImageryProvider(imgProv);
+
+                            // save reference for current coverage and collection
+                            var coveragesCollection = product.get('coveragesCollection');
+                            coveragesCollection[cov_id] = {
+                                imageryLayer: imageryLayer
+                            };
+                            product.set('coveragesCollection', coveragesCollection);
+                        }
                     }
                 }
 
-                self.currentDownload++;
-                if(self.currentDownload == self.downloadTotal){
+                this.currentDownload++;
+                if(this.currentDownload == this.downloadTotal){
                     $('#loadingcontrols').empty();
                     $('#loadingcontrols').hide();
                 }
 
-                $('#progressindicator').text(self.currentDownload +' / '+ self.downloadTotal);
-                $('#progressindicator').css('width', Math.round(((self.currentDownload-1)/self.downloadTotal)*100)+'%');
+                $('#progressindicator').text(this.currentDownload +' / '+ this.downloadTotal);
+                $('#progressindicator').css('width', Math.round(((this.currentDownload-1)/this.downloadTotal)*100)+'%');
 
             },
 
@@ -2523,57 +2378,7 @@ define(['backbone.marionette',
                             convArray.push(Array.from(rasdata[i]));
                         }
 
-                        if(nullValue){
-                            for (var rd = 0; rd < convArray.length; rd++) {
-                                for (var ar = 0; ar < convArray[rd].length; ar++) {
-                                    for (var nv = 0; nv < nullValue.length; nv++) {
-                                        if(convArray[rd][ar] === nullValue[nv]){
-                                            convArray[rd][ar] = Number.MIN_VALUE;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        // Check if we need to transform data
-                        
-                        if(meta && meta.hasOwnProperty('SCALE') && meta.hasOwnProperty('OFFSET') 
-                            /*&& img.fileDirectory.hasOwnProperty('GDAL_NODATA')*/){
-                            //var nodata = Number(img.fileDirectory.GDAL_NODATA.slice(0,-1));
-                            var scale = Number(meta.SCALE);
-                            var offset = Number(meta.OFFSET);
-
-                            var unitconv = 1.0;
-                            var conversionCollections = [];
-                            if(conversionCollections.indexOf(product.get('download').id)!==-1){
-                                unitconv = 1e9;
-                            }
-
-                            if(!isNaN(offset) && !isNaN(scale)){
-
-                                for (var i = 0; i < rasdata.length; i++) {
-                                    for (var rd = 0; rd < rasdata[i].length; rd++) {
-                                        convArray[i][rd] = (offset + (rasdata[i][rd] * scale)) * unitconv;
-                                    }
-                                }
-                            }
-                        } else {
-
-                            var conversionCollections = [
-                                'EU_CAMS_SURFACE_SO2_G_4326_01',
-                                'EU_CAMS_SURFACE_NO2_G_4326_01',
-                                'EU_CAMS_SURFACE_O3_G_4326_01'
-                            ];
-                            if(conversionCollections.indexOf(product.get('download').id)!==-1){
-                                var unitconv = 1e9;
-                                for (var i = 0; i < rasdata.length; i++) {
-                                    for (var rd = 0; rd < rasdata[i].length; rd++) {
-                                        convArray[i][rd] = rasdata[i][rd] * unitconv;
-                                    }
-                                }
-                            }
-                        }
-                        rasdata = convArray;
+                        rasdata = this.applyDataTransform(meta, nullValue, rasdata, product);
 
                         if (img.getWidth()==1 && img.getHeight()==1) {
                             // This is a 1D "column"
@@ -2582,14 +2387,6 @@ define(['backbone.marionette',
                             if(meta && meta.hasOwnProperty('VERTICAL_LEVELS')){
                                 heights = meta.VERTICAL_LEVELS.split(',').map(Number);
                             }
-                            // TODO: Super dirty hack because data is weird and they dont want it to be visualized like this
-                            if(heights[heights.length-1]>99999){
-                                heights.pop();
-                                rasdata.pop();
-                            }
-
-                            //var line = [];
-                            //console.log(rasdata.length);
                             var cov_item = (_.find(self.currentCoverages, function(item) {
                                 return item.identifier == cov_id; 
                             }));
@@ -2606,7 +2403,6 @@ define(['backbone.marionette',
                                     height: height
                                 });
                             }
-                            //self.timeseries.push({id:cov_id, data:line});
                         }else{
                             // 2D coverage for animation
                             if(typeof rasdata !== 'undefined' && rasdata.length>0){
@@ -2641,707 +2437,277 @@ define(['backbone.marionette',
                 });
             },
 
-            checkCoverages: function(product,visible){
+            getProductStyle: function(product){
+                var style = {};
+                style.color = product.get("color");
+                style.color = style.color.substring(1, style.color.length);
+                var parameters = product.get("parameters");
+                for(var key in parameters){
+                    if(parameters[key].selected){
+                        band = key;
+                    }
+                }
+                style.colorscale = parameters[band].colorscale;
+                style.clamp_min = defaultFor(parameters[band].clamp_min, true);
+                style.clamp_max = defaultFor(parameters[band].clamp_max, true);
+                style.outlines = product.get("outlines");
+                style.range = parameters[band].range;
+                style.alpha = product.get("opacity");
 
-                // Remove possible timetick and play button
-                Communicator.mediator.trigger("date:tick:select", null);
-                $('#playercontrols').hide();
-                $('#timestamp').hide();
+                return style;
+            },
 
-                if(this.renderingActive){
+            retrieveGroundMeasurements: function(product){
 
+                var that = this;
+                var request = (
+                    'http://top-platform.eu/portal/'+
+                    product.get('download').id+'/'+
+                    getISODateTimeString(this.begin_time)+'/'+
+                    getISODateTimeString(this.end_time)
+                );
 
-                    if(!_.has(this.coverages_collections, product.get("download").id)){
-                        this.coverages_collections[product.get("download").id] = new Cesium.PrimitiveCollection();
-                        this.map.scene.primitives.add(this.coverages_collections[product.get("download").id]);
+                $.ajax({
+                    type:'GET',
+                    dataType: 'JSON',
+                    url: request
+                })
+                .done(function( jsondata ) {
+
+                    that.stations = {};
+                    for (var i = 0; i < jsondata.length; i++) {
+                        if(that.stations.hasOwnProperty(jsondata[i].name)){
+                            that.stations[jsondata[i].name].values.push(
+                                jsondata[i].value
+                            );
+                            that.stations[jsondata[i].name].observation_time_start.push(
+                                new Date(jsondata[i].observation_time_start)
+                            );
+                            that.stations[jsondata[i].name].observation_time_end.push(
+                                new Date(jsondata[i].observation_time_end)
+                            );
+                        } else {
+                            that.stations[jsondata[i].name] = {
+                                id: jsondata[i].name,
+                                values: [jsondata[i].value],
+                                latitude: jsondata[i].latitude,
+                                height: jsondata[i].height,
+                                longitude: jsondata[i].longitude,
+                                observation_time_start: [
+                                    new Date(jsondata[i].observation_time_start)
+                                ],
+                                observation_time_end: [
+                                    new Date(jsondata[i].observation_time_end)
+                                ],
+                            }
+                        }
                     }
 
-                    var cur_coll = this.coverages_collections[product.get("views")[0].id];
+                    cur_coll.removeAll();
 
-                    if(visible){
+                    for (var stID in that.stations){
+                        var cS = that.stations[stID];
+                        var pos = new Cesium.Cartesian3.fromDegrees(cS.longitude, cS.latitude);
+                        var bil_coll = cur_coll.add(new Cesium.BillboardCollection());
+                        var icon = pinimage;
+
+                        if(that.selectedEntityId == cS.id){
+                            icon = pinimage_selected;
+                        }
+
+                        var b = bil_coll.add({
+                            id: cS.id,
+                            position : pos,
+                            verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                            image: icon,
+                            scale : 0.5,
+                        });
+
+                        that.primitiveMapping[cS.id] = b;
+                        if(that.selectedEntityId == cS.id){
+                            that.pickEntity({primitive:b, id:cS.id}, cS.latitude, cS.longitude);
+                        }
 
                         cur_coll.show = true;
+                    }
+                });
+            },
 
-                        var color = product.get("color");
-                        color = color.substring(1, color.length);
-                        var parameters = product.get("parameters");
-                        var keys = _.keys(parameters);
-                        var band;
-                        _.each(keys, function(key){
-                            if(parameters[key].selected)
-                                band = key;
+            createCoverageRequest: function(b, entry, coverages){
+
+                var bboxCont = entry['http://www.georss.org/georss:where']['gml:Envelope'];
+                var lowCorn = bboxCont['gml:lowerCorner'].split(' ').map(parseFloat);
+                var upperCorn = bboxCont['gml:upperCorner'].split(' ').map(parseFloat);
+                var id = entry['atom:id'];
+                var summ = entry['atom:summary'];
+                var hasEndTime = false;
+                var wcsEndpoint = entry['atom:source'];
+
+                if(b!=null){
+                wcsEndpoint = wcsEndpoint +
+                    '&subset=Lat('+b[0]+','+b[2]+')'+
+                    '&subset=Long('+b[1]+','+b[3]+')';
+                    // Intersect product bbox and bbox selection
+                    if(lowCorn[0]<b[0]){
+                        lowCorn[0] = b[0];
+                    }
+                    if(lowCorn[1]<b[1]){
+                        lowCorn[1] = b[1];
+                    }
+                    if(upperCorn[0]>b[2]){
+                        upperCorn[0] = b[2];
+                    }
+                    if(upperCorn[1]>b[3]){
+                        upperCorn[1] = b[3];
+                    }
+                }
+
+                // Apply scaling base on number of requested coverages
+                var scaleFactor = 1.0;
+
+                if(wcsEndpoint.indexOf('WRFCHEM')!==-1){
+                    scaleFactor*=0.7;
+                }
+                if(wcsEndpoint.indexOf('S5P_LEVEL2_QA_AER_AI_4326_0035')!==-1){
+                    scaleFactor*=0.05;
+                }
+
+                if(wcsEndpoint.indexOf('S5P_OFFL_L2__CH4')!==-1){
+                    scaleFactor=0.2;
+                }
+
+                wcsEndpoint += '&scale='+scaleFactor;
+
+                wcsEndpoint += '&compression=false';
+                wcsEndpoint += '&filter=false';
+
+
+                if(summ.indexOf('<strong>End</strong>') !== -1){
+                    hasEndTime = true;
+                }
+                // Replace all tags of summary with white spaces and then
+                // split by whitespaces, leaving is necessary information
+                var spl = summ.replace(/ *\<[^>]*\> */g, " ").split(/[\s]+/);
+                var start = new Date(spl[7]);
+                var end = start;
+                if(hasEndTime){
+                    end = new Date(spl[9]);
+                }
+
+                // TODO: This should not be part of the dataset received so 
+                // we should remove this and the data should be fixed
+                if(id.indexOf('QA_VALUE') === -1){
+                    coverages.data.push({
+                        identifier: id,
+                        wcsEndpoint: wcsEndpoint,
+                        bbox: [lowCorn[1], lowCorn[0], upperCorn[1], upperCorn[0]],
+                        starttime: start
+                    });
+                }
+            },
+
+            loadingOfCoveragesComplete: function(coverages, stacked){
+
+                var self = this;
+                if(this.timeseries.length >0){
+                    this.timeseries = _.filter(this.timeseries, function(obj){ return obj.height != 9.99e+29; });
+
+                    for (var i = this.timeseries.length - 1; i >= 0; i--) {
+                        this.timeseries[i].starttime = new Date(this.timeseries[i].starttime);
+                        this.timeseries[i].endtime = new Date(this.timeseries[i].endtime);
+                    }
+                    $("#pickingresults").show();
+                    // TODO: Load graphly plot
+                    this.timeseries = [];
+
+                }else{
+
+                    if (stacked){
+                        var to_play = coverages.data;
+                        // remove coverages that were not loaded correctly
+                        to_play = to_play.filter(function(cov){
+                            return this.stackedDataset[collId].indexOf(cov.identifier) !== -1;
                         });
-                        var colorscale = parameters[band].colorscale;
-                        var clamp_min = defaultFor(parameters[band].clamp_min, false);
-                        var clamp_max = defaultFor(parameters[band].clamp_max, false);
-                        var outlines = product.get("outlines");
-                        var range = parameters[band].range;
-                        var alpha = product.get("opacity");
-                        var url = product.get("views")[0].urls[0];
-                        var collection = product.get("views")[0].id;
-                        var that = this;
-                        var self = this;
-                        self.current_product = product;
-
-                        this.p_plot.setColorScale(colorscale);
+                        var prim_to_render = cur_coll._primitives[0];
+                        var play_length = to_play.length;
+                        var play_index = play_length-1;
+                        var fps = 15;
 
 
-                        if(product.get("ground_measurements")){
+                        this.primitiveToRender[collection] = cur_coll._primitives[0];
+                        this.dataToRender[collection] = coverages.data;
 
-                            var request = (
-                                'http://top-platform.eu/portal/'+
-                                product.get('download').id+'/'+
-                                getISODateTimeString(this.begin_time)+'/'+
-                                getISODateTimeString(this.end_time)
-                            );
+                        $('#playercontrols').show();
+                        
+                        // Remove handlers
+                        $("#play-button").off();
 
-                            $.ajax({
-                                type:'GET',
-                                dataType: 'JSON',
-                                url: request
-                            })
-                            .done(function( jsondata ) {
-
-                                that.stations = {};
-                                for (var i = 0; i < jsondata.length; i++) {
-                                    if(that.stations.hasOwnProperty(jsondata[i].name)){
-                                        that.stations[jsondata[i].name].values.push(
-                                            jsondata[i].value
-                                        );
-                                        that.stations[jsondata[i].name].observation_time_start.push(
-                                            new Date(jsondata[i].observation_time_start)
-                                        );
-                                        that.stations[jsondata[i].name].observation_time_end.push(
-                                            new Date(jsondata[i].observation_time_end)
-                                        );
-                                    } else {
-                                        that.stations[jsondata[i].name] = {
-                                            id: jsondata[i].name,
-                                            values: [jsondata[i].value],
-                                            latitude: jsondata[i].latitude,
-                                            height: jsondata[i].height,
-                                            longitude: jsondata[i].longitude,
-                                            observation_time_start: [
-                                                new Date(jsondata[i].observation_time_start)
-                                            ],
-                                            observation_time_end: [
-                                                new Date(jsondata[i].observation_time_end)
-                                            ],
-                                        }
-                                    }
-                                }
-
-                                cur_coll.removeAll();
-
-                                for (var stID in that.stations){
-                                    var cS = that.stations[stID];
-                                    var pos = new Cesium.Cartesian3.fromDegrees(cS.longitude, cS.latitude);
-                                    var bil_coll = cur_coll.add(new Cesium.BillboardCollection());
-                                    var icon = pinimage;
-
-                                    if(that.selectedEntityId == cS.id){
-                                        icon = pinimage_selected;
-                                    }
-
-                                    var b = bil_coll.add({
-                                        id: cS.id,
-                                        position : pos,
-                                        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-                                        image: icon,
-                                        scale : 0.5,
-                                    });
-
-                                    that.primitiveMapping[cS.id] = b;
-                                    if(that.selectedEntityId == cS.id){
-                                        that.pickEntity({primitive:b, id:cS.id}, cS.latitude, cS.longitude);
-                                    }
-
-                                    cur_coll.show = true;
-                                }
-
-
-                                /*var data = xmldata.getElementsByTagName("data");
-                                var id = xmldata.getElementsByTagName("siteName")[0].textContent;
-                                var latitude = Number(xmldata.getElementsByTagName("siteLatitude")[0].textContent);
-                                var longitude = Number(xmldata.getElementsByTagName("siteLongitude")[0].textContent);
-                                
-                                var field = xmldata.getElementsByTagName("field")[0].textContent.replace(/ /g,"_");
-                                //console.log(id, field);
-                                for (var i = data.length - 1; i >= 0; i--) {
-                                    //console.log(data[i].getElementsByTagName("timeStart")[0].textContent);
-                                    //console.log(data[i].getElementsByTagName("value")[0].textContent);
+                        $("#play-button").on('click', function () {
+                                fps = 15;
+                                if( $("#fast-play-button").find('i').hasClass("fa-pause") ){
                                     
-                                    var obj = {};
-                                    obj['id'] = id;
-                                    obj[field] = Number(data[i].getElementsByTagName("value")[0].textContent);
-                                    obj['timestamp'] = new Date(data[i].getElementsByTagName("timeStart")[0].textContent);
-                                    obj['field'] = field;
-                                    self.special1dData.push(obj);
-                                }
-
-                                var pos = new Cesium.Cartesian3.fromDegrees(longitude, latitude);
-                                var bil_coll = cur_coll.add(new Cesium.BillboardCollection());
-                                var icon = pinimage;
-                                if(self.selectedEntityId == id){
-                                    icon = pinimage_selected;
-                                }
-                                var b = bil_coll.add({
-                                    id: id,
-                                    position : pos,
-                                    verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-                                    image: icon
-                                });
-                                self.primitiveMapping[id] = b;
-                                if(self.selectedEntityId == id){
-                                    self.pickEntity({primitive:b, id:id}, latitude, longitude);
-                                }
-                                cur_coll.show = true;*/
-
-                            });
-
-                            // Stop here don't need to execute the rest
-                            return;
-                        }
-
-
-                        var request = 
-                            PRODUCT_URL+'pycsw/pycsw/csw.py?mode=opensearch'+
-                            '&service=CSW&version=2.0.2&request=GetRecords&elementsetname=brief'+
-                            '&typenames=csw:Record&resulttype=results'+
-                            '&time='+getISODateTimeString(this.begin_time)+'/'+getISODateTimeString(this.end_time)+
-                            '&q='+collection+
-                            '&maxrecords=100'+
-                            '&outputFormat=application/json';
-
-                        var identifier = collection;
-                        var b = null;
-                        if(this.bboxsel !== null){
-                            b = this.bboxsel;
-                            request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
-                        } else {
-                            // Always apply global bbox to make sure no weird 
-                              // coverages are retuned that go over the pole 
-                              // and things like that
-                            b = [-90, -180, 90, 180];
-                        }
-                        request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
-
-                        $.get(request)
-                          .success(function(resp) {
-
-                            var coverages = {
-                                data: []
-                            };
-
-                            if(resp.hasOwnProperty('atom:feed') && resp['atom:feed'].hasOwnProperty('atom:entry')){
-
-                                var entries = resp['atom:feed']['atom:entry'];
-                                if(!Array.isArray(entries)){
-                                    entries = [entries];
-                                }
-
-                                if(typeof entries !== 'undefined'){
-
-                                    for( var ee=0; ee<entries.length; ee++ ){
-                                      var bboxCont = entries[ee]['http://www.georss.org/georss:where']['gml:Envelope'];
-
-
-                                      var lowCorn = bboxCont['gml:lowerCorner'].split(' ').map(parseFloat);
-                                      var upperCorn = bboxCont['gml:upperCorner'].split(' ').map(parseFloat);
-                                      var id = entries[ee]['atom:id'];
-                                      var summ = entries[ee]['atom:summary'];
-                                      var hasEndTime = false;
-                                      var wcsEndpoint = entries[ee]['atom:source'];
-
-                                      /*if(wcsEndpoint.indexOf('CAMS')!==-1){
-                                        wcsEndpoint = wcsEndpoint.replace('CAMS', 'vr_CAMS');
-                                      }*/
-                                      
-                                      if(b!=null){
-                                        wcsEndpoint = wcsEndpoint +
-                                            '&subset=Lat('+b[0]+','+b[2]+')'+
-                                            '&subset=Long('+b[1]+','+b[3]+')';
-                                          // Intersect product bbox and bbox selection
-                                          if(lowCorn[0]<b[0]){
-                                            lowCorn[0] = b[0];
-                                          }
-                                          if(lowCorn[1]<b[1]){
-                                            lowCorn[1] = b[1];
-                                          }
-                                          if(upperCorn[0]>b[2]){
-                                            upperCorn[0] = b[2];
-                                          }
-                                          if(upperCorn[1]>b[3]){
-                                            upperCorn[1] = b[3];
-                                          }
-                                      }
-
-                                      // Apply scaling base on number of requested coverages
-                                      var scaleFactor = 1.0;
-
-                                      //scaleFactor -= (entries.length/100)/2;
-                                      //scaleFactor = 0.6;
-
-                                      if(wcsEndpoint.indexOf('WRFCHEM')!==-1){
-                                        scaleFactor*=0.7;
-                                      }
-                                      if(wcsEndpoint.indexOf('S5P_LEVEL2_QA_AER_AI_4326_0035')!==-1){
-                                        scaleFactor*=0.05;
-                                      }
-
-                                      if(wcsEndpoint.indexOf('S5P_OFFL_L2__CH4')!==-1){
-                                        scaleFactor=0.2;
-                                      }
-
-                                      
-
-                                      wcsEndpoint += '&scale='+scaleFactor;
-
-
-                                      
-                                      wcsEndpoint += '&compression=false';
-                                      wcsEndpoint += '&filter=false';
-                                      
-
-                                      if(summ.indexOf('<strong>End</strong>') !== -1){
-                                        hasEndTime = true;
-                                      }
-                                      // Replace all tags of summary with white spaces and then
-                                      // split by whitespaces, leaving is necessary information
-                                      var spl = summ.replace(/ *\<[^>]*\> */g, " ").split(/[\s]+/);
-                                      var start = new Date(spl[7]);
-                                      var end = start;
-                                      if(hasEndTime){
-                                        end = new Date(spl[9]);
-                                      }
-                                      
-                                      //var id = spl[2];
-                                      // TODO: Coverage id usually found here, but not always? 
-
-                                      if(identifier.indexOf('QA_VALUE') !== -1 || id.indexOf('QA_VALUE') === -1){
-                                          coverages.data.push({
-                                                    identifier: id,
-                                                    wcsEndpoint: wcsEndpoint,
-                                                    bbox: [lowCorn[1], lowCorn[0], upperCorn[1], upperCorn[0]],
-                                                    starttime: start
-                                                }
-                                          );
-                                      }
-
-                                    }
-                                }
-                            }
-
-
-
-                            // here we need to remove all "older" coverages
-                            if(self.currentCoverages.hasOwnProperty(identifier)){
-                                for (var cc=0; cc<self.currentCoverages[identifier].length; cc++){
-                                    // Iterate current set to see if available
-                                    var stillActive = false;
-                                    for (var cd = 0; cd < coverages.data.length; cd++) {
-                                        if(self.currentCoverages[identifier][cc].identifier === coverages.data[cd].identifier){
-                                            stillActive = true;
-                                        }
-                                    }
-                                    if(!stillActive){
-                                        // check if available if yes remove coverage
-                                        if(self.p_plot.datasetCollection.hasOwnProperty(self.currentCoverages[identifier][cc].identifier)){
-                                            self.p_plot.removeDataset(self.currentCoverages[identifier][cc].identifier);
-                                        }
-                                    }
-                                }
-                            }
-
-                            // clean stacked dataset
-                            if(self.stackedDataset.hasOwnProperty(identifier)){
-                                
-                                for (var i = self.stackedDataset[identifier].length - 1; i >= 0; i--) {
-
-                                    // Iterate current set to see if available
-                                    var stillActive = false;
-                                    for (var cd = 0; cd < coverages.data.length; cd++) {
-                                        if(self.stackedDataset[identifier][i] === coverages.data[cd].identifier){
-                                            stillActive = true;
-                                        }
-                                    }
-                                    if(!stillActive){
-                                        // check if available if yes remove coverage
-                                        self.stackedDataset[identifier].splice(i,1);
-                                    }
-                                }
-                            }
-
-                            self.currentCoverages[identifier] = coverages.data;
-
-
-                            function identicalBbox(array) {
-                                if (array.length == 1 || array.length == 0)
-                                    return false;
-                                for(var i = 0; i < array.length - 1; i++) {
-                                    if(array[i].bbox[0] != array[i+1].bbox[0] || 
-                                        array[i].bbox[1] != array[i+1].bbox[1] ||
-                                        array[i].bbox[2] != array[i+1].bbox[2] ||
-                                        array[i].bbox[3] != array[i+1].bbox[3]) {
-                                        return false;
-                                    }
-                                }
-                                return true;
-                            }
-
-                            // Now we have a list of all currently selected coverages
-                            // We check if the coverages are stacked (one over the other)
-                            // i.e. same bounding box
-                            var stacked = identicalBbox(coverages.data);
-                            var stacked_prim = null;
-
-
-                            if(!stacked){
-                                // If not stacked there is a primitive per coverage, so we can
-                                // remove coverage primitives from collection which are no longer in the list
-                                var prim_to_remove = [];
-
-                                for (var p=0; p<cur_coll._primitives.length; p++){
-                                    if(
-                                        !_.find(coverages.data, function(c){
-                                            return c.identifier == cur_coll._primitives[p].cov_id;
-                                        })
-                                    ){
-                                        prim_to_remove.push(cur_coll._primitives[p]);
-                                    }
-                                };
-
-                                for (var i = prim_to_remove.length - 1; i >= 0; i--) {
-                                    if(prim_to_remove[i].cov_id && self.p_plot.datasetCollection.hasOwnProperty(prim_to_remove[i].cov_id)){
-                                        self.p_plot.removeDataset(prim_to_remove[i].cov_id);
-                                    }
-                                    cur_coll.remove(prim_to_remove[i]);
-                                };
-
-                            }else{
-                                // If stacked coverages there is only one primitive per collection
-                                // and the texture data saved in the plot library so we check there for availability
-                                // to see if we have to free the texture
-                                // TODO: This is not working as expected, things are being deleted when they should not
-                                for(var coll in self.stackedDataset){
-                                    for (var i = self.stackedDataset[coll].length - 1; i >= 0; i--) {
-                                        if(
-                                            !_.find(coverages.data, function(c){
-                                                return c.identifier == self.stackedDataset[coll][i];
-                                            })
-                                        ){
-                                            if(self.p_plot.datasetAvailable(self.stackedDataset[coll][i])) {
-                                                self.p_plot.removeDataset(self.stackedDataset[coll][i]);
-                                                self.stackedDataset[coll].splice(i,1);
-                                                this.global_product_height-=250
-                                            }
-                                        }
-
-                                    };
-
-                                    for (var p=0; p<cur_coll._primitives.length; p++){
-                                        // We also check to see if there is an already created primitive for
-                                        // the stack animation
-                                        if(
-                                            !_.find(self.stackedDataset[coll], function(c){
-                                                return c == self.stackedDataset[coll][i];
-                                            })
-                                        ){
-                                            stacked_prim = cur_coll._primitives[p];
-                                        }
-                                    };
-                                }
-                            }
-
-                            var deferreds = [];
-                            self.currentDownload = 0;
-
-                            // Let us sort them by start date
-                            coverages.data = _.sortBy(coverages.data, function(c){ return Date.parse(c.starttime); });
-
-                            for (var i = coverages.data.length - 1; i >= 0; i--) {
-
-                                var bbox = coverages.data[i].bbox;
-
-                                var request = PRODUCT_URL+coverages.data[i].wcsEndpoint;
-                                //bbox = bbox.substring(1, bbox.length - 1).split(",").map(parseFloat);
-                                //var request = url + "?service=WCS&request=GetCoverage&version=2.0.1&coverageid="+coverages.data[i].identifier;
-
-                                //var request = url.substring(0,url.length-11) + "/coverage/"+coverages.data[i].identifier+".tif";
-                                //var request = url.substring(0,url.length-11) + "/davprc/coverage/"+coverages.data[i].identifier;
-                                //console.log(request);
-
-
-                                ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-                                // TODO: Remove
-                                // Testing overwrite
-                                /*
-
-                                if (collection == "Cloudsat"){
-                                    request = "http://demo.v-manip.eox.at/Cloudsat_Reflectivity_2013137113720_0005.tif";
-                                }
-
-                                */
-                                ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-                            
-                                
-
-                                // Check if coverage is already in collection, if not add them
-                                if(
-                                    !_.find(cur_coll._primitives, function(p){
-                                        return p.cov_id == coverages.data[i].identifier;
-                                    })
-                                ){
-
-                                    var bbox = bbox;
-                                    var cov_id = coverages.data[i].identifier;
-                                    var plot = self.p_plot;
-                                    var collId = product.get('download').id;
-
-                                    if(!stacked){
-                                        // If not stacked just request and create primitves for all coverages
-                                        // Check if selection active
-                                        if(self.bboxsel){
-                                            if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
-                                                deferreds.push(self.loadCoverage(request, bbox, cov_id, cur_coll, product, null));
-                                            }
-                                        }else{
-                                            deferreds.push(self.loadCoverage(request, bbox, cov_id, cur_coll, product, null));
-                                        }
-                                    }else if(stacked && i == coverages.data.length-1){
-                                        // If the collection is stacked and this is the last element (in time)
-                                        // of the list it means the primitive is not available already and needs to be created
-                                        // or we have found an already created primite and saved it to stacked primitive
-                                        if(self.p_plot.datasetAvailable(cov_id)) {
-                                            self.p_plot.removeDataset(cov_id);
-                                        }
-                                        // Check if selection active
-
-                                        if(self.bboxsel){
-                                            if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
-                                                deferreds.push(self.loadCoverage(request, bbox, cov_id, cur_coll, product, stacked_prim));
-                                                // We need to add it to the stacked list as it will be compared to to see if part of a stack collection
-                                                if(self.stackedDataset.hasOwnProperty(collId)){
-                                                    self.stackedDataset[collId].push(cov_id);
-                                                } else {
-                                                    self.stackedDataset[collId] = [cov_id];
-                                                }
-                                            }
-                                        }else{
-                                            deferreds.push(self.loadCoverage(request, bbox, cov_id, cur_coll, product, stacked_prim));
-                                            // We need to add it to the stacked list as it will be compared to to see if part of a stack collection
-                                            if(self.stackedDataset.hasOwnProperty(collId)){
-                                                self.stackedDataset[collId].push(cov_id);
-                                            } else {
-                                                self.stackedDataset[collId] = [cov_id];
-                                            }
-                                        }
-                                    }else{
-                                        // We only request the data if it is not already available
-                                        if(!self.p_plot.datasetAvailable(cov_id)) {
-                                            // It is stacked but this is any other coverage where for now we only need the data
-                                            // but do not actually visualize it, so we do not need to create a primitive
-                                            if(self.bboxsel){
-                                                if(doBoundingBoxesIntersect(self.bboxsel, bbox)){
-                                                    deferreds.push(self.addCoverage(request, cov_id, collId, product));
-                                                }
-                                            }else{
-                                                deferreds.push(self.addCoverage(request, cov_id, collId, product));
-                                            }
-                                            if(self.stackedDataset.hasOwnProperty(collId)){
-                                                self.stackedDataset[collId].push(cov_id);
-                                            } else {
-                                                self.stackedDataset[collId] = [cov_id];
-                                            }
-                                        }
-                                    }
-                                }
-
-                            };
-
-                            self.downloadTotal = deferreds.length;
-
-                            $.when.apply($, deferreds)
-                                .then(function(){
-
-                                }).fail(function(resp){
-                                    // Probably want to catch failure
-                                    $("#error-messages").append(
-                                          '<div class="alert alert-warning alert-info">'+
-                                          '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>'+
-                                          '<Strong>Information:</Strong> Some of the requested coverages have no data over the selected area.'+
-                                        '</div>'
-                                    );
-                                }).always(function(){
-                                    if(self.timeseries.length >0){
-
-                                        self.timeseries = _.filter(self.timeseries, function(obj){ return obj.height != 9.99e+29; });
-
-                                        for (var i = self.timeseries.length - 1; i >= 0; i--) {
-                                            self.timeseries[i].starttime = new Date(self.timeseries[i].starttime);
-                                            self.timeseries[i].endtime = new Date(self.timeseries[i].endtime);
-                                        }
-
-                                        $("#pickingresults").show();
-
-                                        // TODO: Load graphly plot
-
-                                        self.timeseries = [];
-
-                                    }else{
-
-                                        if (stacked){
-                                            var to_play = coverages.data;
-                                            // remove coverages that were not loaded correctly
-                                            to_play = to_play.filter(function(cov){
-                                                return self.stackedDataset[collId].indexOf(cov.identifier) !== -1;
-                                            });
-                                            var prim_to_render = cur_coll._primitives[0];
-                                            var play_length = to_play.length;
-                                            var play_index = play_length-1;
-                                            var fps = 15;
-
-
-                                            self.primitiveToRender[collection] = cur_coll._primitives[0];
-                                            self.dataToRender[collection] = coverages.data;
-
-                                            /*if(play_length == 0){
-                                                return;
-                                            }*/
-
-                                            $('#playercontrols').show();
-                                            
-                                            // Remove handlers
-                                            $("#play-button").off();
-
-                                            $("#play-button").on('click', function () {
-                                                    fps = 15;
-                                                    if( $("#fast-play-button").find('i').hasClass("fa-pause") ){
-                                                        
-                                                        $("#fast-play-button").html('<i class="fa fa-forward"></i>');
-                                                        $("#play-button").html('<i class="fa fa-pause"></i>');
-                                                    }else{
-
-                                                        $("#play-button").html('<i class="fa fa-pause"></i>');
-                                                        // Create a draw loop using requestAnimationFrame. The
-                                                        // tick callback function is called for every animation frame.
-                                                        function tick() {
-                                                            setTimeout(function() {
-                                                                if(self.playback){
-                                                                    Cesium.requestAnimationFrame(tick);
-                                                                    play_index = (play_index+1) % play_length;
-                                                                    // Go trhough all available stacks to be animated
-                                                                    for (var coll in self.dataToRender){
-                                                                        self.p_plot.renderDataset(self.dataToRender[coll][play_index].identifier);
-                                                                        //self.primitiveToRender[coll].appearance.material._textures.image.copyFrom(self.p_plot.canvas);
-                                                                        if(self.imgProv){
-                                                                            self.imgProv._imageryCache["[0,0,0]"].texture.copyFrom(self.p_plot.canvas);
-                                                                        }
-                                                                        self.primitiveToRender[coll].cov_id = self.dataToRender[coll][play_index].identifier;
-                                                                    }
-                                                                    Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
-                                                                    $('#timestamp').show();
-                                                                    $('#timestamp').text(
-                                                                        getISODateTimeString(to_play[play_index].starttime)
-                                                                    );
-                                                                }
-
-                                                            }, 1000 / fps);
-
-                                                        }
-
-                                                        if (!self.playback){
-                                                            self.playback = true;
-                                                            tick();
-                                                        }else{
-                                                            self.playback = false;
-                                                            $("#play-button").html('<i class="fa fa-play"></i>');
-                                                        }
-                                                    }
-
-                                                }
-                                            );
-
-                                            // Remove handlers
-                                            $("#fast-play-button").off();
-
-                                            $("#fast-play-button").on('click', function () {
-                                                    fps = 125;
-                                                    if( $("#play-button").find('i').hasClass("fa-pause") ){
-                                                        
-                                                        $("#play-button").html('<i class="fa fa-play"></i>');
-                                                        $("#fast-play-button").html('<i class="fa fa-pause"></i>');
-                                                    }else{
-
-                                                        $("#fast-play-button").html('<i class="fa fa-pause"></i>');
-                                                        // Create a draw loop using requestAnimationFrame. The
-                                                        // tick callback function is called for every animation frame.
-                                                        function tick() {
-                                                            setTimeout(function() {
-                                                                if(self.playback){
-                                                                    Cesium.requestAnimationFrame(tick);
-                                                                    play_index = (play_index+1) % play_length;
-                                                                    // Go trhough all available stacks to be animated
-                                                                    for (var coll in self.dataToRender){
-                                                                        self.p_plot.renderDataset(self.dataToRender[coll][play_index].identifier);
-                                                                        self.primitiveToRender[coll].appearance.material._textures.image.copyFrom(self.p_plot.canvas);
-                                                                        self.primitiveToRender[coll].cov_id = self.dataToRender[coll][play_index].identifier;
-                                                                    }
-                                                                    Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
-                                                                    $('#timestamp').show();
-                                                                    $('#timestamp').text(
-                                                                        getISODateTimeString(to_play[play_index].starttime)
-                                                                    );
-                                                                }
-
-                                                            }, 1000 / fps);
-
-                                                        }
-                                                        if (!self.playback){
-                                                            self.playback = true;
-                                                            tick();
-                                                        }else{
-                                                            self.playback = false;
-                                                            $("#fast-play-button").html('<i class="fa fa-forward"></i>');
-                                                        }
-                                                    }
-
-                                                    /*if (!self.playback){
-                                                        self.playback = true;
-                                                        tick();
-                                                    }else{
-                                                        self.playback = false;
-                                                        $("#play-button").html('<i class="fa fa-play"></i>');
-                                                    }*/
-
-                                                }
-                                            );
-
-                                            // Setup back button
-                                            $("#step-back-button").off();
-
-                                            $("#step-back-button").on('click', function () {
-                                                play_index = (play_index-1);
-                                                if(play_index<0)
-                                                    play_index = play_length-1;
-                                                play_index = play_index % play_length;
+                                    $("#fast-play-button").html('<i class="fa fa-forward"></i>');
+                                    $("#play-button").html('<i class="fa fa-pause"></i>');
+                                }else{
+
+                                    $("#play-button").html('<i class="fa fa-pause"></i>');
+                                    // Create a draw loop using requestAnimationFrame. The
+                                    // tick callback function is called for every animation frame.
+                                    function tick() {
+                                        setTimeout(function() {
+                                            if(self.playback){
+                                                Cesium.requestAnimationFrame(tick);
+                                                play_index = (play_index+1) % play_length;
                                                 // Go trhough all available stacks to be animated
                                                 for (var coll in self.dataToRender){
                                                     self.p_plot.renderDataset(self.dataToRender[coll][play_index].identifier);
-                                                    self.primitiveToRender[coll].appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+                                                    //self.primitiveToRender[coll].appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+                                                    if(self.imgProv){
+                                                        self.imgProv._imageryCache["[0,0,0]"].texture.copyFrom(self.p_plot.canvas);
+                                                    }
                                                     self.primitiveToRender[coll].cov_id = self.dataToRender[coll][play_index].identifier;
                                                 }
                                                 Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
+                                                $('#timestamp').show();
                                                 $('#timestamp').text(
                                                     getISODateTimeString(to_play[play_index].starttime)
                                                 );
-                                            });
+                                            }
 
-                                            // Setup forward button
-                                            $("#step-forward-button").off();
+                                        }, 1000 / fps);
 
-                                            $("#step-forward-button").on('click', function () {
+                                    }
+
+                                    if (!self.playback){
+                                        self.playback = true;
+                                        tick();
+                                    }else{
+                                        self.playback = false;
+                                        $("#play-button").html('<i class="fa fa-play"></i>');
+                                    }
+                                }
+
+                            }
+                        );
+
+                        // Remove handlers
+                        $("#fast-play-button").off();
+
+                        $("#fast-play-button").on('click', function () {
+                                fps = 125;
+                                if( $("#play-button").find('i').hasClass("fa-pause") ){
+                                    
+                                    $("#play-button").html('<i class="fa fa-play"></i>');
+                                    $("#fast-play-button").html('<i class="fa fa-pause"></i>');
+                                }else{
+
+                                    $("#fast-play-button").html('<i class="fa fa-pause"></i>');
+                                    // Create a draw loop using requestAnimationFrame. The
+                                    // tick callback function is called for every animation frame.
+                                    function tick() {
+                                        setTimeout(function() {
+                                            if(self.playback){
+                                                Cesium.requestAnimationFrame(tick);
                                                 play_index = (play_index+1) % play_length;
                                                 // Go trhough all available stacks to be animated
                                                 for (var coll in self.dataToRender){
@@ -3350,55 +2716,400 @@ define(['backbone.marionette',
                                                     self.primitiveToRender[coll].cov_id = self.dataToRender[coll][play_index].identifier;
                                                 }
                                                 Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
+                                                $('#timestamp').show();
                                                 $('#timestamp').text(
                                                     getISODateTimeString(to_play[play_index].starttime)
                                                 );
-                                            });
+                                            }
 
-                                        }
+                                        }, 1000 / fps);
+
                                     }
-                            });
-
-                            if (deferreds.length > 0){
-                                $('#loadingcontrols').show();
-                                $('#loadingcontrols').empty();
-                                $('#loadingcontrols').append(
-                                    '<div class="progress" style="width:30%; margin: auto; margin-bottom:10px;">'+
-                                      '<div id="progressindicator" class="progress-bar" role="progressbar" aria-valuenow="0"'+
-                                      'aria-valuemin="0" aria-valuemax="100" style="width:0%;">'+
-                                      '</div>'+
-                                    '</div>'
-                                );
-                                $('#loadingcontrols').append('<button type="button" class="btn btn-default" id="cancel_loading" style="pointer-events: all;">Cancel</button>');
-                                
-                                $('#progressindicator').text('0 / '+ deferreds.length);
-                                $("#cancel_loading").click(function () {
-                                    for (var i = deferreds.length - 1; i >= 0; i--) {
-                                        //console.log('Aborting: '+i);
-                                        deferreds[i].abort();
+                                    if (!self.playback){
+                                        self.playback = true;
+                                        tick();
+                                    }else{
+                                        self.playback = false;
+                                        $("#fast-play-button").html('<i class="fa fa-forward"></i>');
                                     }
-                                    $('#loadingcontrols').empty();
-                                    $('#loadingcontrols').hide();
-                                });
+                                }
+
                             }
+                        );
 
-                        }, product); // End of done
+                        // Setup back button
+                        $("#step-back-button").off();
 
-                    }else{
-                        //this.map.scene.primitives.remove(this.coverages_collections[product.get("views")[0].id]);
-                        for (var p=0; p<cur_coll._primitives.length; p++){
-                            var prim = cur_coll._primitives[p];
-                            if(prim.cov_id){
-                                this.p_plot.removeDataset(prim.cov_id);
+                        $("#step-back-button").on('click', function () {
+                            play_index = (play_index-1);
+                            if(play_index<0)
+                                play_index = play_length-1;
+                            play_index = play_index % play_length;
+                            // Go trhough all available stacks to be animated
+                            for (var coll in self.dataToRender){
+                                self.p_plot.renderDataset(self.dataToRender[coll][play_index].identifier);
+                                self.primitiveToRender[coll].appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+                                self.primitiveToRender[coll].cov_id = self.dataToRender[coll][play_index].identifier;
                             }
-                            cur_coll.remove(prim);
-                        };
+                            Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
+                            $('#timestamp').text(
+                                getISODateTimeString(to_play[play_index].starttime)
+                            );
+                        });
 
-                        cur_coll.show = false;
+                        // Setup forward button
+                        $("#step-forward-button").off();
+
+                        $("#step-forward-button").on('click', function () {
+                            play_index = (play_index+1) % play_length;
+                            // Go trhough all available stacks to be animated
+                            for (var coll in self.dataToRender){
+                                self.p_plot.renderDataset(self.dataToRender[coll][play_index].identifier);
+                                self.primitiveToRender[coll].appearance.material._textures.image.copyFrom(self.p_plot.canvas);
+                                self.primitiveToRender[coll].cov_id = self.dataToRender[coll][play_index].identifier;
+                            }
+                            Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
+                            $('#timestamp').text(
+                                getISODateTimeString(to_play[play_index].starttime)
+                            );
+                        });
+                    }
+                }
+            },
+
+            processCoverageList: function(product, b, identifier, resp){
+
+                var coverages = {
+                    data: []
+                };
+                var currCovColl = product.get('coveragesCollection');
+
+                if(resp.hasOwnProperty('atom:feed') && resp['atom:feed'].hasOwnProperty('atom:entry')){
+
+                    var entries = resp['atom:feed']['atom:entry'];
+                    if(!Array.isArray(entries)){
+                        entries = [entries];
                     }
 
+                    if(typeof entries !== 'undefined'){
+
+                        for( var ee=0; ee<entries.length; ee++ ){
+                            this.createCoverageRequest(b, entries[ee], coverages);
+                        }
+                    }
                 }
 
+
+
+                // here we need to remove all "older" coverages
+                /*if(this.currentCoverages.hasOwnProperty(identifier)){
+                    for (var cc=0; cc<this.currentCoverages[identifier].length; cc++){
+                        // Iterate current set to see if available
+                        var stillActive = false;
+                        for (var cd = 0; cd < coverages.data.length; cd++) {
+                            if(this.currentCoverages[identifier][cc].identifier === coverages.data[cd].identifier){
+                                stillActive = true;
+                            }
+                        }
+                        if(!stillActive){
+                            // check if available if yes remove coverage
+                            if(this.p_plot.datasetCollection.hasOwnProperty(this.currentCoverages[identifier][cc].identifier)){
+                                this.p_plot.removeDataset(this.currentCoverages[identifier][cc].identifier);
+                            }
+                        }
+                    }
+                }
+
+                // clean stacked dataset
+                if(this.stackedDataset.hasOwnProperty(identifier)){
+                    
+                    for (var i = this.stackedDataset[identifier].length - 1; i >= 0; i--) {
+
+                        // Iterate current set to see if available
+                        var stillActive = false;
+                        for (var cd = 0; cd < coverages.data.length; cd++) {
+                            if(this.stackedDataset[identifier][i] === coverages.data[cd].identifier){
+                                stillActive = true;
+                            }
+                        }
+                        if(!stillActive){
+                            // check if available if yes remove coverage
+                            this.stackedDataset[identifier].splice(i,1);
+                        }
+                    }
+                }*/
+
+                this.currentCoverages[identifier] = coverages.data;
+
+
+                function identicalBbox(array) {
+                    if (array.length == 1 || array.length == 0)
+                        return false;
+                    for(var i = 0; i < array.length - 1; i++) {
+                        if(array[i].bbox[0] != array[i+1].bbox[0] || 
+                            array[i].bbox[1] != array[i+1].bbox[1] ||
+                            array[i].bbox[2] != array[i+1].bbox[2] ||
+                            array[i].bbox[3] != array[i+1].bbox[3]) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+
+                // Now we have a list of all currently selected coverages
+                // We check if the coverages are stacked (one over the other)
+                // i.e. same bounding box
+                var stacked = identicalBbox(coverages.data);
+                var stacked_prim = null;
+
+
+                /*if(!stacked){
+                    // If not stacked there is a primitive per coverage, so we can
+                    // remove coverage primitives from collection which are no longer in the list
+                    var prim_to_remove = [];
+
+                    for (var p=0; p<cur_coll._primitives.length; p++){
+                        if(
+                            !_.find(coverages.data, function(c){
+                                return c.identifier == cur_coll._primitives[p].cov_id;
+                            })
+                        ){
+                            prim_to_remove.push(cur_coll._primitives[p]);
+                        }
+                    };
+
+                    for (var i = prim_to_remove.length - 1; i >= 0; i--) {
+                        if(prim_to_remove[i].cov_id && this.p_plot.datasetCollection.hasOwnProperty(prim_to_remove[i].cov_id)){
+                            this.p_plot.removeDataset(prim_to_remove[i].cov_id);
+                        }
+                        cur_coll.remove(prim_to_remove[i]);
+                    };
+
+                }else{
+                    // If stacked coverages there is only one primitive per collection
+                    // and the texture data saved in the plot library so we check there for availability
+                    // to see if we have to free the texture
+                    // TODO: This is not working as expected, things are being deleted when they should not
+                    for(var coll in this.stackedDataset){
+                        for (var i = this.stackedDataset[coll].length - 1; i >= 0; i--) {
+                            if(
+                                !_.find(coverages.data, function(c){
+                                    return c.identifier == this.stackedDataset[coll][i];
+                                })
+                            ){
+                                if(this.p_plot.datasetAvailable(this.stackedDataset[coll][i])) {
+                                    this.p_plot.removeDataset(this.stackedDataset[coll][i]);
+                                    this.stackedDataset[coll].splice(i,1);
+                                    this.global_product_height-=250
+                                }
+                            }
+
+                        };
+
+                        for (var p=0; p<cur_coll._primitives.length; p++){
+                            // We also check to see if there is an already created primitive for
+                            // the stack animation
+                            if(
+                                !_.find(this.stackedDataset[coll], function(c){
+                                    return c == this.stackedDataset[coll][i];
+                                })
+                            ){
+                                stacked_prim = cur_coll._primitives[p];
+                            }
+                        };
+                    }
+                }*/
+
+                var deferreds = [];
+                this.currentDownload = 0;
+
+                // Let us sort them by start date
+                coverages.data = _.sortBy(coverages.data, function(c){ return Date.parse(c.starttime); });
+
+                for (var i = coverages.data.length - 1; i >= 0; i--) {
+
+                    var bbox = coverages.data[i].bbox;
+
+                    var request = PRODUCT_URL+coverages.data[i].wcsEndpoint;
+                    
+                    // Check if coverage is already in collection, if not add them
+                    if(!currCovColl.hasOwnProperty(coverages.data[i].identifier)){
+
+                        var bbox = bbox;
+                        var cov_id = coverages.data[i].identifier;
+                        var plot = this.p_plot;
+                        var collId = product.get('download').id;
+
+                        if(!stacked){
+                            // If not stacked just request and create primitves for all coverages
+                            // Check if selection active
+                            if(this.bboxsel){
+                                if(doBoundingBoxesIntersect(this.bboxsel, bbox)){
+                                    deferreds.push(this.loadCoverage(request, bbox, cov_id, currCovColl, product, null));
+                                }
+                            }else{
+                                deferreds.push(this.loadCoverage(request, bbox, cov_id, currCovColl, product, null));
+                            }
+                        }else if(stacked && i == coverages.data.length-1){
+                            // If the collection is stacked and this is the last element (in time)
+                            // of the list it means the primitive is not available already and needs to be created
+                            // or we have found an already created primite and saved it to stacked primitive
+                            if(this.p_plot.datasetAvailable(cov_id)) {
+                                this.p_plot.removeDataset(cov_id);
+                            }
+                            // Check if selection active
+
+                            if(this.bboxsel){
+                                if(doBoundingBoxesIntersect(this.bboxsel, bbox)){
+                                    deferreds.push(this.loadCoverage(request, bbox, cov_id, currCovColl, product, stacked_prim));
+                                    // We need to add it to the stacked list as it will be compared to to see if part of a stack collection
+                                    if(this.stackedDataset.hasOwnProperty(collId)){
+                                        this.stackedDataset[collId].push(cov_id);
+                                    } else {
+                                        this.stackedDataset[collId] = [cov_id];
+                                    }
+                                }
+                            }else{
+                                deferreds.push(this.loadCoverage(request, bbox, cov_id, currCovColl, product, stacked_prim));
+                                // We need to add it to the stacked list as it will be compared to to see if part of a stack collection
+                                if(this.stackedDataset.hasOwnProperty(collId)){
+                                    this.stackedDataset[collId].push(cov_id);
+                                } else {
+                                    this.stackedDataset[collId] = [cov_id];
+                                }
+                            }
+                        }else{
+                            // We only request the data if it is not already available
+                            if(!this.p_plot.datasetAvailable(cov_id)) {
+                                // It is stacked but this is any other coverage where for now we only need the data
+                                // but do not actually visualize it, so we do not need to create a primitive
+                                if(this.bboxsel){
+                                    if(doBoundingBoxesIntersect(this.bboxsel, bbox)){
+                                        deferreds.push(this.addCoverage(request, cov_id, collId, product));
+                                    }
+                                }else{
+                                    deferreds.push(this.addCoverage(request, cov_id, collId, product));
+                                }
+                                if(this.stackedDataset.hasOwnProperty(collId)){
+                                    this.stackedDataset[collId].push(cov_id);
+                                } else {
+                                    this.stackedDataset[collId] = [cov_id];
+                                }
+                            }
+                        }
+                    }
+
+                };
+
+                this.downloadTotal = deferreds.length;
+
+                var self = this;
+
+                $.when.apply($, deferreds)
+                    .then(function(){
+
+                    }).fail(function(resp){
+                        // Probably want to catch failure
+                        $("#error-messages").append(
+                              '<div class="alert alert-warning alert-info">'+
+                              '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>'+
+                              '<Strong>Information:</Strong> Some of the requested coverages have no data over the selected area.'+
+                            '</div>'
+                        );
+                    }).always(this.loadingOfCoveragesComplete.bind(this, coverages, stacked));
+
+                if (deferreds.length > 0){
+                    $('#loadingcontrols').show();
+                    $('#loadingcontrols').empty();
+                    $('#loadingcontrols').append(
+                        '<div class="progress" style="width:30%; margin: auto; margin-bottom:10px;">'+
+                          '<div id="progressindicator" class="progress-bar" role="progressbar" aria-valuenow="0"'+
+                          'aria-valuemin="0" aria-valuemax="100" style="width:0%;">'+
+                          '</div>'+
+                        '</div>'
+                    );
+                    $('#loadingcontrols').append('<button type="button" class="btn btn-default" id="cancel_loading" style="pointer-events: all;">Cancel</button>');
+                    
+                    $('#progressindicator').text('0 / '+ deferreds.length);
+                    $("#cancel_loading").click(function () {
+                        for (var i = deferreds.length - 1; i >= 0; i--) {
+                            //console.log('Aborting: '+i);
+                            deferreds[i].abort();
+                        }
+                        $('#loadingcontrols').empty();
+                        $('#loadingcontrols').hide();
+                    });
+                }
+
+            },
+
+            checkCoverageLayers: function(product,visible){
+
+                // Remove possible timetick and play button
+                Communicator.mediator.trigger("date:tick:select", null);
+                $('#playercontrols').hide();
+                $('#timestamp').hide();
+
+                if(!this.renderingActive){
+                    return;
+                }
+
+                var currCovColl = product.get('coveragesCollection');
+
+                if(visible){
+
+                    for(var cov in currCovColl){
+                        if(currCovColl[cov].hasOwnProperty('imageryLayer')){
+                            currCovColl[cov].imageryLayer.show = true;
+                        }
+                    };
+
+                    var style = this.getProductStyle(product);
+                    this.p_plot.setColorScale(style.colorscale);
+
+                    var url = product.get("views")[0].urls[0];
+                    var collection = product.get("views")[0].id;
+
+                    if(product.get("ground_measurements")){
+                        this.retrieveGroundMeasurements(product);
+                        // Stop here don't need to execute the rest
+                        return;
+                    }
+
+                    var request = 
+                        PRODUCT_URL+'pycsw/pycsw/csw.py?mode=opensearch'+
+                        '&service=CSW&version=2.0.2&request=GetRecords&elementsetname=brief'+
+                        '&typenames=csw:Record&resulttype=results'+
+                        '&time='+getISODateTimeString(this.begin_time)+'/'+getISODateTimeString(this.end_time)+
+                        '&q='+collection+
+                        '&maxrecords=100'+
+                        '&outputFormat=application/json';
+
+                    var identifier = collection;
+                    var b = null;
+                    if(this.bboxsel !== null){
+                        b = this.bboxsel;
+                        request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
+                    } else {
+                        // Always apply global bbox to make sure no weird 
+                        // coverages are retuned that go over the pole 
+                        // and things like that
+                        b = [-90, -180, 90, 180];
+                    }
+                    request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
+
+                    $.get(request)
+                        .success(this.processCoverageList.bind(this, product, b, identifier));
+
+                }else{
+
+                    // TODO: Cleanup of loaded data when not shown?
+                    for(var cov in currCovColl){
+                        if(currCovColl[cov].hasOwnProperty('imageryLayer')){
+                            currCovColl[cov].imageryLayer.show = false;
+                        }
+                    };
+                }
 
             },
 
@@ -3910,7 +3621,7 @@ define(['backbone.marionette',
                         cur_coll.remove(prim);
                     };
                     if (product.get("views")[0].protocol == "WCS"){
-                        that.checkCoverages(product, product.get("visible"));
+                        that.checkCoverageLayers(product, product.get("visible"));
 
                     }
                 });
@@ -4105,7 +3816,7 @@ define(['backbone.marionette',
                         if(product.get("views")[0].protocol == "CZML"){
                             //this.checkLayerFeatures(product, product.get("visible"));
                         }else if (product.get("views")[0].protocol == "WCS"){
-                            this.checkCoverages(product, product.get("visible"));
+                            this.checkCoverageLayers(product, product.get("visible"));
 
                         }else if (product.get("views")[0].protocol == "WPS"){
 
