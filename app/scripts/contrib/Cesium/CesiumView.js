@@ -265,6 +265,9 @@ define(['backbone.marionette',
                         creditContainer: "cesium_attribution",
                         contextOptions: {webgl: {preserveDrawingBuffer: true}},
                         clock: clock,
+                        webgl : { 
+                           antialias : false
+                       }
                     });
                 }
                 // Remove GUI elements (TAMP will only use one window)
@@ -533,14 +536,9 @@ define(['backbone.marionette',
 
                 // Show Wireframe
                 //this.map.scene.globe._surface._tileProvider._debug.wireframe = true;
-                
 
-                //this.map.scene.fxaaOrderIndependentTranslucency = false;
-
-                // Workarounf for low framerate when showing rectangles with trasnparency
-                /*this.map.scene._oit.isSupported = function() {
-                    return false;
-                };*/
+                // disable fxaa
+                //this.map.scene.fxaa = false;
 
 
                 this.billboards = this.map.scene.primitives.add(new Cesium.BillboardCollection());
@@ -558,8 +556,7 @@ define(['backbone.marionette',
                 this.camera_last_position.z = this.map.scene.camera.position.z;
 
                 // Extend far clipping for fieldlines
-
-                this.map.scene.camera.frustum.far = this.map.scene.camera.frustum.far * 15
+                //this.map.scene.camera.frustum.far = this.map.scene.camera.frustum.far * 15
 
                 this.map.clock.onTick.addEventListener(this.handleTick.bind(this));
                 
@@ -1281,26 +1278,16 @@ define(['backbone.marionette',
             },
 
             onUpdateOpacity: function(options) {
-
-                // Cesium has some issue ordering things when alpha is equal to 1
-                if(options.value==1){options.value=0.999;}
-
                 globals.products.each(function(product) {
                     if(product.get("download").id==options.model.get("download").id){
-
-                                if(product.get("views")[0].protocol == "WCS"){
-                                    var cur_coll = this.coverages_collections[product.get("views")[0].id];
-                                    if(cur_coll){
-                                        for (var p=0; p<cur_coll._primitives.length; p++){
-                                            var prim = cur_coll._primitives[p];
-
-                                            //prim.appearance.material.uniforms.alpha = options.value;
-                                            prim.appearance.material.uniforms.color.alpha = options.value;
-
-                                        }
-                                    }
+                        if(product.get("views")[0].protocol == "WCS"){
+                            var currCovs = product.get('coveragesCollection');
+                            for (var cv in currCovs){
+                                if(currCovs[cv].hasOwnProperty('imageryLayer')){
+                                    currCovs[cv].imageryLayer.alpha = options.value;
                                 }
-
+                            }
+                        }
                         var ces_layer = product.get("ces_layer");
 
                         if( _.has(this.features_collection, options.model.get("views")[0].id) ){
@@ -1324,10 +1311,8 @@ define(['backbone.marionette',
 
                     if(options.model.get("name") == "Processing results"){
                         for (var p=0; p<this.process_result_collection._primitives.length; p++){
-
                             var prim = this.process_result_collection._primitives[p];
                             prim.appearance.material.uniforms.color.alpha = options.value;
-
                         }
                     }
 
@@ -1650,7 +1635,7 @@ define(['backbone.marionette',
                 
             },
 
-            loadCoverage: function(request, bbox, cov_id, cur_coll, product, prim){
+            loadCoverage: function(request, bbox, cov_id, cur_coll, product, stackedImageryLayer){
 
                 var self = this;
                 return $.ajax({
@@ -1661,18 +1646,18 @@ define(['backbone.marionette',
                 })
                 .done(
                     this.onDataReceived.bind(
-                        this,bbox, cov_id, cur_coll, product, prim,
+                        this,bbox, cov_id, cur_coll, product, stackedImageryLayer,
                         undefined, undefined, undefined
                     )
                 )
                 .fail(
                     this.onLoadCoverageFailed.bind(
-                        this,bbox, cov_id, cur_coll, product, prim,
+                        this,bbox, cov_id, cur_coll, product, stackedImageryLayer,
                         undefined, undefined, undefined)
                     );
             },
 
-            onLoadCoverageFailed: function( bbox, cov_id, cur_coll, product, prim, gt, rasdata, img, data ) {
+            onLoadCoverageFailed: function( bbox, cov_id, cur_coll, product, stackedImageryLayer, gt, rasdata, img, data ) {
                 // remove coverage from stack
                 var prodId = product.get('download').id;
                 if(!$.isEmptyObject(this.stackedDataset) && this.stackedDataset[prodId].indexOf(cov_id) !== -1){
@@ -2214,7 +2199,7 @@ define(['backbone.marionette',
                 }
             },
 
-            onDataReceived: function( bbox, cov_id, cur_coll, product, imageryLayer, gt, rasdata, img, data ) {
+            onDataReceived: function( bbox, cov_id, cur_coll, product, stackedImageryLayer, gt, rasdata, img, data ) {
 
                 var parameters = product.get("parameters");
                 var keys = _.keys(parameters);
@@ -2298,19 +2283,22 @@ define(['backbone.marionette',
 
                         // If imagery layer provided update texture if not 
                         // create new imagery layer
-                        if(imageryLayer){
-                            imageryLayer._imageryCache["[0,0,0]"].texture.copyFrom(this.p_plot.canvas);
+                        if(stackedImageryLayer){
+                            stackedImageryLayer._imageryCache["[0,0,0]"].texture.copyFrom(this.p_plot.canvas);
                         }else{
                             // TODO consider in which index we should ingest layer
                             var imgProv = this.createSingleTileImageryProvider(
                                 this.p_plot.canvas.toDataURL(), bbox
                             );
-                            imageryLayer = this.map.scene.imageryLayers.addImageryProvider(imgProv);
+                            stackedImageryLayer = this.map.scene.imageryLayers.addImageryProvider(imgProv);
+                            stackedImageryLayer.splitDirection = Cesium.ImagerySplitDirection.RIGHT;
+                            stackedImageryLayer.minificationFilter = Cesium.TextureMinificationFilter.NEAREST;
+                            stackedImageryLayer.magnificationFilter = Cesium.TextureMagnificationFilter.NEAREST;
 
                             // save reference for current coverage and collection
                             var coveragesCollection = product.get('coveragesCollection');
                             coveragesCollection[cov_id] = {
-                                imageryLayer: imageryLayer
+                                imageryLayer: stackedImageryLayer
                             };
                             product.set('coveragesCollection', coveragesCollection);
                         }
@@ -2378,7 +2366,7 @@ define(['backbone.marionette',
                             convArray.push(Array.from(rasdata[i]));
                         }
 
-                        rasdata = this.applyDataTransform(meta, nullValue, rasdata, product);
+                        rasdata = self.applyDataTransform(meta, nullValue, rasdata, product);
 
                         if (img.getWidth()==1 && img.getHeight()==1) {
                             // This is a 1D "column"
@@ -2412,6 +2400,10 @@ define(['backbone.marionette',
                                 } else {
                                     self.stackedDataset[cur_coll] = [cov_id];
                                 }
+                                // save reference for current coverage and collection
+                                var coveragesCollection = product.get('coveragesCollection');
+                                coveragesCollection[cov_id] = {};
+                                product.set('coveragesCollection', coveragesCollection);
                             }
                         }
                     }
@@ -2563,7 +2555,7 @@ define(['backbone.marionette',
                 }
 
                 // Apply scaling base on number of requested coverages
-                var scaleFactor = 1.0;
+                var scaleFactor = 0.8;
 
                 if(wcsEndpoint.indexOf('WRFCHEM')!==-1){
                     scaleFactor*=0.7;
@@ -2606,7 +2598,7 @@ define(['backbone.marionette',
                 }
             },
 
-            loadingOfCoveragesComplete: function(coverages, stacked){
+            loadingOfCoveragesComplete: function(coverages, collId, product, stacked){
 
                 var self = this;
                 if(this.timeseries.length >0){
@@ -2626,16 +2618,19 @@ define(['backbone.marionette',
                         var to_play = coverages.data;
                         // remove coverages that were not loaded correctly
                         to_play = to_play.filter(function(cov){
-                            return this.stackedDataset[collId].indexOf(cov.identifier) !== -1;
+                            return self.stackedDataset[collId].indexOf(cov.identifier) !== -1;
                         });
-                        var prim_to_render = cur_coll._primitives[0];
+                        var imageryLayer = _.find(product.get('coveragesCollection'), function(c){
+                            return c.hasOwnProperty('imageryLayer');
+                        });
+                        if(imageryLayer){
+                            imageryLayer = imageryLayer.imageryLayer;
+                        }
                         var play_length = to_play.length;
                         var play_index = play_length-1;
                         var fps = 15;
 
-
-                        this.primitiveToRender[collection] = cur_coll._primitives[0];
-                        this.dataToRender[collection] = coverages.data;
+                        this.dataToRender[collId] = coverages.data;
 
                         $('#playercontrols').show();
                         
@@ -2661,11 +2656,9 @@ define(['backbone.marionette',
                                                 // Go trhough all available stacks to be animated
                                                 for (var coll in self.dataToRender){
                                                     self.p_plot.renderDataset(self.dataToRender[coll][play_index].identifier);
-                                                    //self.primitiveToRender[coll].appearance.material._textures.image.copyFrom(self.p_plot.canvas);
-                                                    if(self.imgProv){
-                                                        self.imgProv._imageryCache["[0,0,0]"].texture.copyFrom(self.p_plot.canvas);
+                                                    if(imageryLayer){
+                                                        imageryLayer._imageryCache["[0,0,0]"].texture.copyFrom(self.p_plot.canvas);
                                                     }
-                                                    self.primitiveToRender[coll].cov_id = self.dataToRender[coll][play_index].identifier;
                                                 }
                                                 Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
                                                 $('#timestamp').show();
@@ -2712,8 +2705,9 @@ define(['backbone.marionette',
                                                 // Go trhough all available stacks to be animated
                                                 for (var coll in self.dataToRender){
                                                     self.p_plot.renderDataset(self.dataToRender[coll][play_index].identifier);
-                                                    self.primitiveToRender[coll].appearance.material._textures.image.copyFrom(self.p_plot.canvas);
-                                                    self.primitiveToRender[coll].cov_id = self.dataToRender[coll][play_index].identifier;
+                                                    if(imageryLayer){
+                                                        imageryLayer._imageryCache["[0,0,0]"].texture.copyFrom(self.p_plot.canvas);
+                                                    }
                                                 }
                                                 Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
                                                 $('#timestamp').show();
@@ -2748,8 +2742,9 @@ define(['backbone.marionette',
                             // Go trhough all available stacks to be animated
                             for (var coll in self.dataToRender){
                                 self.p_plot.renderDataset(self.dataToRender[coll][play_index].identifier);
-                                self.primitiveToRender[coll].appearance.material._textures.image.copyFrom(self.p_plot.canvas);
-                                self.primitiveToRender[coll].cov_id = self.dataToRender[coll][play_index].identifier;
+                                if(imageryLayer){
+                                    imageryLayer._imageryCache["[0,0,0]"].texture.copyFrom(self.p_plot.canvas);
+                                }
                             }
                             Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
                             $('#timestamp').text(
@@ -2765,8 +2760,9 @@ define(['backbone.marionette',
                             // Go trhough all available stacks to be animated
                             for (var coll in self.dataToRender){
                                 self.p_plot.renderDataset(self.dataToRender[coll][play_index].identifier);
-                                self.primitiveToRender[coll].appearance.material._textures.image.copyFrom(self.p_plot.canvas);
-                                self.primitiveToRender[coll].cov_id = self.dataToRender[coll][play_index].identifier;
+                                if(imageryLayer){
+                                    imageryLayer._imageryCache["[0,0,0]"].texture.copyFrom(self.p_plot.canvas);
+                                }
                             }
                             Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
                             $('#timestamp').text(
@@ -2778,69 +2774,23 @@ define(['backbone.marionette',
             },
 
             processCoverageList: function(product, b, identifier, resp){
-
+                console.log(this.p_plot.datasetCollection);
                 var coverages = {
                     data: []
                 };
                 var currCovColl = product.get('coveragesCollection');
 
                 if(resp.hasOwnProperty('atom:feed') && resp['atom:feed'].hasOwnProperty('atom:entry')){
-
                     var entries = resp['atom:feed']['atom:entry'];
                     if(!Array.isArray(entries)){
                         entries = [entries];
                     }
-
                     if(typeof entries !== 'undefined'){
-
                         for( var ee=0; ee<entries.length; ee++ ){
                             this.createCoverageRequest(b, entries[ee], coverages);
                         }
                     }
                 }
-
-
-
-                // here we need to remove all "older" coverages
-                /*if(this.currentCoverages.hasOwnProperty(identifier)){
-                    for (var cc=0; cc<this.currentCoverages[identifier].length; cc++){
-                        // Iterate current set to see if available
-                        var stillActive = false;
-                        for (var cd = 0; cd < coverages.data.length; cd++) {
-                            if(this.currentCoverages[identifier][cc].identifier === coverages.data[cd].identifier){
-                                stillActive = true;
-                            }
-                        }
-                        if(!stillActive){
-                            // check if available if yes remove coverage
-                            if(this.p_plot.datasetCollection.hasOwnProperty(this.currentCoverages[identifier][cc].identifier)){
-                                this.p_plot.removeDataset(this.currentCoverages[identifier][cc].identifier);
-                            }
-                        }
-                    }
-                }
-
-                // clean stacked dataset
-                if(this.stackedDataset.hasOwnProperty(identifier)){
-                    
-                    for (var i = this.stackedDataset[identifier].length - 1; i >= 0; i--) {
-
-                        // Iterate current set to see if available
-                        var stillActive = false;
-                        for (var cd = 0; cd < coverages.data.length; cd++) {
-                            if(this.stackedDataset[identifier][i] === coverages.data[cd].identifier){
-                                stillActive = true;
-                            }
-                        }
-                        if(!stillActive){
-                            // check if available if yes remove coverage
-                            this.stackedDataset[identifier].splice(i,1);
-                        }
-                    }
-                }*/
-
-                this.currentCoverages[identifier] = coverages.data;
-
 
                 function identicalBbox(array) {
                     if (array.length == 1 || array.length == 0)
@@ -2860,65 +2810,98 @@ define(['backbone.marionette',
                 // We check if the coverages are stacked (one over the other)
                 // i.e. same bounding box
                 var stacked = identicalBbox(coverages.data);
-                var stacked_prim = null;
+                var stackedImageryLayer = null;
 
-
-                /*if(!stacked){
-                    // If not stacked there is a primitive per coverage, so we can
-                    // remove coverage primitives from collection which are no longer in the list
-                    var prim_to_remove = [];
-
-                    for (var p=0; p<cur_coll._primitives.length; p++){
-                        if(
-                            !_.find(coverages.data, function(c){
-                                return c.identifier == cur_coll._primitives[p].cov_id;
-                            })
-                        ){
-                            prim_to_remove.push(cur_coll._primitives[p]);
+                // here we need to remove all "older" coverages
+                if(this.currentCoverages.hasOwnProperty(identifier)){
+                    var prevColl = this.currentCoverages[identifier];
+                    for (var cc=0; cc<this.currentCoverages[identifier].length; cc++){
+                        // Iterate current set to see if available
+                        var stillActive = false;
+                        for (var cd = 0; cd < coverages.data.length; cd++) {
+                            var currColl = coverages.data[cd];
+                            if(prevColl[cc].identifier === currColl.identifier){
+                                stillActive = true;
+                            }
                         }
-                    };
-
-                    for (var i = prim_to_remove.length - 1; i >= 0; i--) {
-                        if(prim_to_remove[i].cov_id && this.p_plot.datasetCollection.hasOwnProperty(prim_to_remove[i].cov_id)){
-                            this.p_plot.removeDataset(prim_to_remove[i].cov_id);
+                        if(!stillActive){
+                            var prevCov = prevColl[cc].identifier;
+                            // Check if imagery provider available and if this
+                            // is not a stacked collection we can remove it
+                            if(currCovColl.hasOwnProperty(prevCov)){
+                                if(!stacked){
+                                    if(this.p_plot.datasetCollection.hasOwnProperty(prevCov)){
+                                        this.p_plot.removeDataset(prevCov);
+                                    }
+                                    this.map.scene.imageryLayers.remove(
+                                        currCovColl[prevCov].imageryLayer
+                                    );
+                                    delete currCovColl[prevCov];
+                                } else {
+                                    if(!currCovColl[prevCov].hasOwnProperty('imageryLayer')){
+                                        // TODO: Need better cleanup of stacked dataset saved in plotty
+                                        // Only the dataset is available right now
+                                        if(this.p_plot.datasetCollection.hasOwnProperty(prevCov)){
+                                            this.p_plot.removeDataset(prevCov);
+                                        }
+                                        // we do not remove the imagery layer
+                                        delete currCovColl[prevCov];
+                                    }
+                                }
+                            }
                         }
-                        cur_coll.remove(prim_to_remove[i]);
-                    };
+                    }
+                }
 
-                }else{
-                    // If stacked coverages there is only one primitive per collection
-                    // and the texture data saved in the plot library so we check there for availability
+                // clean stacked dataset stack
+                if(this.stackedDataset.hasOwnProperty(identifier)){
+                    for (var i = this.stackedDataset[identifier].length - 1; i >= 0; i--) {
+                        // Iterate current set to see if available
+                        var stillActive = false;
+                        for (var cd = 0; cd < coverages.data.length; cd++) {
+                            if(this.stackedDataset[identifier][i] === coverages.data[cd].identifier){
+                                stillActive = true;
+                            }
+                        }
+                        if(!stillActive){
+                            // check if available if yes remove coverage
+                            this.stackedDataset[identifier].splice(i,1);
+                        }
+                    }
+                }
+
+                this.currentCoverages[identifier] = coverages.data;
+
+                if(stacked){
+                    var self = this;
+                    // If stacked coverages there is only one singletileprovider
+                    // layer per collection and the texture data saved in the 
+                    // plot library so we check there for availability
                     // to see if we have to free the texture
-                    // TODO: This is not working as expected, things are being deleted when they should not
                     for(var coll in this.stackedDataset){
                         for (var i = this.stackedDataset[coll].length - 1; i >= 0; i--) {
                             if(
                                 !_.find(coverages.data, function(c){
-                                    return c.identifier == this.stackedDataset[coll][i];
+                                    return c.identifier == self.stackedDataset[coll][i];
                                 })
                             ){
                                 if(this.p_plot.datasetAvailable(this.stackedDataset[coll][i])) {
                                     this.p_plot.removeDataset(this.stackedDataset[coll][i]);
                                     this.stackedDataset[coll].splice(i,1);
-                                    this.global_product_height-=250
                                 }
-                            }
-
-                        };
-
-                        for (var p=0; p<cur_coll._primitives.length; p++){
-                            // We also check to see if there is an already created primitive for
-                            // the stack animation
-                            if(
-                                !_.find(this.stackedDataset[coll], function(c){
-                                    return c == this.stackedDataset[coll][i];
-                                })
-                            ){
-                                stacked_prim = cur_coll._primitives[p];
                             }
                         };
                     }
-                }*/
+                    // We also check to see if there is an already
+                    // singeltile imagery provider created for the
+                    // stack animation
+                    stackedImageryLayer = _.find(currCovColl, function(c){
+                            return c.hasOwnProperty('imageryLayer');
+                    });
+                    if(stackedImageryLayer){
+                        stackedImageryLayer = stackedImageryLayer.imageryLayer;
+                    }
+                }
 
                 var deferreds = [];
                 this.currentDownload = 0;
@@ -2931,15 +2914,13 @@ define(['backbone.marionette',
                     var bbox = coverages.data[i].bbox;
 
                     var request = PRODUCT_URL+coverages.data[i].wcsEndpoint;
+                    var cov_id = coverages.data[i].identifier;
+                    var bbox = bbox;
+                    var plot = this.p_plot;
+                    var collId = product.get('download').id;
                     
                     // Check if coverage is already in collection, if not add them
                     if(!currCovColl.hasOwnProperty(coverages.data[i].identifier)){
-
-                        var bbox = bbox;
-                        var cov_id = coverages.data[i].identifier;
-                        var plot = this.p_plot;
-                        var collId = product.get('download').id;
-
                         if(!stacked){
                             // If not stacked just request and create primitves for all coverages
                             // Check if selection active
@@ -2958,25 +2939,18 @@ define(['backbone.marionette',
                                 this.p_plot.removeDataset(cov_id);
                             }
                             // Check if selection active
-
                             if(this.bboxsel){
                                 if(doBoundingBoxesIntersect(this.bboxsel, bbox)){
-                                    deferreds.push(this.loadCoverage(request, bbox, cov_id, currCovColl, product, stacked_prim));
-                                    // We need to add it to the stacked list as it will be compared to to see if part of a stack collection
-                                    if(this.stackedDataset.hasOwnProperty(collId)){
-                                        this.stackedDataset[collId].push(cov_id);
-                                    } else {
-                                        this.stackedDataset[collId] = [cov_id];
-                                    }
+                                    deferreds.push(this.loadCoverage(request, bbox, cov_id, currCovColl, product, stackedImageryLayer));
                                 }
                             }else{
-                                deferreds.push(this.loadCoverage(request, bbox, cov_id, currCovColl, product, stacked_prim));
-                                // We need to add it to the stacked list as it will be compared to to see if part of a stack collection
-                                if(this.stackedDataset.hasOwnProperty(collId)){
-                                    this.stackedDataset[collId].push(cov_id);
-                                } else {
-                                    this.stackedDataset[collId] = [cov_id];
-                                }
+                                deferreds.push(this.loadCoverage(request, bbox, cov_id, currCovColl, product, stackedImageryLayer));
+                            }
+                            // We need to add it to the stacked list as it will be compared to to see if part of a stack collection
+                            if(this.stackedDataset.hasOwnProperty(collId)){
+                                this.stackedDataset[collId].push(cov_id);
+                            } else {
+                                this.stackedDataset[collId] = [cov_id];
                             }
                         }else{
                             // We only request the data if it is not already available
@@ -2997,6 +2971,12 @@ define(['backbone.marionette',
                                 }
                             }
                         }
+                    } else {
+                        // if the coverage is already loaded check if inside of
+                        // stack, if not add it for correct animation
+                        if(stacked && this.stackedDataset[collId].indexOf(cov_id) === -1){
+                            this.stackedDataset[collId].push(cov_id);
+                        }
                     }
 
                 };
@@ -3016,7 +2996,7 @@ define(['backbone.marionette',
                               '<Strong>Information:</Strong> Some of the requested coverages have no data over the selected area.'+
                             '</div>'
                         );
-                    }).always(this.loadingOfCoveragesComplete.bind(this, coverages, stacked));
+                    }).always(this.loadingOfCoveragesComplete.bind(this, coverages, collId, product, stacked));
 
                 if (deferreds.length > 0){
                     $('#loadingcontrols').show();
@@ -3203,51 +3183,16 @@ define(['backbone.marionette',
                                     vertexFormat : Cesium.PolylineMaterialAppearance.VERTEX_FORMAT,
                                 })
                             }),
-                            //appearance : new Cesium.PolylineColorAppearance()
                             appearance : new Cesium.PolylineMaterialAppearance({
                                 material : arrowmat
                             })
                         }));
 
                     }, this);
-
-                    // TODO: Explored increasing performance using color instance attribute
-                    //  Was not able to make it work with materials, maybe there is a solution
-                    /*
-                    var instances = [];
-                    _.each(results.data, function(row){
-                        instances.push(
-                            new Cesium.GeometryInstance({
-                                geometry : new Cesium.PolylineGeometry({
-                                    positions : [
-                                        new Cesium.Cartesian3(row.pos1_x, row.pos1_y, row.rad1),
-                                        new Cesium.Cartesian3(row.pos2_x, row.pos2_y, row.rad2)
-                                    ],
-                                    width : 5.0,
-                                    vertexFormat : Cesium.PolylineMaterialAppearance.VERTEX_FORMAT,
-                                }),
-                                attributes: {
-                                    color: new Cesium.ColorGeometryInstanceAttribute(row.col_r/255, row.col_g/255, row.col_b/255, alpha)
-                                }
-                            })
-                        );  
-
-                    }, this);
-
-                    this.features_collection[identifier].add(new Cesium.Primitive({
-                        geometryInstances : instances,
-                        appearance : new Cesium.PolylineColorAppearance()
-                    }));
-                    */
-
-
                     this.map.scene.primitives.add(this.features_collection[identifier]);
 
                 }else{
-
-
                     this.features_collection[identifier] = new Cesium.PointPrimitiveCollection();
-
                     _.each(results.data, function(row){
                         var color = Cesium.Color.fromBytes(row.col_r, row.col_g, row.col_b, alpha*255);
                         this.features_collection[identifier].add({
@@ -3260,24 +3205,16 @@ define(['backbone.marionette',
                         });
 
                     }, this);
-
                     this.map.scene.primitives.add(this.features_collection[identifier]);
-
                 }
-
-
             },
-
 
             onLayerRangeChanged: function(layer, range, colorscale){
                 var self = this;
-
                 globals.products.each(function(product) {
 
                     if(product.get("download").id==layer){
                         if(product.get("views")[0].protocol == "WCS"){
-
-                            var cur_coll = self.coverages_collections[product.get("download").id];
 
                             var parameters = product.get("parameters");
                             var keys = _.keys(parameters);
@@ -3286,21 +3223,15 @@ define(['backbone.marionette',
                             var clamp_min = defaultFor(parameters[band].clamp_min, false);
                             var clamp_max = defaultFor(parameters[band].clamp_max, false);
 
-
-                            if(cur_coll){
-                                for (var p=0; p<cur_coll._primitives.length; p++){
-
-                                    var prim = cur_coll._primitives[p];
+                            var currCovs = product.get('coveragesCollection');
+                            for (var cv in currCovs){
+                                if(currCovs[cv].hasOwnProperty('imageryLayer')){
                                     var plot = self.p_plot;
                                     plot.setDomain(range);
                                     plot.setColorScale(colorscale);
                                     plot.setClamp(clamp_min, clamp_max);
-                                    plot.renderDataset(prim.cov_id);
-                                    //prim.appearance.material._textures.image.copyFrom(plot.canvas);
-                                    if(self.imgProv){
-                                        self.imgProv._imageryCache["[0,0,0]"].texture.copyFrom(self.p_plot.canvas);
-                                    }
-
+                                    plot.renderDataset(cv);
+                                    currCovs[cv].imageryLayer._imageryCache["[0,0,0]"].texture.copyFrom(self.p_plot.canvas);
                                 }
                             }
                         }
@@ -3326,8 +3257,6 @@ define(['backbone.marionette',
 
                     if(product.get("download").id==layer){
 
-                        var hexcolor = product.get("color");
-                            hexcolor = hexcolor.substring(1, hexcolor.length);
                         var parameters = product.get("parameters");
                         var band;
                         var keys = _.keys(parameters);
@@ -3348,75 +3277,42 @@ define(['backbone.marionette',
                             this.checkLayerFeatures(product, product.get("visible"));
 
                         }else if(product.get("views")[0].protocol == "WCS"){
+                            var parameters = product.get("parameters");
+                            var keys = _.keys(parameters);
+                            var band = keys[0];
+                            var colorscale = parameters[band].colorscale;
+                            var clamp_min = defaultFor(parameters[band].clamp_min, false);
+                            var clamp_max = defaultFor(parameters[band].clamp_max, false);
 
-                            var cur_coll = this.coverages_collections[product.get("views")[0].id];
-
-                            if(cur_coll){
-                                for (var p=0; p<cur_coll._primitives.length; p++){
-
-                                    var prim = cur_coll._primitives[p];
+                            var currCovs = product.get('coveragesCollection');
+                            for (var cv in currCovs){
+                                if(currCovs[cv].hasOwnProperty('imageryLayer')){
                                     var plot = self.p_plot;
                                     plot.setDomain(range);
-                                    plot.setColorScale(style);
+                                    plot.setColorScale(colorscale);
                                     plot.setClamp(clamp_min, clamp_max);
-                                    plot.renderDataset(prim.cov_id);
-                                    //prim.appearance.material._textures.image.copyFrom(plot.canvas);
-                                    if(self.imgProv){
-                                        self.imgProv._imageryCache["[0,0,0]"].texture.copyFrom(self.p_plot.canvas);
-                                    }
-                                    //prim.appearance.material._textures.image.copyFrom(plot.canvas);
-
-                                };
+                                    plot.renderDataset(cv);
+                                    currCovs[cv].imageryLayer._imageryCache["[0,0,0]"].texture.copyFrom(self.p_plot.canvas);
+                                }
                             }
-
-
                         }else if(product.get("views")[0].protocol == "WMS"){
-
-                            if (band == "Fieldlines" ){
+                            if(product.get("download").id==layer){
+                                var ces_layer = product.get("ces_layer");
                                 if(product.get("visible")){
-                                    var ces_layer = product.get("ces_layer");
+                                    ces_layer.show = true;
+                                }
+                                ces_layer.imageryProvider.updateProperties("dim_bands", band);
+                                ces_layer.imageryProvider.updateProperties("dim_range", (range[0]+","+range[1]));
+                                ces_layer.imageryProvider.updateProperties("elevation", height);
+                                if(style)
+                                    ces_layer.imageryProvider.updateProperties("styles", style);
+                                if(coeff_range)
+                                    ces_layer.imageryProvider.updateProperties("dim_coeff", (coeff_range[0]+","+coeff_range[1]));
+
+                                if (ces_layer.show){
+                                    var index = this.map.scene.imageryLayers.indexOf(ces_layer);
                                     this.map.scene.imageryLayers.remove(ces_layer, false);
-
-                                    // When changing height or coefficient range and fieldlienes is selected
-                                    // model would be added multiple times, need to check if model already
-                                    // marked as active and avoid adding it to list
-                                    if (this.activeFL.indexOf(product.get('name'))==-1)
-                                        this.activeFL.push(product.get("download").id);
-
-                                }else{
-                                    if (this.activeFL.indexOf(product.get('download').id)!=-1){
-                                        this.activeFL.splice(this.activeFL.indexOf(product.get('name')), 1);
-                                    }
-                                }
-                                this.checkFieldLines();
-                            }else{
-                                if (this.activeFL.indexOf(product.get('name'))!=-1){
-                                    this.activeFL.splice(this.activeFL.indexOf(product.get('name')), 1);
-                                }
-                                this.checkFieldLines();
-                                if(product.get("download").id==layer){
-                                    var ces_layer = product.get("ces_layer");
-
-                                    if(product.get("visible")){
-                                        ces_layer.show = true;
-                                    }
-
-                                    ces_layer.imageryProvider.updateProperties("dim_bands", band);
-
-                                    ces_layer.imageryProvider.updateProperties("dim_range", (range[0]+","+range[1]));
-
-                                    ces_layer.imageryProvider.updateProperties("elevation", height);
-
-                                    if(style)
-                                        ces_layer.imageryProvider.updateProperties("styles", style);
-                                    if(coeff_range)
-                                        ces_layer.imageryProvider.updateProperties("dim_coeff", (coeff_range[0]+","+coeff_range[1]));
-
-                                    if (ces_layer.show){
-                                        var index = this.map.scene.imageryLayers.indexOf(ces_layer);
-                                        this.map.scene.imageryLayers.remove(ces_layer, false);
-                                        this.map.scene.imageryLayers.add(ces_layer, index);
-                                    }
+                                    this.map.scene.imageryLayers.add(ces_layer, index);
                                 }
                             }
                         }else if (product.get("views")[0].protocol == "WPS"){
@@ -3625,85 +3521,7 @@ define(['backbone.marionette',
 
                     }
                 });
-
-
             },
-
-            checkFieldLines: function(){
-                console.log(this.activeFL);
-
-                if(this.activeFL.length>0 && this.bboxsel){
-
-                    var url, model_id, color, band, style, range, logarithmic;
-
-                    globals.products.each(function(product) {
-                        if(this.activeFL.indexOf(product.get('name'))!=-1){
-                            var name = product.get('name');
-                            url = product.get("views")[0].urls[0];
-                            model_id = product.get("views")[0].id;
-                            color = product.get("color");
-                            color = color.substring(1, color.length);
-                            parameters = product.get("parameters");
-                            band;
-                            _.each(_.keys(parameters), function(key){
-                                if(parameters[key].selected)
-                                    band = key;
-                            });
-                            style = parameters[band].colorscale;
-                            range = parameters[band].range;
-                            logarithmic = parameters[band].logarithmic;
-
-                            if(this.FL_collection.hasOwnProperty( name )) {
-                                this.map.scene.primitives.remove(this.FL_collection[name]);
-                                delete this.FL_collection[name];
-                            }
-
-                            var self = this;
-
-                            $.post( url, Tmpl_get_field_lines({
-                                //"shc": product.get('shc'),
-                                "model_ids": model_id,
-                                "begin_time": getISODateTimeString(this.begin_time),
-                                "end_time": getISODateTimeString(this.end_time),
-                                "bbox": this.bboxsel[0] +","+ this.bboxsel[1] +","+ this.bboxsel[2] +","+ this.bboxsel[3],
-                                "style": style,
-                                "range_min": range[0],
-                                "range_max": range[1],
-                                "log_scale": logarithmic
-                            }))
-
-                            .done(function( data ) {
-                                Papa.parse(data, {
-                                    header: true,
-                                    dynamicTyping: true,
-                                    //name: name,
-                                    complete: function(results) {
-                                        self.createPrimitives(results, name)
-                                    }
-                                });
-                            });
-
-
-
-                        }
-                    }, this);
-
-                    
-
-                }else{
-                    _.each(_.keys(this.FL_collection), function(key){
-                        this.map.scene.primitives.remove(this.FL_collection[key]);
-                        delete this.FL_collection[key];
-                    }, this);
-                }
-
-                
-            },
-
-            onFieldlinesChanged: function(){
-                this.checkFieldLines();
-            },
-
 
             createPrimitives: function(results, name){
 
@@ -3871,9 +3689,6 @@ define(['backbone.marionette',
                         }
                     }
                 }, this);
-
-
-                this.checkFieldLines();
             },
 
             onSetExtent: function(bbox) {
