@@ -1238,34 +1238,40 @@ define(['backbone.marionette',
             },
 
             onSortProducts: function(productLayers) {
+                // TODO: Right now only WCS products are taken into account
+                //       need to implement reordering of other layer types
+                //       such as WMS and WMTS
 
-                // TODO: Go through all imagery layers from products and sort them as
-                // needed
-
-
-                // Search for moved layer
-                /*var layer_moved = null;
-                var to_move = 0;
+                // Create list of product id and index to correctly sort it
+                var sortedProds = [];
                 globals.products.each(function(product) {
-                    var ces_layer = product.get("ces_layer");
-                    if (ces_layer){
-                        var product_index = (globals.products.length-1 - globals.products.indexOf(product)) + globals.baseLayers.length;
-                        var ces_index = this.map.scene.imageryLayers.indexOf(ces_layer);
-                        var cur_move = product_index - ces_index;
-                        if (Math.abs(to_move)<Math.abs(cur_move)){
-                            to_move = cur_move;
-                            layer_moved = ces_layer;
-                        }
-                    }
+                    sortedProds.push({
+                        id: product.get('download').id,
+                        product: product,
+                        ordinal: product.get('ordinal')
+                    });
                 }, this);
 
-                // Raise or Lower the layer depending on movement
-                for(var i=0; i<Math.abs(to_move); ++i){
-                    if(to_move < 0)
-                        this.map.scene.imageryLayers.lower(layer_moved);
-                    else if(to_move>0)
-                        this.map.scene.imageryLayers.raise(layer_moved);
-                }*/
+                sortedProds.sort(function(a, b){
+                    return (a.ordinal < b.ordinal) ? 1 : -1;
+                });
+
+                // Reverse traverse through all active products from lowest to
+                // top one always moving the corresponding imagery layers to the
+                // top, this should correctly sort all of their layers
+                for (var sp = 0; sp < sortedProds.length; sp++) {
+                    var product = sortedProds[sp].product;
+                    var currCovColl = product.get('coveragesCollection');
+                    if(currCovColl){
+                        for(var cov in currCovColl){
+                            if(currCovColl[cov].hasOwnProperty('imageryLayer')){
+                                this.map.scene.imageryLayers.raiseToTop(
+                                    currCovColl[cov].imageryLayer
+                                );
+                            }
+                        }
+                    }
+                }
 
                 // Move overlays to top
                 globals.overlays.each(function(overlay){
@@ -2771,6 +2777,9 @@ define(['backbone.marionette',
                         });
                     }
                 }
+
+                // Make sure layers are reordered based on their position in the list
+                this.onSortProducts();
             },
 
             processCoverageList: function(product, b, identifier, resp){
