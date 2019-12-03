@@ -112,6 +112,7 @@ define(['backbone.marionette',
                 this.activeModels = [];
                 this.difference_image = null;
                 this.volumeVisualization = false;
+                this.colorscales = {};
 
                 this.selectedEntityId = null;
                 this.primitiveMapping = {};
@@ -1085,6 +1086,12 @@ define(['backbone.marionette',
                     debounceActive: false
                 });
 
+                function synchronizeColorLegend(p){
+                    this.checkColorscale(p.get('download').id);
+                }
+                // Recheck color legends
+                globals.products.each(synchronizeColorLegend.bind(this));
+
                 return this;
             },
 
@@ -1383,6 +1390,7 @@ define(['backbone.marionette',
 
                     globals.products.each(function(product) {
                         if(product.get("download").id==options.id){
+                            this.checkColorscale(product.get('download').id);
                             // TODO: This if method is only for testing and has to be reviewed
                             if (product.get("views")[0].protocol == "WCS"){
                                 this.checkCoverageLayers(product, options.visible);
@@ -3154,7 +3162,6 @@ define(['backbone.marionette',
                         });
                     });
                 }
-               
             },
 
             createFeatures: function (results, identifier, band, alpha){
@@ -3360,6 +3367,217 @@ define(['backbone.marionette',
                     }
                     
                 }, this);
+            },
+
+            renderSVG: function(svg, width, height){
+                $('#imagerenderercanvas').attr('width', width);
+                $('#imagerenderercanvas').attr('height', height);
+                var c = document.querySelector('#imagerenderercanvas');
+                var ctx = c.getContext('2d');
+                // Clear the canvas
+                ctx.clearRect(0, 0, width, height);
+
+                ctx.fillStyle = "white";
+                ctx.fillRect(0, 0, width, height);
+
+                ctx.drawSvg(svg, 0, 0, height, width);
+                return c.toDataURL('image/jpg');
+            },
+
+            createViewportQuad: function(img, x, y, width, height){
+                var newmat = new Cesium.Material.fromType('Image', {
+                    image : img,
+                    color: new Cesium.Color(1, 1, 1, 1),
+                });
+                return new Cesium.ViewportQuad(
+                    new Cesium.BoundingRectangle(x, (y+120), width, height), newmat
+                );
+            },
+
+            checkColorscale: function(pId){
+                var visible = true;
+                var product = false;
+                var indexDel;
+                var margin = 20;
+                var width = 300;
+                var scalewidth =  width - margin *2;
+
+                globals.products.each(function(p) {
+                    if(p.get('download').id === pId){
+                        product = p;
+                    }
+                }, this);
+
+                if (_.has(this.colorscales, pId)){
+                    // remove object from cesium scene
+                    this.map.scene.primitives.remove(this.colorscales[pId].prim);
+                    this.map.scene.primitives.remove(this.colorscales[pId].csPrim);
+                    indexDel = this.colorscales[pId].index;
+                    delete this.colorscales[pId];
+
+                    // Modify all indices and related height of all colorscales 
+                    // which are over deleted position
+
+                    _.each(this.colorscales, function(value, key, obj) {
+                        var i = obj[key].index-1;
+                        if (i >= indexDel){
+                            var scaleImg = obj[key].prim.material.uniforms.image;
+                            var csImg = obj[key].csPrim.material.uniforms.image;
+                            this.map.scene.primitives.remove(obj[key].prim);
+                            this.map.scene.primitives.remove(obj[key].csPrim);
+                            obj[key].prim = this.map.scene.primitives.add(
+                                this.createViewportQuad(scaleImg, 0, i*55 +5, width, 55)
+                            );
+                            obj[key].csPrim = this.map.scene.primitives.add(
+                                this.createViewportQuad(csImg, 20, i*55 +42, scalewidth, 10)
+                            );
+                            obj[key].index = i;
+                      
+                        }
+                    },this);
+                }
+
+                if(product && product.get('views')[0].protocol === 'WPS' &&
+                    product.get('shc') === null){
+                    visible = false;
+                }
+
+                if(product.get('timeSliderProtocol') === 'INDEX'){
+                    visible = false;
+                }
+
+                if (product && product.get('visible') && visible){
+                    var options = product.get('parameters');
+                    var keys = _.keys(options);
+                    var sel = false;
+
+                    _.each(keys, function(key){
+                        if(options[key].selected){
+                            sel = key;
+                        }
+                    });
+
+                    if(sel === false){
+                        return;
+                    }
+                    var rangeMin = product.get('parameters')[sel].range[0];
+                    var rangeMax = product.get('parameters')[sel].range[1];
+                    var uom = product.get('parameters')[sel].uom;
+                    var style = product.get('parameters')[sel].colorscale;
+                    var logscale = defaultFor(product.get('parameters')[sel].logarithmic, false);
+                    var axisScale;
+
+
+                    this.plot.setColorScale(style);
+                    var colorscaleimage = this.plot.getColorScaleImage().toDataURL();
+
+                    $('#svgcolorscalecontainer').remove();
+                    var svgContainer = d3.select('body').append('svg')
+                        .attr('width', 300)
+                        .attr('height', 60)
+                        .attr('id', 'svgcolorscalecontainer');
+
+                    if(logscale){
+                        axisScale = d3.scale.log();
+                    }else{
+                        axisScale = d3.scale.linear();
+                    }
+
+                    axisScale.domain([rangeMin, rangeMax]);
+                    axisScale.range([0, scalewidth]);
+
+                    var xAxis = d3.svg.axis()
+                        .scale(axisScale);
+
+                    if(logscale){
+                        var numberFormat = d3.format(',f');
+                        function logFormat(d) {
+                            var x = Math.log(d) / Math.log(10) + 1e-6;
+                            return Math.abs(x - Math.floor(x)) < 0.3 ? numberFormat(d) : '';
+                        }
+                         xAxis.tickFormat(logFormat);
+
+                    }else{
+                        var step = (rangeMax - rangeMin)/5;
+                        xAxis.tickValues(
+                            d3.range(rangeMin,rangeMax+step, step)
+                        );
+                        var expFormat = d3.format('e');
+                        xAxis.tickFormat(function(v){
+                            if ((v >= 0.01 && v<100) || (v<=-0.01 && v>-100) || v===0) {
+                                return v;
+                            } else {
+                                return expFormat(v).toUpperCase();
+                            }
+                        });
+                    }
+
+                    var g = svgContainer.append('g')
+                        .attr('class', 'x axis')
+                        .attr('transform', 'translate(' + [margin, 20]+')')
+                        .call(xAxis);
+
+                    // Add layer info
+                    var info = product.get('name');
+                    /*info += ' - ' + sel;*/
+                    if(uom){
+                        info += ' ['+uom+']';
+                    }
+
+                     g.append('text')
+                        .style('text-anchor', 'middle')
+                        .attr('transform', 'translate(' + [scalewidth/2, 30]+')')
+                        .attr('font-weight', 'bold')
+                        .text(info);
+
+                    svgContainer.selectAll('text')
+                        .attr('stroke', 'none')
+                        .attr('fill', 'black')
+                        .attr('font-weight', 'bold');
+
+                    svgContainer.selectAll('.tick').select('line')
+                        .attr('stroke', 'black');
+
+                    svgContainer.selectAll('.axis .domain')
+                        .attr('stroke-width', '2')
+                        .attr('stroke', '#000')
+                        .attr('shape-rendering', 'crispEdges')
+                        .attr('fill', 'none');
+
+                    svgContainer.selectAll('.axis path')
+                        .attr('stroke-width', '2')
+                        .attr('shape-rendering', 'crispEdges')
+                        .attr('stroke', '#000');
+
+                    var svgHtml = d3.select('#svgcolorscalecontainer')
+                        .attr('version', 1.1)
+                        .attr('xmlns', 'http://www.w3.org/2000/svg')
+                        .node().innerHTML;
+
+                    var renderHeight = 55;
+                    var renderWidth = width;
+
+                    var index = Object.keys(this.colorscales).length;
+
+                    var prim = this.map.scene.primitives.add(
+                        this.createViewportQuad(
+                            this.renderSVG(svgHtml, renderWidth, renderHeight),
+                            0, index*55+5, renderWidth, renderHeight
+                        )
+                    );
+                    var csPrim = this.map.scene.primitives.add(
+                        this.createViewportQuad(
+                            colorscaleimage, 20, index*55 +42, scalewidth, 10
+                        )
+                    );
+
+                    this.colorscales[pId] = {
+                        index: index,
+                        prim: prim,
+                        csPrim: csPrim
+                    };
+                    svgContainer.remove();
+                }
             },
 
 

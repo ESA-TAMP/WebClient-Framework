@@ -44,6 +44,8 @@
 				    });
 
 				});*/
+				var imagerenderercanvas = $('<canvas/>',{id: 'imagerenderercanvas'});
+                $('body').append(imagerenderercanvas);
 
 				$("body").tooltip({ 
 			    	selector: '[data-toggle=tooltip]',
