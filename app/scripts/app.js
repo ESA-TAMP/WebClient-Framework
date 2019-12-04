@@ -275,7 +275,8 @@
 								processes: [],
 								parameters: p.parameters,
                                 favourite: favourite,
-                                coveragesCollection: {}
+                                coveragesCollection: {},
+                                scaleFactor: defaultFor(p.scaleFactor, 0.5)
 							};
 
 							if(ground_measurements){
