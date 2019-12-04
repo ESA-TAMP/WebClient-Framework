@@ -640,11 +640,15 @@ define(['backbone.marionette',
                     }
                     $("#pickingresults").hide();
                 }
-                /*if (Cesium.defined(pickedObject)) {
+                
+                if (Cesium.defined(pickedObject)) {
                     if(pickedObject.id){
-                        self.pickEntity(pickedObject);
+                        var stationObj = this.pickEntity(pickedObject);
+                        if(stationObj){
+                            resultData[stationObj.id] = stationObj.data;
+                        }
                     }
-                }*/
+                }
 
                 // If picking tool has been activated lets look at the
                 // clicked position
@@ -758,402 +762,30 @@ define(['backbone.marionette',
                 return this.fetchValueFromDataset(covId, p, rectangle, product);
             },
 
-            pickEntity: function(pickedObject, lat, lon){
+            pickEntity: function(pickedObject){
 
                 pickedObject.primitive.image = pinimage_selected;
                 this.selectedEntityId = pickedObject.id;
                 var id = pickedObject.id;
 
-                // Do some cleanup
-                $("#positionvalues").remove();
-                $('#prcontainer').remove();
-                $('#enlarge').remove();
-                $('#analyticsSavebutton').remove();
-
-                $("#pickingresults").show();
-
-                // Add possible data available in the area
-                var cartographic = Cesium.Ellipsoid.WGS84.cartesianToCartographic(pickedObject.primitive.position);
-                var pos_x = Cesium.Math.toDegrees(cartographic.longitude);
-                var pos_y = Cesium.Math.toDegrees(cartographic.latitude);
-                var additional_data = this.pickScene(pos_x,pos_y);
-
-                $("#pickingresults").append('<div id="positionvalues" style="position:absolute;top:5px;left:50px"> Lat:'+pos_y.toFixed(5)+'; Lon:'+pos_x.toFixed(5)+'</div>');
-
-                var flatdata = [];
+                var stationObj = null;
+                var stationData = [];
 
                 if(this.stations.hasOwnProperty(id)){
-
-                    /*renderdata = {
-                        'timestamp': this.stations[id].observation_time_start,
-                        'measurement': this.stations[id].values,
-                    }*/
-
                     for (var i = 0; i < this.stations[id].values.length; i++) {
-                        flatdata.push({
-                            measurement: this.stations[id].values[i],
-                            timestamp: this.stations[id].observation_time_start[i],
-                            collection: id
+                        stationData.push({
+                            value: this.stations[id].values[i],
+                            timestamp: this.stations[id].observation_time_start[i]
                         });
                     }
-                }
-
-                var datSet = {
-                    'measurement': {
-                        'lineConnect': true,
-                        'color': [0.1, 0.1, 1.0]
-                    },
-                    'measurement': {
-                        'lineConnect': true,
-                        'color': [0.8, 0.2, 0.2]
-                    },
-                    'timestamp': {}
-                };
-
-
-                // Sort data separately to have two consecutive lists when connecting
-                // with lines
-                if(flatdata[0].hasOwnProperty('timestamp') && 
-                    flatdata[0]['timestamp'] instanceof Date) {
-                    datSet['timestamp'] = {
-                        scaleFormat: 'time'
-                    }
-                    flatdata = _.sortBy(flatdata, function(c){ return c.timestamp.getTime(); });
-                }
-
-                //TODO: Currently there is an issue with just single values
-                // in plot library so we add a second NaN data value which is not shown
-                // but should get rid of the error
-                if(flatdata.length==1){
-                    flatdata.push({
-                        measurement: NaN,
-                        timestamp: new Date(flatdata[0].timestamp.getTime()+(60*100*60*60)),
-                        collection: flatdata[0].collection
-                    });
-                }
-
-
-                if(additional_data.length>0 && additional_data[0].hasOwnProperty('timestamp') && 
-                    additional_data[0]['timestamp'] instanceof Date) {
-                    datSet['timestamp'] = {
-                        scaleFormat: 'time'
-                    }
-                    additional_data = _.sortBy(additional_data, function(c){ return c.timestamp.getTime(); });
-                }
-
-                flatdata = flatdata.concat(additional_data)
-
-
-
-                $("#pickingresults").show();
-                $('#pickingresultcontainer').show();
-
-                
-
-                var renderdata = {};
-                for (var i = 0; i < flatdata.length; i++) {
-                    for (var pkey in flatdata[i]){
-                        if(renderdata.hasOwnProperty(pkey)){
-                            renderdata[pkey].push(flatdata[i][pkey]);
-                        } else {
-                            renderdata[pkey] = [flatdata[i][pkey]];
+                    if(stationData.length>0){
+                        stationObj = {
+                            id: id,
+                            data: stationData
                         }
                     }
                 }
-
-                /*var compRenDat = {};
-                for (var i = 0; i < renderdata.length; i++) {
-                    
-                    for(var k in renderdata[i]){
-                        if(compRenDat.hasOwnProperty(k)){
-                            compRenDat[k].push(renderdata[i][k]);
-                        } else {
-                            compRenDat[k] = [renderdata[i][k]];
-                        }
-                    }
-                }*/
-                this.selection_x = 'timestamp';
-                this.selection_y = 'measurement';
-
-                if(this.graph){
-                     var rS = {
-                        xAxis: this.selection_x,
-                        yAxis: [this.selection_y],
-                        colorAxis: [ null ],
-                    };
-                    var datident;
-                    // Check if we want to configure multiple sources
-                    if(renderdata.hasOwnProperty('collection')){
-                        var collIds = _.unique(renderdata['collection']);
-                        if(collIds.length>1){
-                            datident = {
-                                parameter: 'collection',
-                                identifiers: collIds
-                            }
-                            rS['dataIdentifier'] = datident;
-
-                        }
-                    }
-                    // Check if something changed in the selection
-                    if(this.graph.renderSettings.xAxis !== this.selection_x || 
-                        this.graph.renderSettings.yAxis[0] !== this.selection_y) {
-                        this.graph.dataSettings = datSet;
-                        this.graph.renderSettings = rS;
-                    }
-
-                    if(datident){
-                        this.graph.renderSettings.dataIdentifier = datident;
-                    } else if(this.graph.renderSettings.hasOwnProperty('dataIdentifier')){
-                        delete this.graph.renderSettings.dataIdentifier;
-                    }
-
-                    this.graph.loadData(renderdata);
-                }
-
-
-                $("#pickingresults").append(
-                    '<a href="javascript:void(0)" id="enlarge" style="position: absolute;top:5px;left:5px">'+
-                        '<i style="font-size:1.5em;" class="fa fa-expand fa-rotate-90"></i></a>'
-                );
-
-                $('#pickingresults').append(
-                    '<div id="analyticsSavebutton"><i class="fa fa-floppy-o" aria-hidden="true"></i></div>'
-                );
-
-                var that = this;
-                $('#analyticsSavebutton').click(function(){
-                    that.graph.saveImage();
-                });
-
-                $('#enlarge').click(function (evt) {
-                    if ($('#pickingresults').hasClass("big")){
-                        $('#pickingresults').width("30%");
-                        $('#pickingresults').height("30%");
-                        $('#pickingresults').resize();
-                        $('#pickingresults').removeClass("big");
-                        $('#pickingresultcontainer').resize();
-                        if(that.graph){
-                            that.graph.resize();
-                        }
-                    }else{
-                        $('#pickingresults').addClass( "big" )
-                        $('#pickingresults').width("50%");
-                        $('#pickingresults').height("70%");
-                        $('#pickingresults').resize();
-                        $('#pickingresultcontainer').resize();
-                        if(that.graph){
-                            that.graph.resize();
-                        }
-                    }
-                    
-                });
-
-            },
-
-            pickScene: function(long, lat){
-
-                var p = {x:long, y:lat};
-                // TODO: One interesting way of getting this is by picking
-                // This is only possible as "raycast" from camera into the scene
-                // which is not practical for examning things like volumes
-                // Still it has interesting potential for investigation
-                //var primitives = that.map.scene.drillPick(new Cesium.Cartesian2(x,y));
-                var checkInside = function(p, rect){
-                    if(rect){
-                        var e = Cesium.Math.toDegrees(rect.east),
-                            w = Cesium.Math.toDegrees(rect.west),
-                            n = Cesium.Math.toDegrees(rect.north),
-                            s = Cesium.Math.toDegrees(rect.south);
-
-                        if(e > 180){
-                            e-= 180;
-                            w-=180;
-                        }
-                        if( w <= p.x && p.x <= e &&
-                            s <= p.y && p.y <= n ) {
-                            return true;
-                        }
-                    }
-
-                    return false;
-                }
-
-                var renderdata = [];
-                var that = this;
-                var primitives = [];
-                // Go through al primitives ans see if point is inside
-                _.each(that.map.scene.primitives._primitives, function (prim) {
-                    // Is a coverage primitive
-                    if(prim.hasOwnProperty('cov_id')){
-                        var rect = prim.geometryInstances[0].geometry._rectangle;
-                        if(         (p,rect))
-                            primitives.push(prim);
-                        
-                    }
-                    // Is a collection
-                    if(prim.hasOwnProperty('_primitives') && prim.show){
-                        _.each(prim._primitives, function (subprim) {
-                            // Is a coverage primitive
-                            if(subprim.hasOwnProperty('cov_id')){
-                                var rect = subprim.geometryInstances[0].geometry._rectangle;
-                                if(subprim.show && checkInside(p,rect))
-                                    primitives.push(subprim);
-                                
-                            }
-
-                        });
-                    }
-                }); 
-
-                if(primitives){
-
-                    var volume_primitives = false;
-                    
-                    for (var i = primitives.length - 1; i >= 0; i--) {
-                        var pos = 0;
-                        
-                        var cov_id = primitives[i].cov_id;
-                        var height = pos;
-                        if (primitives[i].hasOwnProperty("height")){
-                            height = primitives[i].height;
-                            if(height!=0)
-                                volume_primitives = true;
-                        }
-                        var rect = primitives[i].geometryInstances[0].geometry._rectangle;
-
-                        // Check if coverage is part of a time stack
-                        //console.log(that.stackedDataset);
-                        var currColl = false;
-                        for(var coll in that.stackedDataset){
-                            if(that.stackedDataset[coll].indexOf(cov_id) !== -1){
-                                currColl = coll;
-                            }
-                        }
-                        if (currColl){
-                            // The coverage is part of the stacked dataset 
-                            // so we can go through all elements
-                            for (var j = that.stackedDataset[currColl].length - 1; j >= 0; j--) {
-                                var stackCovID = that.stackedDataset[currColl][j];
-                                if(that.p_plot.datasetAvailable(stackCovID)) {
-                                    var timestamp = pos;
-                                    var covsData = that.currentCoverages;
-                                    var collection;
-                                    for(var coll in covsData){
-                                        for (var cov in covsData[coll]){
-                                            if(covsData[coll][cov].identifier == stackCovID){
-                                                if(covsData[coll][cov].hasOwnProperty('starttime')){
-                                                    timestamp = new Date(covsData[coll][cov].starttime);
-                                                    collection = coll;
-                                                }
-                                            }
-                                        };
-                                    }
-                                    var ds = that.p_plot.datasetCollection[stackCovID];
-                                    var w = ds.width;
-                                    var h = ds.height;
-                                    var east = Cesium.Math.toDegrees(rect.east);
-                                    var west = Cesium.Math.toDegrees(rect.west);
-                                    var north = Cesium.Math.toDegrees(rect.north);
-                                    var south = Cesium.Math.toDegrees(rect.south);
-                                    var res_x = Math.abs(east - west)/w;
-                                    var res_y = Math.abs(north - south)/h;
-                                    var x = Math.floor(Math.abs(p.x - west)/res_x);
-                                    var y = Math.floor(Math.abs(p.y - north)/res_y);
-                                    var index = stackCovID.lastIndexOf("_");
-                                    //var pos = parseInt(cov_id.substr(index+1));
-                                    var id = stackCovID.substr(0,index);
-                                    if(stackCovID.split('_').length>3){
-                                        function getPosition(str, m, i) {
-                                           return str.split(m, i).join(m).length;
-                                        }
-                                        id = stackCovID.substr(0,getPosition(stackCovID, '_', 3));
-                                    }
-                                    pos++;
-                                    this.selection_x = 'timestamp';
-                                    this.selection_y = 'measurement';
-
-                                    var value = ds.data[(y*w)+x];
-                                    if(value === Number.MIN_VALUE){
-                                        value = NaN;
-                                    }
-
-                                    renderdata.push({
-                                        id:id,
-                                        measurement: value,
-                                        timestamp: timestamp,
-                                        collection: collection
-                                    })
-
-                                }
-                            };
-                        }else{
-                            if(that.p_plot.datasetAvailable(cov_id)) {
-
-                                var ds = that.p_plot.datasetCollection[cov_id];
-                                var w = ds.width;
-                                var h = ds.height;
-                                var east = Cesium.Math.toDegrees(rect.east);
-                                var west = Cesium.Math.toDegrees(rect.west);
-                                var north = Cesium.Math.toDegrees(rect.north);
-                                var south = Cesium.Math.toDegrees(rect.south);
-                                var res_x = Math.abs(east - west)/w;
-                                var res_y = Math.abs(north - south)/h;
-                                var x = Math.floor(Math.abs(p.x - west)/res_x);
-                                var y = Math.floor(Math.abs(p.y - north)/res_y);
-                                /*console.log(x,y);
-                                console.log(ds.data[(y*w)+x]);*/
-                                var index = cov_id.lastIndexOf("_");
-                                //var pos = parseInt(cov_id.substr(index+1));
-                                var id = cov_id.substr(0,index);
-                                if(cov_id.split('_').length>3){
-                                    function getPosition(str, m, i) {
-                                       return str.split(m, i).join(m).length;
-                                    }
-                                    id = cov_id.substr(0,getPosition(cov_id, '_', 3));
-                                }
-
-                                var timestamp, collection;
-                                var covsData = that.currentCoverages;
-
-                                for(var coll in covsData){
-                                    for (var cov in covsData[coll]){
-                                        if(covsData[coll][cov].identifier == cov_id){
-                                            if(covsData[coll][cov].hasOwnProperty('starttime')){
-                                                timestamp = new Date(covsData[coll][cov].starttime);
-                                                collection = coll;
-                                            }
-                                        }
-                                    };
-                                }
-
-                                //pos++;
-                                if(volume_primitives){
-                                    this.selection_x = 'measurement';
-                                    this.selection_y = 'height';
-                                }else{
-                                    this.selection_x = 'timestamp';
-                                    this.selection_y = 'measurement';
-                                }
-
-                                var value = ds.data[(y*w)+x];
-                                if(value === Number.MIN_VALUE){
-                                    value = NaN;
-                                }
-                                
-                                renderdata.push({
-                                    id:id,
-                                    measurement: value,
-                                    height: height,
-                                    timestamp: timestamp,
-                                    collection: collection
-                                })
-
-                            }
-
-                        }
-                    };
-                }
-                return renderdata;
+                return stationObj;
             },
 
             onShow: function() {
