@@ -2317,7 +2317,7 @@ define(['backbone.marionette',
                 });
             },
 
-            createCoverageRequest: function(b, entry, coverages){
+            createCoverageRequest: function(b, entry, coverages, product){
 
                 var bboxCont = entry['http://www.georss.org/georss:where']['gml:Envelope'];
                 var lowCorn = bboxCont['gml:lowerCorner'].split(' ').map(parseFloat);
@@ -2346,25 +2346,12 @@ define(['backbone.marionette',
                     }
                 }
 
-                // Apply scaling base on number of requested coverages
-                var scaleFactor = 1.0;
-
-                if(wcsEndpoint.indexOf('WRFCHEM')!==-1){
-                    scaleFactor*=0.7;
-                }
-                if(wcsEndpoint.indexOf('S5P_LEVEL2_QA_AER_AI_4326_0035')!==-1){
-                    scaleFactor*=0.05;
-                }
-
-                if(wcsEndpoint.indexOf('S5P_OFFL_L2__CH4')!==-1){
-                    scaleFactor=0.2;
-                }
-
+                // Check if scalefactor is available
+                var scaleFactor = defaultFor(product.get('scaleFactor'), 1.0);
                 wcsEndpoint += '&scale='+scaleFactor;
 
                 wcsEndpoint += '&compression=false';
                 wcsEndpoint += '&filter=false';
-
 
                 if(summ.indexOf('<strong>End</strong>') !== -1){
                     hasEndTime = true;
@@ -2589,7 +2576,7 @@ define(['backbone.marionette',
                     }
                     if(typeof entries !== 'undefined'){
                         for( var ee=0; ee<entries.length; ee++ ){
-                            this.createCoverageRequest(b, entries[ee], coverages);
+                            this.createCoverageRequest(b, entries[ee], coverages, product);
                         }
                     }
                 }
@@ -3217,6 +3204,35 @@ define(['backbone.marionette',
                         }
                     }
                     
+                }, this);
+            },
+
+            onScaleFactorChanged: function(layer){
+
+                globals.products.each(function(product) {
+
+                    if(product.get("download").id==layer){
+                        // Cleanup previous coverages for collection 
+                        // where scalefactor changed
+                        var currCovs = product.get('coveragesCollection');
+
+                        for (var cv in currCovs){
+                            if(cv!=='stackedImageryLayer'){
+                                if(this.p_plot.datasetAvailable(cv)){
+                                    this.p_plot.removeDataset(cv);
+                                }
+                            }
+                            if(currCovs[cv].hasOwnProperty('imageryLayer')){
+                                this.map.scene.imageryLayers.remove(
+                                    currCovs[cv].imageryLayer
+                                );
+                            }
+                            delete currCovs[cv];
+                        }
+                        if (product.get("views")[0].protocol == "WCS"){
+                            this.checkCoverageLayers(product, product.get("visible"));
+                        }
+                    }
                 }, this);
             },
 
