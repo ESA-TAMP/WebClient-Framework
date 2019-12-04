@@ -105,7 +105,6 @@ define(['backbone.marionette',
                 this.billboards = null;
                 this.activeFL = [];
                 this.features_collection = {};
-                this.coverages_collections = {};
                 this.FL_collection = {};
                 this.bboxsel = null;
                 this.extentPrimitive = null;
@@ -3564,7 +3563,7 @@ define(['backbone.marionette',
                         id: 'selectionrectangle',
                         rectangle : {
                             coordinates : rectangle,
-                            height: 20000,
+                            height: 100,
                             fill : false,
                             outline : true,
                             outlineColor : Cesium.Color.BLUE,
@@ -3587,19 +3586,25 @@ define(['backbone.marionette',
                 globals.products.each(function(product) {
                     // Cleanup previous coverage data as we need to fetch
                     // all new with new bbox
-                    var cur_coll = that.coverages_collections[product.get("views")[0].id];
-                    for (var p=0; p<cur_coll._primitives.length; p++){
-                        var prim = cur_coll._primitives[p];
-                        if(prim.cov_id){
-                            that.p_plot.removeDataset(prim.cov_id);
+                    var currCovs = product.get('coveragesCollection');
+
+                    for (var cv in currCovs){
+                        if(cv!=='stackedImageryLayer'){
+                            if(this.p_plot.datasetAvailable(cv)){
+                                this.p_plot.removeDataset(cv);
+                            }
                         }
-                        cur_coll.remove(prim);
-                    };
+                        if(currCovs[cv].hasOwnProperty('imageryLayer')){
+                            this.map.scene.imageryLayers.remove(
+                                currCovs[cv].imageryLayer
+                            );
+                        }
+                        delete currCovs[cv];
+                    }
                     if (product.get("views")[0].protocol == "WCS"){
                         that.checkCoverageLayers(product, product.get("visible"));
-
                     }
-                });
+                }, this);
             },
 
             createPrimitives: function(results, name){
