@@ -82,6 +82,12 @@
 				this.$("#range_min").val(options[this.selected].range[0]);
 				this.$("#range_max").val(options[this.selected].range[1]);
 
+				// Set the step size
+				// TODO: How many steps do we want to allow? Is 100 ok?
+				var step_size = Math.abs(options[this.selected].range[1]-options[this.selected].range[0])/100;
+				this.$("#range_min_slider").attr("step", step_size);
+				this.$("#range_max_slider").attr("step", step_size);
+				
 				// Set the range sliders
 				this.$("#range_min_slider").attr("max", options[this.selected].range[1]);
 				this.$("#range_min_slider").attr("min", options[this.selected].range[0]);
@@ -123,11 +129,6 @@
 
 
 
-				// Set the step size
-				// TODO: How many steps do we want to allow? Is 120 ok?
-				var step_size = Math.abs(options[this.selected].range[1]-options[this.selected].range[0])/120;
-				this.$("#range_min_slider").attr("step", step_size);
-				this.$("#range_max_slider").attr("step", step_size);
 
 
 				this.$("#range_min_slider").on("input change", function(){
@@ -359,15 +360,16 @@
 					this.$("#range_min_slider").attr("min", options[this.selected].range[0]);
 					this.$("#range_min_slider").attr("value", options[this.selected].range[0]);
 
-					this.$("#range_max_slider").attr("max", options[this.selected].range[1]);
-					this.$("#range_max_slider").attr("min", options[this.selected].range[0]);
-					this.$("#range_max_slider").attr("value", options[this.selected].range[1]);
-
 					// Set the step size
 					// TODO: How many steps do we want to allow? Is 120 ok?
 					var step_size = Math.abs(options[this.selected].range[1]-options[this.selected].range[0])/120;
 					this.$("#range_min_slider").attr("step", step_size);
 					this.$("#range_max_slider").attr("step", step_size);
+
+					this.$("#range_max_slider").attr("max", options[this.selected].range[1]);
+					this.$("#range_max_slider").attr("min", options[this.selected].range[0]);
+					this.$("#range_max_slider").attr("value", options[this.selected].range[1]);
+
 
 					if(options[this.selected].hasOwnProperty("logarithmic"))
 						this.createScale(options[this.selected].logarithmic);
@@ -533,7 +535,14 @@
 					});
 
 				xAxis.tickValues( axisScale.ticks( 3 ).concat( axisScale.domain() ) );
-				xAxis.tickFormat(d3.format(".3g"));
+				var expFormat = d3.format('e');
+				xAxis.tickFormat(function(v){
+					if ((v > 0.01 && v<100) || (v<-0.01 && v>-100) || v===0) {
+						return v;
+					} else {
+						return expFormat(v).toUpperCase();
+					}
+				});
 
 			    var g = svgContainer.append("g")
 			        .attr("class", "x axis")
