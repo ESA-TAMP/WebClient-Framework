@@ -2544,11 +2544,6 @@ define(['backbone.marionette',
                         // 2D coverage for animation
                         if(typeof rasdata !== 'undefined' && rasdata.length>0){
                             self.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
-                            if(self.stackedDataset.hasOwnProperty(cur_coll)){
-                                self.stackedDataset[cur_coll].push(cov_id);
-                            } else {
-                                self.stackedDataset[cur_coll] = [cov_id];
-                            }
                             // save reference for current coverage and collection
                             var coveragesCollection = product.get('coveragesCollection');
                             coveragesCollection[cov_id] = {
@@ -2991,7 +2986,7 @@ define(['backbone.marionette',
                 // here we need to remove all "older" coverages
                 if(this.currentCoverages.hasOwnProperty(identifier)){
                     var prevColl = this.currentCoverages[identifier];
-                    for (var cc=0; cc<this.currentCoverages[identifier].length; cc++){
+                    for (var cc=0; cc<prevColl.length; cc++){
                         // Iterate current set to see if available
                         var stillActive = false;
                         for (var cd = 0; cd < coverages.data.length; cd++) {
@@ -3041,17 +3036,17 @@ define(['backbone.marionette',
 
                 // clean stacked dataset stack
                 if(this.stackedDataset.hasOwnProperty(identifier)){
-                    for (var i = this.stackedDataset[identifier].length - 1; i >= 0; i--) {
+                    for (var sd=this.stackedDataset[identifier].length-1; sd >= 0; sd--) {
                         // Iterate current set to see if available
                         var stillActive = false;
                         for (var cd = 0; cd < coverages.data.length; cd++) {
-                            if(this.stackedDataset[identifier][i] === coverages.data[cd].identifier){
+                            if(this.stackedDataset[identifier][sd] === coverages.data[cd].identifier){
                                 stillActive = true;
                             }
                         }
                         if(!stillActive){
                             // check if available if yes remove coverage
-                            this.stackedDataset[identifier].splice(i,1);
+                            this.stackedDataset[identifier].splice(sd,1);
                         }
                     }
                 }
@@ -3155,7 +3150,10 @@ define(['backbone.marionette',
                             // We need to add it to the stacked list as it will
                             // be compared to to see if part of a stack collection
                             if(this.stackedDataset.hasOwnProperty(collId)){
-                                this.stackedDataset[collId].push(cov_id);
+                                // Only add it if not already there
+                                if(this.stackedDataset[collId].indexOf(cov_id) === -1){
+                                    this.stackedDataset[collId].push(cov_id);
+                                }
                             } else {
                                 this.stackedDataset[collId] = [cov_id];
                             }
@@ -3184,7 +3182,9 @@ define(['backbone.marionette',
                                     );
                                 }
                                 if(this.stackedDataset.hasOwnProperty(collId)){
-                                    this.stackedDataset[collId].push(cov_id);
+                                    if(this.stackedDataset[collId].indexOf(cov_id) === -1){
+                                        this.stackedDataset[collId].push(cov_id);
+                                    }
                                 } else {
                                     this.stackedDataset[collId] = [cov_id];
                                 }
