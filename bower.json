@@ -21,7 +21,7 @@
     "bootstrap": "~3.0.1",
     "font-awesome": "~4.5.0",
     "d3.Graphs": "ESA-VirES/AnalyticsViewer#~0.3.9",
-    "cesium": "https://github.com/AnalyticalGraphicsInc/cesium/releases/download/1.20/Cesium-1.20.zip",
+    "cesium": "https://github.com/AnalyticalGraphicsInc/cesium/releases/download/1.39/Cesium-1.39.zip",
     "papaparse": "~4.1.0",
     "geotiffjs": "https://github.com/geotiffjs/geotiff.js/releases/download/v0.3.6/geotiff.min.js",
     "plotty": "santilland/plotty#^0.1.2",
@@ -29,9 +29,8 @@
     "FileSaver.js": "eligrey/FileSaver.js#~1.2.0",
     "canvas-toBlob.js": "eligrey/canvas-toBlob.js",
     "Blob.js": "eligrey/Blob.js",
-    "graphly": "eox-a/graphly#322c37ba2f8b986d0e3cefa7e44f254098ca4190",
-    "datetimepicker": "xdan/datetimepicker#^2.5.20",
-    "moment": "^2.24.0"
+    "graphly": "eox-a/graphly#50aefeff461fa8f98a5cff289e29dedf0e8814a5",
+    "datetimepicker": "xdan/datetimepicker#^2.5.20"
   },
   "devDependencies": {
     "Keypress": "~2.0.0"

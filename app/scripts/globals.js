@@ -77,6 +77,8 @@ define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, Objec
                     member.set('processes', []);
                     member.set('view', {isBaseLayer: false});
                     member.set('favourite', true);
+                    member.set('coveragesCollection',{});
+                    member.set('scaleFactor',0.5);
 
                     self.add(member);
                 }
