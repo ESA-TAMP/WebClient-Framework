@@ -44,6 +44,8 @@
 				    });
 
 				});*/
+				var imagerenderercanvas = $('<canvas/>',{id: 'imagerenderercanvas'});
+                $('body').append(imagerenderercanvas);
 
 				$("body").tooltip({ 
 			    	selector: '[data-toggle=tooltip]',
@@ -198,7 +200,7 @@
 							model: product.model,
 							coefficients_range: product.coefficients_range,
 							satellite: product.satellite,
-							clamps: Cesium.defaultFor(product.clamps, [false, false]),
+							clamps: Cesium.defaultFor(product.clamps, [false, true]),
                             favourite: favourite
 						})
 					);
@@ -232,7 +234,7 @@
 							for (var j = pKeys.length - 1; j >= 0; j--) {
 								p.parameters[pKeys[j]]["colorscale"] = defaultFor(p.parameters[pKeys[j]]["colorscale"], "viridis");
 								p.parameters[pKeys[j]]["clamp_min"] = defaultFor(p.parameters[pKeys[j]]["clamp_min"], false);
-								p.parameters[pKeys[j]]["clamp_max"] = defaultFor(p.parameters[pKeys[j]]["clamp_max"], false);
+								p.parameters[pKeys[j]]["clamp_max"] = defaultFor(p.parameters[pKeys[j]]["clamp_max"], true);
 							}
 						}
 
@@ -272,7 +274,9 @@
 								},
 								processes: [],
 								parameters: p.parameters,
-                                favourite: favourite
+                                favourite: favourite,
+                                coveragesCollection: {},
+                                scaleFactor: defaultFor(p.scaleFactor, 0.5)
 							};
 
 							if(ground_measurements){
