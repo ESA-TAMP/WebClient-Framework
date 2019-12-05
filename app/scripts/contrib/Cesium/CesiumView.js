@@ -445,6 +445,23 @@ define(['backbone.marionette',
 
             showPickingResult: function(renderdata, pos_x, pos_y){
 
+                function hexToRgb(hex) {
+                    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                    return result ? [
+                        (parseInt(result[1], 16))/255.0,
+                        (parseInt(result[2], 16))/255.0,
+                        (parseInt(result[3], 16))/255.0
+                    ] : null;
+                }
+
+                var autoColor = {
+                    colors : d3.scale.category10(),
+                    index : 0,
+                    getColor: function () { 
+                        return hexToRgb(this.colors(this.index++))
+                    }
+                }
+
                 $("#pickingresults").hide();
 
                 // Do some cleanup
@@ -526,7 +543,7 @@ define(['backbone.marionette',
                             if(orderedtimebucket[ts].hasOwnProperty(key)){
                                 resultData[key].push(orderedtimebucket[ts][key]);
                             } else {
-                                resultData[key].push(Number.MIN_VALUE);
+                                resultData[key].push(NaN);
                             }
                         } 
                     }
@@ -540,40 +557,53 @@ define(['backbone.marionette',
                         }
                     };
 
+
+
                     var colorAxis = [];
                     for(var coll in renderdata){
                         datSet[coll] = {
                             'lineConnect': true,
-                            'color': [0.1, 0.1, 1.0]
+                            'color': autoColor.getColor()
                         };
                         colorAxis.push(null);
                     }
 
-                    /*if(resultData[0].hasOwnProperty('timestamp') && 
-                        resultData[0]['timestamp'] instanceof Date) {
-                        datSet['timestamp'] = {
-                            scaleFormat: 'time'
-                        }
-                        resultData = _.sortBy(resultData, function(c){ return c.timestamp.getTime(); });
-                    }*/
-
                     if(this.graph){
-                         var rS = {
+                        var rS = {
                             xAxis: 'timestamp',
                             yAxis: [collections],
                             colorAxis: [colorAxis],
                             y2Axis: [[]],
                             colorAxis2:[[]],
                         };
+                        if(collections.length === 2){
+                            rS = {
+                                xAxis: 'timestamp',
+                                yAxis: [[collections[0]]],
+                                colorAxis: [[null]],
+                                y2Axis: [[collections[1]]],
+                                colorAxis2:[[null]],
+                            };
+                        }
+                        // Check if collections have changed
+                        var collectionschanged = false;
+                        if(this.prevColl && this.prevColl.length === collections.length){
+                            for (var i = 0; i < this.prevColl.length; i++) {
+                                if(this.prevColl[i] !== collections[i]){
+                                    collectionschanged = true;
+                                }
+                            }
+                        } else {
+                            collectionschanged = true;
+                        }
 
-                        // Check if something changed in the selection
-                        if(this.graph.renderSettings.xAxis !== this.selection_x || 
-                            this.graph.renderSettings.yAxis[0] !== collections) {
+                        if(collectionschanged) {
 
                             this.graph.dataSettings = datSet;
                             this.graph.renderSettings = rS;
                         }
                         this.graph.loadData(resultData);
+                        this.prevColl = collections;
                     }
 
 
@@ -619,6 +649,8 @@ define(['backbone.marionette',
             onViewerClicked: function(click){
 
                 var resultData = {};
+                var pos_x = 0;
+                var pos_y = 0;
                 // First check if a station or PoI was selected, if yes
                 var pickedObject = this.map.scene.pick(click.position);
 
@@ -645,21 +677,26 @@ define(['backbone.marionette',
                         var stationObj = this.pickEntity(pickedObject);
                         if(stationObj){
                             resultData[stationObj.id] = stationObj.data;
+                            var poipos = Cesium.Ellipsoid.WGS84.cartesianToCartographic(
+                                pickedObject.primitive.position
+                            );
+                            pos_x = Cesium.Math.toDegrees(poipos.longitude);
+                            pos_y = Cesium.Math.toDegrees(poipos.latitude);
                         }
                     }
                 }
 
-                // If picking tool has been activated lets look at the
+                // If picking tool or POI has been activated lets look at the
                 // clicked position
-                if (this.pickingActive) {
+                if (this.pickingActive || Cesium.defined(pickedObject)) {
                     var x = click.position.x;
                     var y = click.position.y;
 
                     var cartesian = this.map.camera.pickEllipsoid(new Cesium.Cartesian2(x,y), this.map.scene.globe.ellipsoid);
                     var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
 
-                    var pos_x = Cesium.Math.toDegrees(cartographic.longitude);
-                    var pos_y = Cesium.Math.toDegrees(cartographic.latitude);
+                    pos_x = Cesium.Math.toDegrees(cartographic.longitude);
+                    pos_y = Cesium.Math.toDegrees(cartographic.latitude);
 
                     // Iterate all imagery providers to see if picking point is inside
                     globals.products.each(function(product) {
@@ -697,15 +734,18 @@ define(['backbone.marionette',
                         }
                     }, this);
 
-                    this.map.entities.getById("needle").show = false;
+                    if(!Cesium.defined(pickedObject)){
+                        // Move and show needle if no POI is selected
+                        this.map.entities.getById("needle").show = false;
+                        var needle = this.map.entities.getById('needle');
+                        needle.position.setValue(Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 600000));
+                        needle.polyline._positions.setValue([
+                            Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 0),
+                            Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 600000)
+                        ]);
+                        this.map.entities.getById("needle").show = true;
+                    }
 
-                    var needle = this.map.entities.getById('needle');
-                    needle.position.setValue(Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 600000));
-                    needle.polyline._positions.setValue([
-                        Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 0),
-                        Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 600000)
-                    ]);
-                    this.map.entities.getById("needle").show = true;
                     this.showPickingResult(resultData, pos_x, pos_y);
                 }
             },
@@ -2287,12 +2327,19 @@ define(['backbone.marionette',
                         }
                     }
 
-                    cur_coll.removeAll();
+                    var poiCollection = product.get('poiCollection');
+                    if(poiCollection === undefined){
+                        poiCollection = new Cesium.PrimitiveCollection();
+                        product.set('poiCollection', poiCollection);
+                        that.map.scene.primitives.add(poiCollection);
+                    }
+
+                    poiCollection.removeAll();
 
                     for (var stID in that.stations){
                         var cS = that.stations[stID];
                         var pos = new Cesium.Cartesian3.fromDegrees(cS.longitude, cS.latitude);
-                        var bil_coll = cur_coll.add(new Cesium.BillboardCollection());
+                        var bil_coll = poiCollection.add(new Cesium.BillboardCollection());
                         var icon = pinimage;
 
                         if(that.selectedEntityId == cS.id){
@@ -2312,7 +2359,7 @@ define(['backbone.marionette',
                             that.pickEntity({primitive:b, id:cS.id}, cS.latitude, cS.longitude);
                         }
 
-                        cur_coll.show = true;
+                        poiCollection.show = true;
                     }
                 });
             },
@@ -2872,8 +2919,14 @@ define(['backbone.marionette',
                 }
 
                 var currCovColl = product.get('coveragesCollection');
+                var poiCollection = product.get('poiCollection');
+
 
                 if(visible){
+
+                    if(poiCollection !== undefined){
+                        poiCollection.show = true;
+                    }
 
                     for(var cov in currCovColl){
                         if(currCovColl[cov].hasOwnProperty('imageryLayer')){
@@ -2919,6 +2972,10 @@ define(['backbone.marionette',
                         .success(this.processCoverageList.bind(this, product, b, identifier));
 
                 }else{
+
+                    if(poiCollection !== undefined){
+                        poiCollection.show = false;
+                    }
 
                     // TODO: Cleanup of loaded data when not shown?
                     for(var cov in currCovColl){
