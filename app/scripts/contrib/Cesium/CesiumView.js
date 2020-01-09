@@ -1355,6 +1355,19 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                     bbox[0],bbox[1],bbox[2],bbox[3]
                 )
             });
+
+            this.map.entities.add({
+                rectangle : {
+                    coordinates : Cesium.Rectangle.fromDegrees(bbox[0],bbox[1],bbox[2],bbox[3]),
+                    outline : true,
+                    outlineColor : Cesium.Color.RED,
+                    outlineWidth : 4,
+                    stRotation : Cesium.Math.toRadians(45),
+                    material : Cesium.Color.fromRandom({alpha : 0.0}),
+                    height: 0
+                }
+            });
+
             return imgProv;
         },
 
@@ -1367,12 +1380,19 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
             if(alpha==1){alpha=0.98;}
 
             // Check for antimeridian crossing if there is do some wrapping
-            if( (bbox[2] - bbox[0] > 180) &&
+            /*if( (bbox[2] - bbox[0] > 180) &&
                 (bbox[0]!=-180 && bbox[2]!=180) &&
                 (bbox[0]!=0 && bbox[2]!=360) ){
                 var tmp = bbox[0] + 360;
                 bbox[0] = bbox[2];
                 bbox[2] = tmp;
+            }*/
+            if( (bbox[3] - bbox[1] > 180) &&
+                (bbox[1]!=-180 && bbox[3]!=180) &&
+                (bbox[1]!=0 && bbox[3]!=360) ){
+                var tmp = bbox[1] + 360;
+                bbox[1] = bbox[3];
+                bbox[3] = tmp;
             }
             // TODO: Do we need this check here?
 
@@ -2369,21 +2389,21 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
             var wcsEndpoint = entry['atom:source'];
 
             if(b!=null){
-            wcsEndpoint = wcsEndpoint +
-                '&subset=Lat('+b[0]+','+b[2]+')'+
-                '&subset=Long('+b[1]+','+b[3]+')';
-                // Intersect product bbox and bbox selection
-                if(lowCorn[0]<b[0]){
-                    lowCorn[0] = b[0];
+                wcsEndpoint = wcsEndpoint +
+                    '&subset=Lat('+b[0]+','+b[2]+')'+
+                    '&subset=Long('+b[1]+','+b[3]+')';
+                    // Intersect product bbox and bbox selection
+                if(lowCorn[1]<b[0]){
+                    lowCorn[1] = b[0];
                 }
-                if(lowCorn[1]<b[1]){
-                    lowCorn[1] = b[1];
+                if(lowCorn[0]<b[1]){
+                    lowCorn[0] = b[1];
                 }
-                if(upperCorn[0]>b[2]){
-                    upperCorn[0] = b[2];
+                if(upperCorn[1]>b[2]){
+                    upperCorn[1] = b[2];
                 }
-                if(upperCorn[1]>b[3]){
-                    upperCorn[1] = b[3];
+                if(upperCorn[0]>b[3]){
+                    upperCorn[0] = b[3];
                 }
             }
 
@@ -2408,14 +2428,15 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
 
             // TODO: This should not be part of the dataset received so 
             // we should remove this and the data should be fixed
-            if(id.indexOf('QA_VALUE') === -1){
-                coverages.data.push({
-                    identifier: id,
-                    wcsEndpoint: wcsEndpoint,
-                    bbox: [lowCorn[1], lowCorn[0], upperCorn[1], upperCorn[0]],
-                    starttime: start
-                });
-            }
+            console.log(entry['atom:category']["@term"])
+            //if(entry['atom:category']["@term"].indexOf(' QA ') === -1 &&
+            //    entry['atom:category']["@term"].indexOf('NITROGENDIOXIDE TROPOSPHERIC') === -1){
+            coverages.data.push({
+                identifier: id,
+                wcsEndpoint: wcsEndpoint,
+                bbox: [lowCorn[0], lowCorn[1], upperCorn[0], upperCorn[1]],
+                starttime: start
+            });
         },
 
         loadingOfCoveragesComplete: function(coverages, collId, product, stacked){
