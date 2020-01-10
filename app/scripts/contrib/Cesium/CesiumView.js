@@ -3159,6 +3159,8 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
 
                 if(product.get("download").id==layer){
 
+                    this.checkColorscale(product.get('download').id);
+
                     var parameters = product.get("parameters");
                     var band;
                     var keys = _.keys(parameters);
