@@ -21,7 +21,7 @@
     "bootstrap": "~3.0.1",
     "font-awesome": "~4.5.0",
     "d3.Graphs": "ESA-VirES/AnalyticsViewer#~0.3.9",
-    "cesium": "https://github.com/AnalyticalGraphicsInc/cesium/releases/download/1.20/Cesium-1.20.zip",
+    "cesium": "https://github.com/AnalyticalGraphicsInc/cesium/releases/download/1.39/Cesium-1.39.zip",
     "papaparse": "~4.1.0",
     "geotiffjs": "https://github.com/geotiffjs/geotiff.js/releases/download/v0.3.6/geotiff.min.js",
     "plotty": "santilland/plotty#^0.1.2",
@@ -29,7 +29,7 @@
     "FileSaver.js": "eligrey/FileSaver.js#~1.2.0",
     "canvas-toBlob.js": "eligrey/canvas-toBlob.js",
     "Blob.js": "eligrey/Blob.js",
-    "graphly": "eox-a/graphly#^0.1.0"
+    "graphly": "eox-a/graphly#79d32659a84134aee14d6d3de3390edb501cd3ee"
   },
   "devDependencies": {
     "Keypress": "~2.0.0"

@@ -127,10 +127,6 @@
 					Communicator.mediator.trigger("layer:parameters:changed", that.model.get("download").id);
 				});
 
-
-
-
-
 				this.$("#range_min_slider").on("input change", function(){
 					var newrange = [parseFloat(this.value), options[that.selected].range[1]];
 					options[that.selected].range = newrange;
@@ -138,11 +134,25 @@
 					that.updateRange(options);
 				});
 
+				this.$("#range_min_slider").on("mouseup", function(){
+					var newrange = [parseFloat(this.value), options[that.selected].range[1]];
+					options[that.selected].range = newrange;
+					that.model.set("parameters", options);
+					Communicator.mediator.trigger("layer:parameters:changed", that.model.get("download").id);
+				});
+
 				this.$("#range_max_slider").on("input change", function(){
 					var newrange = [options[that.selected].range[0], parseFloat(this.value)];
 					options[that.selected].range = newrange;
 					Communicator.mediator.trigger("layer:range:changed", that.model.get("download").id, newrange, options[that.selected].colorscale);
 					that.updateRange(options);
+				});
+
+				this.$("#range_max_slider").on("mouseup", function(){
+					var newrange = [options[that.selected].range[0], parseFloat(this.value)];
+					options[that.selected].range = newrange;
+					that.model.set("parameters", options);
+					Communicator.mediator.trigger("layer:parameters:changed", that.model.get("download").id);
 				});
 
 
@@ -223,6 +233,7 @@
 				that.updateRange(options);
 
 				this.createHeightTextbox(this.model.get("height"));
+				this.createScaleFactorTextbox(this.model.get('scaleFactor'));
 
 				if(!(typeof this.model.get("timeRange") === 'undefined')){
 
@@ -296,6 +307,7 @@
 				}
 
 				this.createHeightTextbox(this.model.get("height"));
+				this.createScaleFactorTextbox(this.model.get('scaleFactor'));
 
 				this.model.set("parameters", options);
 				//that.updateRange(options);
@@ -398,6 +410,24 @@
 						this.model.set("height", height);
 				}
 
+				// Check for scalefactor parameter
+				var scaleFactorChange = false;
+				if ($("#scaleFactorValue").length){
+					var scaleFactor = parseFloat($("#scaleFactorValue").val());
+					if(scaleFactor>1.0){
+						scaleFactor = NaN;
+					}
+					error = error || this.checkValue(scaleFactor,$("#scaleFactorValue"));
+
+					if (!error){
+						var prevScaleFactor = this.model.get("scaleFactor");
+						if(prevScaleFactor !== scaleFactor){
+							this.model.set("scaleFactor", scaleFactor);
+							scaleFactorChange = true;
+						}
+					}
+				}
+
 				if(!error){
 					// Remove button
 					$("#applychanges").empty();
@@ -405,6 +435,9 @@
 					//Apply changes
 					this.model.set("parameters", options);
 					Communicator.mediator.trigger("layer:parameters:changed", this.model.get("download").id);
+					if(scaleFactorChange){
+						Communicator.mediator.trigger("layer:scalefactor:changed", this.model.get("download").id);
+					}
 				}
 			},
 
@@ -578,6 +611,23 @@
 
 					// Register necessary key events
 					this.registerKeyEvents(this.$("#heightvalue"));
+				}
+	      	},
+
+	      	createScaleFactorTextbox: function(scaleFactor){
+	      		var that = this;
+	      		this.$("#scaleFactor").empty();
+	      		if( (scaleFactor || scaleFactor==0)){
+					this.$("#scaleFactor").append(
+						'<form style="vertical-align: middle;">'+
+						'<label for="scaleFactorValue" style="width: 70px;">Data scale: </label>'+
+						'<input id="scaleFactorValue" type="text" style="width:30px; margin-left:8px"/>'+
+						'</form>'
+					);
+					this.$("#scaleFactorValue").val(scaleFactor);
+
+					// Register necessary key events
+					this.registerKeyEvents(this.$("#scaleFactorValue"));
 				}
 	      	}
 
