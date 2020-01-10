@@ -138,11 +138,25 @@
 					that.updateRange(options);
 				});
 
+				this.$("#range_min_slider").on("mouseup", function(){
+					var newrange = [parseFloat(this.value), options[that.selected].range[1]];
+					options[that.selected].range = newrange;
+					that.model.set("parameters", options);
+					Communicator.mediator.trigger("layer:parameters:changed", that.model.get("download").id);
+				});
+
 				this.$("#range_max_slider").on("input change", function(){
 					var newrange = [options[that.selected].range[0], parseFloat(this.value)];
 					options[that.selected].range = newrange;
 					Communicator.mediator.trigger("layer:range:changed", that.model.get("download").id, newrange, options[that.selected].colorscale);
 					that.updateRange(options);
+				});
+
+				this.$("#range_max_slider").on("mouseup", function(){
+					var newrange = [options[that.selected].range[0], parseFloat(this.value)];
+					options[that.selected].range = newrange;
+					that.model.set("parameters", options);
+					Communicator.mediator.trigger("layer:parameters:changed", that.model.get("download").id);
 				});
 
 

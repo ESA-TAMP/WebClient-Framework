@@ -9,7 +9,7 @@ define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, Objec
         getColor: function () { return this.colors(this.index++) }
     };
 
-    var clientInterfaceHost = 'http://80.158.47.58/en';
+    var clientInterfaceHost = 'https://amida.adamplatform.eu/en';
     var Products = Backbone.Collection.extend({
         url: clientInterfaceHost+'/api/dave/collections/',
         fetchCollection: function() {
