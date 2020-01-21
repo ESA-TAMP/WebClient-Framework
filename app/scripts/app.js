@@ -276,7 +276,7 @@
 								parameters: p.parameters,
                                 favourite: favourite,
                                 coveragesCollection: {},
-                                scaleFactor: defaultFor(p.scaleFactor, 0.5)
+                                scaleFactor: defaultFor(p.scaleFactor, 0.7)
 							};
 
 							if(ground_measurements){
