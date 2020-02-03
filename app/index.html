@@ -61,7 +61,6 @@
                 }
             }*/
 
-
             var USER_PRODUCTS = [
                 {
                     "name": "CH4 total column - Near real time",
@@ -81,6 +80,22 @@
                 {
                     "name": "CH4 total column - Offline",
                     "id": "S5P_OFFL_L2_CH4_PRODUCT_METHANE_MIXING_RATIO",
+                    "description": "Sentinel 5P Methane (CH4) total column",
+                    "scaleFactor": 0.3,
+                    "date":
+                    ["May 3, 2018","Oct. 28, 2019"],
+                    "parameters": {
+                        "Parameter1": {
+                            "range":[ 1500,2000 ],"uom":"mol/m2",
+                            "clamp_max":true,
+                            "clamp_min":true,
+                            "nullValue": [-9999, 9.969209968386869e+36]
+                        }
+                    }
+                },
+                {
+                    "name": "CH4 total column - Reprocessed",
+                    "id": "S5P_RPRO_L2_CH4_PRODUCT_METHANE_MIXING_RATIO",
                     "description": "Sentinel 5P Methane (CH4) total column",
                     "scaleFactor": 0.3,
                     "date":
@@ -126,6 +141,22 @@
                     }
                 },
                 {
+                    "name": "NO2 tropospheric column - Reprocessed",
+                    "id": "S5P_RPRO_L2_NO2_PRODUCT_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN",
+                    "description": "Sentinel 5P Nitrogen Dioxide (NO2) tropospheric columns",
+                    "scaleFactor": 0.3,
+                    "date":
+                    ["May 3, 2018","Oct. 28, 2019"],
+                    "parameters": {
+                        "Parameter1": {
+                            "range":[ 0,0.0005 ],"uom":"mol/m2",
+                            "clamp_max":true,
+                            "clamp_min":true,
+                            "nullValue": [-9999, 9.969209968386869e+36]
+                        }
+                    }
+                },
+                {
                     "name": "SO2 total column - Near real time",
                     "id": "S5P_NRTI_L2_SO2_PRODUCT_SULFURDIOXIDE_TOTAL_VERTICAL_COLUMN",
                     "description": "Sentinel 5P Sulfur Dioxide (SO2) total column",
@@ -143,6 +174,22 @@
                 {
                     "name": "SO2 total column - Offline",
                     "id": "S5P_OFFL_L2_SO2_PRODUCT_SULFURDIOXIDE_TOTAL_VERTICAL_COLUMN",
+                    "description": "Sentinel 5P Sulfur Dioxide (SO2) total column",
+                    "scaleFactor": 0.3,
+                    "date":
+                    ["May 3, 2018","Oct. 28, 2019"],
+                    "parameters": {
+                        "Parameter1": {
+                            "range":[ 0, 0.002 ],"uom":"mol/m2",
+                            "clamp_max":true,
+                            "clamp_min":true,
+                            "nullValue": [-9999, 9.969209968386869e+36]
+                        }
+                    }
+                },
+                {
+                    "name": "SO2 total column - Reprocessed",
+                    "id": "S5P_RPRO_L2_SO2_PRODUCT_SULFURDIOXIDE_TOTAL_VERTICAL_COLUMN",
                     "description": "Sentinel 5P Sulfur Dioxide (SO2) total column",
                     "scaleFactor": 0.3,
                     "date":
@@ -188,6 +235,22 @@
                     }
                 },
                 {
+                    "name": "CO Vertical  column - Reprocessed",
+                    "id": "S5P_RPRO_L2_CO_PRODUCT_CARBONMONOXIDE_TOTAL_COLUMN",
+                    "description": "Sentinel 5P Carbn Monoxide (CO) total column",
+                    "scaleFactor": 0.3,
+                    "date":
+                    ["May 3, 2018","Oct. 28, 2019"],
+                    "parameters": {
+                        "Parameter1": {
+                            "range":[ 0.001,0.05 ],"uom":"mol/m2",
+                            "clamp_max":true,
+                            "clamp_min":true,
+                            "nullValue": [-9999, 9.969209968386869e+36]
+                        }
+                    }
+                },
+                {
                     "name": "O3 tropospheric column - Near real time",
                     "id": "S5P_NRTI_L2_O3_PRODUCT_OZONE_TOTAL_VERTICAL_COLUMN",
                     "description": "Sentinel 5P Ozone (O3) tropospheric column",
@@ -205,6 +268,22 @@
                 {
                     "name": "O3 tropospheric column - Offline",
                     "id": "S5P_OFFL_L2_O3_PRODUCT_OZONE_TOTAL_VERTICAL_COLUMN",
+                    "description": "Sentinel 5P Ozone (O3) tropospheric column",
+                    "scaleFactor": 0.3,
+                    "date":
+                    ["May 3, 2018","Oct. 28, 2019"],
+                    "parameters": {
+                        "Parameter1": {
+                            "range":[ 0.1, 0.25 ],"uom":"mol/m2",
+                            "clamp_max":true,
+                            "clamp_min":true,
+                            "nullValue": [-9999, 9.969209968386869e+36]
+                        }
+                    }
+                },
+                {
+                    "name": "O3 tropospheric column - Reprocessed",
+                    "id": "S5P_RPRO_L2_O3_PRODUCT_OZONE_TOTAL_VERTICAL_COLUMN",
                     "description": "Sentinel 5P Ozone (O3) tropospheric column",
                     "scaleFactor": 0.3,
                     "date":
