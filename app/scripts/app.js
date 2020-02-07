@@ -284,6 +284,10 @@
 								args['timeSliderProtocol'] = 'KVP';
 							}
 
+                            if(p.hasOwnProperty('provider')){
+                                args.provider = p.provider;
+                            }
+
 							globals.products.add(new m.LayerModel(args));
 							console.log("Added user product " + p.name );
 						}

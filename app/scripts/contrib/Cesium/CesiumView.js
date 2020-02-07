@@ -1140,7 +1140,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                         if(baselayer.get("name")!=options.name){
                             ces_layer.show = false;
                             //Manage custom attribution (remove deactivated layers)
-                            $("#"+baselayer.get("name")).remove();
+                            //$("#"+baselayer.get("name")).remove();
                         }
                     }
                 }, this);
@@ -1220,7 +1220,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                             }
                         }else{
                             //Manage custom attribution (remove deactivated layers)
-                            $("#"+product.get("name")).remove();
+                            //$("#"+product.get("name")).remove();
                         }
                     }
                 }, this);

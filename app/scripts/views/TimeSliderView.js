@@ -340,7 +340,7 @@
       fetchWPS: function(start, end, params, callback){
 
           var request = 
-            PRODUCT_URL+'pycsw/pycsw/csw.py?mode=opensearch'+
+            this.provider+'pycsw/pycsw/csw.py?mode=opensearch'+
             '&service=CSW&version=2.0.2&request=GetRecords&elementsetname=brief'+
             '&typenames=csw:Record&resulttype=results'+
             '&time='+getISODateTimeString(start)+'/'+getISODateTimeString(end)+
@@ -440,7 +440,8 @@
                   attrs = {
                     id: product.get('download').id,
                     url: product.get('download').url,
-                    bbox: this.bbox
+                    bbox: this.bbox,
+                    provider: defaultFor(product.get('provider'), PRODUCT_URL)
                   };
                   
                   this.slider.addDataset({
