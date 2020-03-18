@@ -80,8 +80,10 @@
                     var sels = Communicator.reqres.request('selections:get:all');
 
                     var sel_time = sels.time;
-                    options.timerange_start = getISODateTimeString(sel_time.start);
-                    options.timerange_end = getISODateTimeString(sel_time.end);
+                    options.timerange_start = getISODateTimeString(sel_time.start)
+                        .replace('T', ' ').slice(0,-4);
+                    options.timerange_end = getISODateTimeString(sel_time.end)
+                        .replace('T', ' ').slice(0,-4);
 
                     // Get current bbox
                     var bbox = sels.geo;
@@ -100,7 +102,7 @@
                 //var date_input=$('input[name="date"]'); //our date input has the name "date"
                 //var container=$('.bootstrap-iso form').length>0 ? $('.bootstrap-iso form').parent() : "body";
 
-                $.datetimepicker.setDateFormatter({
+                /*$.datetimepicker.setDateFormatter({
                     parseDate: function (date, format) {
                         var d = new Date(date);
                         return date instanceof Date ? d : false;
@@ -115,14 +117,19 @@
                         }
                     }
                 });
+*/
 
-
-                this.$('.datefield').datetimepicker({
-                    format: 'ISO8601'
+                $('.datefield').datetimepicker({
+                    //format: 'ISO8601',
+                    format:'Y-m-d H:i',
+                    /*onChangeDateTime:function(dp,$input){
+                        console.log($input.val());
+                        console.log($input);
+                    }*/
                 });
 
-                var baseprocessingURL = 'https://amida.adamplatform.eu/wps/wps?';
-                baseprocessingURL+='service=WPS&version=2.0.0&request=execute&Identifier=pmm&storeExecuteResponse=true&status=true&datainputs=';
+                var baseprocessingURL = 'https://amida-wcs.adamplatform.eu/wps/wps?';
+                baseprocessingURL+='service=WPS&version=2.0.0&request=execute&Identifier=pmm_test&storeExecuteResponse=true&status=true&datainputs=';
 
                 $('#processForm').submit(function(e){
                     e.preventDefault();
@@ -138,11 +145,13 @@
                         });
                         // Reformat specific fields
                         if(inputs.hasOwnProperty('timerange_start') && inputs.hasOwnProperty('timerange_end')){
-                            inputs.timerange = inputs.timerange_start+'/'+inputs.timerange_end;
+                            var start = getISODateTimeString(new Date(inputs.timerange_start));
+                            var end = getISODateTimeString(new Date(inputs.timerange_end));
+                            inputs.timerange = start+'/'+end;
                             delete inputs.timerange_start;
                             delete inputs.timerange_end;
                         }
-                        // Check for selected projeciton
+                        // Check for selected projection
                         inputs.projection = $( '#projection option:selected' ).val();
                         var url = baseprocessingURL + kvpTmpl({values: inputs});
                         $('#startProcess').attr('disabled', true);
@@ -152,14 +161,14 @@
                                 setTimeout(function(){
                                     $('#requestlabel').remove();
                                     $('#startProcess').attr('disabled', false);
-                                }, 5000);
+                                }, 10000);
                             })
                             .error(function(){
                                 $('#processForm').append('<label id="requestlabel" for="startProcess" class="getstatuslabel failed">Error sending request</label>');
                                 setTimeout(function(){
                                     $('#requestlabel').remove();
                                     $('#startProcess').attr('disabled', false);
-                                }, 5000);
+                                }, 10000);
                             });
                     }
                     
