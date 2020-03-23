@@ -149,7 +149,8 @@ define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, Objec
         products: new Products(),
         jobs: new Jobs(),
         overlays: new Backbone.Collection(),
-        swarm: new swarm_model()
+        swarm: new swarm_model(),
+        clientInterfaceHost: clientInterfaceHost
     };
 });
 

@@ -21,7 +21,8 @@
 				'click .fa-adjust': 'onOpenSlider',
 				'click .favouriteContainer.active': 'onDeactivateProduct',
 				'click .favouriteContainer.inactive': 'onActivateProduct',
-				'slide .ui-slider': 'onOpacityAdjust'
+				'slide .ui-slider': 'onOpacityAdjust',
+				'click .deleteJob': 'onDeleteJob'
 			},
 
 			initialize: function(options) {
@@ -229,6 +230,17 @@
 		    	$(this.el).find('.favouriteIcon').parent().removeClass('inactive');
 		    	$(this.el).find('.favouriteIcon').parent().addClass('active');
 		    	globals.favouritesView.render();
+		    },
+		    onDeleteJob: function(evt){
+		    	var deleteUrl = globals.clientInterfaceHost + 
+		    		'/api/pmm/jobs/?identifier='+this.model.get('identifier');
+		    	$.ajax({
+				    url: deleteUrl,
+				    type: 'DELETE',
+				    success: function(result) {
+				        globals.jobs.fetchCollection();
+				    }
+				});
 		    },
 		    onDeactivateProduct: function(evt){
 		    	$(this.el).find('.favouriteIcon').removeClass('fa-star');
