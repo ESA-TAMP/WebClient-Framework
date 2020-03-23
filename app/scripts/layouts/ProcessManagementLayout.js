@@ -87,10 +87,14 @@
 
                     // Get current bbox
                     var bbox = sels.geo;
-                    var bboxstring = '-180,180,-90,90';
+                    //[top-left.lat, top-left.lon, bottom-right.lat, bottom-right.lon]
+                    var bboxstring = '90,-180,-90,180';
                     if(bbox !== null){
-                        bboxstring = bbox.w.toFixed(3)+','+bbox.e.toFixed(3)+','+
-                        bbox.s.toFixed(3)+','+bbox.n.toFixed(3);
+                        bboxstring = 
+                            bbox.n.toFixed(3)+','+
+                            bbox.w.toFixed(3)+','+
+                            bbox.s.toFixed(3)+','+
+                            bbox.e.toFixed(3);
                     }
                     options.bbox = bboxstring;
 
