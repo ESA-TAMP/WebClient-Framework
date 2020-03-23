@@ -145,11 +145,15 @@
                         });
                         // Reformat specific fields
                         if(inputs.hasOwnProperty('timerange_start') && inputs.hasOwnProperty('timerange_end')){
-                            var start = getISODateTimeString(new Date(inputs.timerange_start));
-                            var end = getISODateTimeString(new Date(inputs.timerange_end));
-                            inputs.timerange = start+'/'+end;
+                            var start = getISODateTimeString(new Date(inputs.timerange_start)).slice(0,-1);
+                            var end = getISODateTimeString(new Date(inputs.timerange_end)).slice(0,-1);
+                            inputs.timerange = start+','+end;
                             delete inputs.timerange_start;
                             delete inputs.timerange_end;
+                        }
+                        // Check if timeaggre is being used
+                        if(inputs.timeaggre === ''){
+                            delete inputs.timeaggre;
                         }
                         // Check for selected projection
                         inputs.projection = $( '#projection option:selected' ).val();
