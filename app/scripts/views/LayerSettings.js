@@ -6,12 +6,13 @@
 	root.define([
 		'backbone',
 		'communicator',
+		'globals',
 		'hbs!tmpl/LayerSettings',
 		'underscore',
 		'plotty'
 	],
 
-	function( Backbone, Communicator, LayerSettingsTmpl ) {
+	function( Backbone, Communicator, globals, LayerSettingsTmpl ) {
 
 		var LayerSettings = Backbone.Marionette.Layout.extend({
 
@@ -250,6 +251,37 @@
 
 					this.$("#centertime").click(function(){
 						Communicator.mediator.trigger("date:center", timerange);
+					});
+
+				}
+
+				if(!(typeof this.model.get("id") === 'undefined')){
+					var collId = this.model.get("id");
+					if (!collId.startsWith('AMIDA')){
+						this.$("#deletecollection").empty();
+
+						this.$("#deletecollection").append(
+						'<button style="width:100%;" type="button" class="btn btn-danger">Delete collection</button>'
+						);
+					}
+
+					this.$("#deletecollection").click(function(){
+						var deleteUrl = globals.clientInterfaceHost + 
+				    		'/api/pmm/collections/?identifier='+collId;
+				    	$.ajax({
+						    url: deleteUrl,
+						    type: 'DELETE',
+						    success: function(result) {
+						    	var options = {
+				            		name: that.model.get('name'),
+				            		isBaseLayer: false,
+				            		visible: false
+				            	};
+						    	Communicator.mediator.trigger('map:layer:change', options);
+						    	that.close();
+						        globals.products.fetchCollection();
+						    }
+						});
 					});
 
 				}
