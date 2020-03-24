@@ -279,7 +279,7 @@
 				            	};
 						    	Communicator.mediator.trigger('map:layer:change', options);
 						    	that.close();
-						        globals.products.fetchCollection();
+						        globals.products.fetch();
 						    }
 						});
 					});

@@ -238,7 +238,7 @@
 				    url: deleteUrl,
 				    type: 'DELETE',
 				    success: function(result) {
-				        globals.jobs.fetchCollection();
+				        globals.jobs.fetch();
 				    }
 				});
 		    },
