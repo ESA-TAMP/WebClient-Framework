@@ -60,7 +60,7 @@
 
             renderProcessOptions: function(processId){
                 var options = {
-                    prefix: 'myColl_'+Math.floor(Math.random()*100),
+                    prefix: 'myColl'+Math.floor(Math.random()*100),
                     resolution: '0.1'
                 };
                 
@@ -147,17 +147,65 @@
                         $('form#processForm :input').each(function(){
                             inputs[$(this).attr('id')] = $(this).val();
                         });
+                        var startDate, endDate;
                         // Reformat specific fields
                         if(inputs.hasOwnProperty('timerange_start') && inputs.hasOwnProperty('timerange_end')){
-                            var start = getISODateTimeString(new Date(inputs.timerange_start)).slice(0,-1);
-                            var end = getISODateTimeString(new Date(inputs.timerange_end)).slice(0,-1);
+                            startDate = new Date(inputs.timerange_start);
+                            endDate = new Date(inputs.timerange_end);
+                            var start = getISODateTimeString(startDate).slice(0,-1);
+                            var end = getISODateTimeString(endDate).slice(0,-1);
                             inputs.timerange = start+','+end;
                             delete inputs.timerange_start;
                             delete inputs.timerange_end;
                         }
                         // Check if timeaggre is being used
-                        if(inputs.timeaggre === ''){
-                            delete inputs.timeaggre;
+                        if(inputs.hasOwnProperty('timeaggre')){
+                            var aggreSel = inputs.timeaggre;
+                            var timeaggrelist = '';
+                            var currentStep = new Date(startDate);
+                            switch (aggreSel) {
+                            case 'noaggre':
+                                break;
+                            case 'weekly':
+                                while(endDate.getTime()>currentStep.getTime()){
+                                    currentStep = new Date(currentStep);
+                                    timeaggrelist += (getISODateTimeString(currentStep).slice(0,-1)+',');
+                                    currentStep.setDate(currentStep.getDate() + 7);
+                                }
+                                timeaggrelist += getISODateTimeString(endDate).slice(0,-1);
+                                break;
+                            case 'daily':
+                                while(endDate.getTime()>currentStep.getTime()){
+                                    currentStep = new Date(currentStep);
+                                    timeaggrelist += (getISODateTimeString(currentStep).slice(0,-1)+',');
+                                    currentStep.setDate(currentStep.getDate() + 1);
+                                }
+                                timeaggrelist += getISODateTimeString(endDate).slice(0,-1);
+                                break;
+                            case 'halfdaily':
+                                while(endDate.getTime()>currentStep.getTime()){
+                                    currentStep = new Date(currentStep);
+                                    timeaggrelist += (getISODateTimeString(currentStep).slice(0,-1)+',');
+                                    currentStep.setHours(currentStep.getHours() + 12);
+                                }
+                                timeaggrelist += getISODateTimeString(endDate).slice(0,-1);
+                                break;
+                            case 'hourly':
+                                while(endDate.getTime()>currentStep.getTime()){
+                                    currentStep = new Date(currentStep);
+                                    timeaggrelist += (getISODateTimeString(currentStep).slice(0,-1)+',');
+                                    currentStep.setHours(currentStep.getHours() + 1);
+                                }
+                                timeaggrelist += getISODateTimeString(endDate).slice(0,-1);
+                                break;
+                            }
+                            // Overwrite timeaggre selection with computed time
+                            // ranges list
+                            if(timeaggrelist === ''){
+                                delete inputs.timeaggre;
+                            } else {
+                                inputs.timeaggre = timeaggrelist;
+                            }
                         }
                         // Check for selected projection
                         inputs.projection = $( '#projection option:selected' ).val();

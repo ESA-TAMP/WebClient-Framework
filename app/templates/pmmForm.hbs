@@ -38,8 +38,14 @@
     </div>
     <div class="form-row">
         <div class="form-group col-md-12">
-          <label for="timeaggre">Time aggregation list</label>
-          <input autocomplete="off" class="form-control" name="timeaggre" id="timeaggre" value="{{timeaggre_start}}">
+          <label for="timeaggre">Time aggregation steps</label>
+          <select id="timeaggre" name="timeaggre" class="form-control">
+            <option value="noaggre" selected>No selection</option>
+            <option value="hourly">Hourly</option>
+            <option value="halfdaily">Half daily</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+          </select>
         </div>
     </div>
     <button id="startProcess" style="float:right; margin-right:16px;" class="btn btn-primary">Start Process</button>
