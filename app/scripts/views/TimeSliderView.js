@@ -362,6 +362,9 @@
               if(resp.hasOwnProperty('atom:feed') && resp['atom:feed'].hasOwnProperty('atom:entry')){
                 var entries = resp['atom:feed']['atom:entry'];
                 if(typeof entries !== 'undefined'){
+                  if(!Array.isArray(entries)){
+                    entries = [entries];
+                  }
                   for( var ee=0; ee<entries.length; ee++ ){
                     var bboxCont = entries[ee]['http://www.georss.org/georss:where']['gml:Envelope'];
                     var lowCorn = bboxCont['gml:lowerCorner'].split(' ').map(parseFloat);
