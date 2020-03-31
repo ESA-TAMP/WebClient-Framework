@@ -28,7 +28,7 @@
 			onShow: function(view){
 				this.listenTo(this.collection, 'add', this.itemadded);
 				this.listenTo(this.collection, 'remove', this.itemRemoved);
-				this.listenTo(this.collection, 'change', this.itemchanged);
+				this.listenTo(this.collection, 'update', this.itemchanged);
 				/*"add", "remove" and "change"*/
 				this.listenTo(Communicator.mediator, "productCollection:updateSort", this.updateSort);
 				this.listenTo(Communicator.mediator, "map:layer:change", this.onLayerSelectionChange);

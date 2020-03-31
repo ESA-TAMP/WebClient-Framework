@@ -81,6 +81,8 @@ define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, Objec
                     member.set('scaleFactor',0.5);
 
                     self.add(member);
+                } else {
+                    // TODO: Something could have changed in the product
                 }
             });
             return this.models;
@@ -126,7 +128,8 @@ define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, Objec
 
             // Now check if we need to add something
             _.each(response, function(item, index) {
-                if(self.where({identifier: item.identifier}).length === 0){
+                var matches = self.where({identifier: item.identifier});
+                if(matches.length === 0){
                     var member = new self.model();
                     member.set('_id', index);
                     // Set the defaul attributes.
@@ -134,6 +137,19 @@ define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, Objec
                         member.set(key, item[key]);
                     }
                     self.add(member);
+                } else if (matches.length === 1){
+                    var match = matches[0];
+                    for (var mkey in item){
+                        // check if there was a change
+                        if(match.get(mkey) !== item[mkey]){
+                            match.set(mkey, item[mkey]);
+                            //self.set({match},{remove: false});
+                        }
+                    }
+                    if(match.hasChanged()){
+                        self.remove(match);
+                        self.add(match);
+                    }
                 }
             });
             return this.models;
