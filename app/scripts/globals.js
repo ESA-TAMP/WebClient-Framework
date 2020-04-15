@@ -2,7 +2,7 @@
 // globals
 define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, ObjectStore) {
 
-    var refreshtime = 5000; // 5 seconds
+    var refreshtime = 50000000000; // 5 seconds
     var autoColor = {
         colors : d3.scale.category10(),
         index : 0,
@@ -11,13 +11,13 @@ define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, Objec
 
     var clientInterfaceHost = 'https://amida.adamplatform.eu/en';
     var Products = Backbone.Collection.extend({
-        url: clientInterfaceHost+'/api/dave/collections/',
+        url: clientInterfaceHost+'/api/v2/dave/collections/',
         fetchCollection: function() {
             var self = this;
             self.fetch();
-            this.timeout = setTimeout(function() {
+            /*this.timeout = setTimeout(function() {
                 self.fetchCollection();
-            }, refreshtime );
+            }, refreshtime );*/
         },
         parse: function(response) {
             var self = this;
@@ -46,6 +46,8 @@ define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, Objec
                         new Date(item.start),
                         new Date(item.end),
                     ]);
+                    member.set('groundMeasurements', item.groundMeasurement);
+
                     member.set('views', [{
                         'id': item.identifier,
                         'protocol': 'WCS',
@@ -109,9 +111,9 @@ define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, Objec
         fetchCollection: function() {
             var self = this;
             self.fetch();
-            this.timeout = setTimeout(function() {
+            /*this.timeout = setTimeout(function() {
                 self.fetchCollection();
-            }, refreshtime );
+            }, refreshtime );*/
         },
         parse: function(response) {
             var self = this;
