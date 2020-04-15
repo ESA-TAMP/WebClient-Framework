@@ -135,6 +135,10 @@
                 var baseprocessingURL = 'https://amida-wcs.adamplatform.eu/wps/wps?';
                 baseprocessingURL+='service=WPS&version=2.0.0&request=execute&Identifier=pmm_test&storeExecuteResponse=true&status=true&datainputs=';
 
+                if(typeof USERVARIABLE !== 'undefined'){
+                    baseprocessingURL+='user='+USERVARIABLE+';';
+                }
+
                 $('#processForm').submit(function(e){
                     e.preventDefault();
                 });

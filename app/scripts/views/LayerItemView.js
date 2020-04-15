@@ -233,7 +233,7 @@
 		    },
 		    onDeleteJob: function(evt){
 		    	var deleteUrl = globals.clientInterfaceHost + 
-		    		'/api/pmm/jobs/?identifier='+this.model.get('identifier');
+		    		'/api/v2/dave/jobs/'+this.model.get('identifier')+'/';
 		    	$.ajax({
 				    url: deleteUrl,
 				    type: 'DELETE',

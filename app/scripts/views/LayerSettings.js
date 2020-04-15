@@ -267,7 +267,7 @@
 
 					this.$("#deletecollection").click(function(){
 						var deleteUrl = globals.clientInterfaceHost + 
-				    		'/api/pmm/collections/?identifier='+collId;
+				    		'/api/v2/dave/collections/'+collId;
 				    	$.ajax({
 						    url: deleteUrl,
 						    type: 'DELETE',

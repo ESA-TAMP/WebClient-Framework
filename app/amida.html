@@ -16,7 +16,10 @@
          <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,700|Open+Sans:300,300i,400,400i,700,700i" rel="stylesheet">
 
         {% if user.is_authenticated %}
-        
+            <script type="text/javascript">
+                var USERVARIABLE;
+                USERVARIABLE = "{{ user.get_username }}";
+            </script>
             <!-- Possible path configurations if dependency files are on different paths -->
             <script type="text/javascript">
 
