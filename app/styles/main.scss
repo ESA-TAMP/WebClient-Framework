@@ -32,6 +32,47 @@ html, body {
   // FIXXME: Their are a few 'quirks' in the layout, making it necessary to force hidding the scrollbars
   // for some cases:
   overflow: hidden;
+  font-family: 'Palanquin', sans-serif!important;
+}
+
+.navbar-brand {
+    margin-top: -4px;
+}
+
+.navbar {
+  background-color: #2fa697!important;
+}
+
+.navbar-inverse .navbar-brand {
+  color: #f1f1f1!important;
+}
+
+.navbar-inverse .navbar-brand:hover {
+  color: white!important;
+}
+
+
+.navbar-inverse .navbar-nav>li>a {
+  color: #f1f1f1!important;
+}
+
+.navbar-inverse .navbar-nav>li>a:hover {
+  color: white!important;
+}
+
+.panel-heading{
+  background-color: #2fa697!important;
+  color: white!important;
+  
+}
+
+.panel-title{
+  font-family: 'Palanquin', sans-serif!important;
+}
+
+.modal-backdrop {
+  background-color: #1f6b61!important;
+  color: white;
 }
 
 body {
