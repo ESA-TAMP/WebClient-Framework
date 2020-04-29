@@ -35,8 +35,9 @@
             };
 
             //https://ogc-edc.dev.hub.eox.at/?SERVICE=WCS&version=2.0.0&request=GetCapabilities
-            var PRODUCT_URL = "https://ogc-edc.dev.hub.eox.at/";
-            var fetchCollectionListURL  = PRODUCT_URL+'wcs?service=WCS&Request=GetCapabilities&version=2.0.0';
+            //var PRODUCT_URL = "https://ogc-edc.dev.hub.eox.at/";
+            var PRODUCT_URL = "https://ogc-edc.dev.hub.eox.at/94bc5784-9f89-4e50-b52f-1ad8b7cfdf49"; 
+            var fetchCollectionListURL  = PRODUCT_URL+'?service=WCS&Request=GetCapabilities&version=2.0.0';
             var USER_PRODUCTS = [];
 
             var request = new XMLHttpRequest();

@@ -340,66 +340,39 @@
       fetchWPS: function(start, end, params, callback){
 
           var request = 
-            PRODUCT_URL+'pycsw/pycsw/csw.py?mode=opensearch'+
-            '&service=CSW&version=2.0.2&request=GetRecords&elementsetname=brief'+
-            '&typenames=csw:Record&resulttype=results'+
-            '&time='+getISODateTimeString(start)+'/'+getISODateTimeString(end)+
-            '&q='+this.id+
-            '&maxrecords=500'+
-            '&outputFormat=application/json';
+          PRODUCT_URL+'?SERVICE=WCS&version=2.0.0&request=DescribeEOCoverageSet&eoId='+this.id+
+          '&subset=phenomenonTime("'+getISODateTimeString(start)+'","'+getISODateTimeString(end)+'")';
+            //'&time='+getISODateTimeString(start)+'/'+getISODateTimeString(end)+
+           
 
-          if (this.bbox !== null){
+          /*if (this.bbox !== null){
             var b = this.bbox;
             request += '&bbox='+b.w+','+b.n+','+b.e+','+b.s;
-          }
+          }*/
 
           var identifier = this.id;
-
+          var rows = [];
           $.get(request)
             .success(function(resp) {
-
-              var rows = [];
-              if(resp.hasOwnProperty('atom:feed') && resp['atom:feed'].hasOwnProperty('atom:entry')){
-                var entries = resp['atom:feed']['atom:entry'];
-                if(typeof entries !== 'undefined'){
-                  for( var ee=0; ee<entries.length; ee++ ){
-                    var bboxCont = entries[ee]['http://www.georss.org/georss:where']['gml:Envelope'];
-                    var lowCorn = bboxCont['gml:lowerCorner'].split(' ').map(parseFloat);
-                    var upperCorn = bboxCont['gml:upperCorner'].split(' ').map(parseFloat);
-                    var id = entries[ee]['atom:title'];
-                    var summ = entries[ee]['atom:summary'];
-                    var hasEndTime = false;
-                    var wcsEndpoint = entries[ee]['atom:source'];
-                    if(summ.indexOf('<strong>End</strong>') !== -1){
-                      hasEndTime = true;
-                    }
-                    // Replace all tags of summary with white spaces and then
-                    // split by whitespaces, leaving is necessary information
-                    var spl = summ.replace(/ *\<[^>]*\> */g, " ").split(/[\s]+/);
-                    var start = new Date(spl[7]);
-                    var end = start;
-                    if(hasEndTime){
-                      end = new Date(spl[9]);
-                    }
-                    var id = spl[2];
-
-
-
-                    if(identifier.indexOf('QA_VALUE') !== -1 || id.indexOf('QA_VALUE') === -1){
-                      rows.push([
-                            start,
-                            start, //end,
-                            {
-                                id: id,
-                                bbox: [lowCorn[1], lowCorn[0], upperCorn[1], upperCorn[0]]
-                            }
-                      ]);
-                    }
-                  }
-                  callback(rows);
-                }
+              var collections = resp.getElementsByTagName('wcs:CoverageDescription');
+              for (var col = 0; col  < collections.length; col++) {
+                  var ds = collections[col];
+                  var covId = ds.getElementsByTagName('wcs:CoverageId')[0].textContent;
+                  var start = new Date(ds.getElementsByTagName('gml:beginPosition')[0].textContent);
+                  var end = new Date(ds.getElementsByTagName('gml:endPosition')[0].textContent);
+                  var lowCorn = ds.getElementsByTagName('gml:lowerCorner')[0].textContent.split(' ').map(Number);
+                  var upperCorn = ds.getElementsByTagName('gml:upperCorner')[0].textContent.split(' ').map(Number);
+                  
+                  rows.push([
+                      start,
+                      end,
+                      {
+                          id: covId,
+                          bbox: [lowCorn[1], lowCorn[0], upperCorn[1], upperCorn[0]]
+                      }
+                ]);
               }
-
+            callback(rows);
             });
       },
 

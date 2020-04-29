@@ -67,16 +67,16 @@ define(['backbone.marionette',
     'models/LayerModel',
     'globals',
     'papaparse',
+    'geotiff',
     'hbs!tmpl/wps_get_time_data',
     'hbs!tmpl/wcs_get_coverage',
     'cesium/Cesium',
     'drawhelper',
     'FileSaver',
-    'geotiff',
     'plotty',
     'graphly'
 ],
-function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
+function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa, GeoTIFF,
          Tmpl_get_time_data, Tmpl_wcs_get_coverage) {
 
     var CesiumView = Marionette.View.extend({
@@ -1231,7 +1231,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
 
             var gt;
             try {
-                gt = GeoTIFF.parse(data);
+                gt = GeoTIFF.fromBlob(data);
             }
             catch(err) {
                 $("#error-messages").append(
@@ -2022,126 +2022,129 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
             var alpha = product.get("opacity");
             var nullValue = defaultFor(parameters[band].nullValue, false);
 
+            (async function() {
+                    
+                var tiff = await GeoTIFF.fromArrayBuffer(data);
+                var img = await tiff.getImage();
+                var rasdata = await img.readRasters();
+                //if(rasdata === undefined) {rasdata = img.readRasters();}
+                if(rasdata === undefined) {
+                    // Something went wrong reading the tiff, show message and stop here
+                    $("#error-messages").append(
+                          '<div class="alert alert-warning alert-info">'+
+                          '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>'+
+                          'There was an error accessing the dataset ' + cov_id +
+                        '</div>'
+                    );
+                    return;
+                }
+                var meta = img.getGDALMetadata();
+                
+                var self = this;
+                
+                rasdata = this.applyDataTransform(meta, nullValue, rasdata, product);
 
+                // Check if the GeoTIFF is a vertical curtain
+                if(meta && meta.hasOwnProperty('COORDINATES') && 
+                    meta.hasOwnProperty('HEIGHT_LEVELS') &&
+                    meta.hasOwnProperty('HEIGHT_LEVELS_NUMBER')){
 
-            if(gt === undefined){gt = GeoTIFF.parse(data)}
-            if(img === undefined) {img = gt.getImage(0);}
-            if(rasdata === undefined) {rasdata = img.readRasters();}
-            if(rasdata === undefined) {
-                // Something went wrong reading the tiff, show message and stop here
-                $("#error-messages").append(
-                      '<div class="alert alert-warning alert-info">'+
-                      '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>'+
-                      'There was an error accessing the dataset ' + cov_id +
-                    '</div>'
-                );
-                return;
-            }
-            var meta = img.getGDALMetadata();
-            
-            var self = this;
-            
-            rasdata = this.applyDataTransform(meta, nullValue, rasdata, product);
-
-            // Check if the GeoTIFF is a vertical curtain
-            if(meta && meta.hasOwnProperty('COORDINATES') && 
-                meta.hasOwnProperty('HEIGHT_LEVELS') &&
-                meta.hasOwnProperty('HEIGHT_LEVELS_NUMBER')){
-
-                this.onVerticalCurtainDataReceived(
-                    meta, cov_id, rasdata, img, prim
-                );
-
-            }else{
-
-                // Check if we have a multilayered tif
-                // There are two types of multilayered tif: volumes and "columns" (e.g. lidar)
-                // We need to differentiate between them as they are displayed differently 
-                if (rasdata.length > 1){
-
-                    var heights;
-                    if(meta && meta.hasOwnProperty('VERTICAL_LEVELS')){
-                        //heights = meta.VERTICAL_LEVELS.slice(1, -1).match(/\S+/g).map(Number);
-                        heights = meta.VERTICAL_LEVELS.split(',').map(Number);
-                    }
-
-                    if (img.getWidth()==1 && img.getHeight()==1) {
-                        // This is a 1D "column"
-                        this.onDataColumnReceived(meta, rasdata, heights);
-                    }else{
-                        // This is a volume
-                        this.onVolumeDataReceived(
-                            meta, cov_id, rasdata, img, prim, heights
-                        );
-                    }
+                    this.onVerticalCurtainDataReceived(
+                        meta, cov_id, rasdata, img, prim
+                    );
 
                 }else{
-                    // This is a single coverage so we need to either create 
-                    // imagery layer or update current one if already existing
-                    this.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
-                    this.p_plot.setDomain(range);
-                    this.p_plot.setNoDataValue(Number.MIN_VALUE);
-                    this.p_plot.setClamp(clamp[0],clamp[1]);
-                    this.p_plot.setColorScale(colorscale);
-                    this.p_plot.renderDataset(cov_id);
 
-                    // If imagery layer provided update texture if not 
-                    // create new imagery layer
-                    if(stackedImageryLayer){
-                        stackedImageryLayer._imageryCache["[0,0,0]"].texture.copyFrom(this.p_plot.canvas);
-                        // Still we want to track the information of current coverages
-                        // inside of the product coverage collections so we 
-                        // add it there too
-                        var coveragesCollection = product.get('coveragesCollection');
-                        coveragesCollection[cov_id] = {
-                            timestamp: starttime
-                        };
-                        product.set('coveragesCollection', coveragesCollection);
-                    }else{
-                        // TODO consider in which index we should ingest layer
-                        var imgProv = this.createSingleTileImageryProvider(
-                            this.p_plot.canvas.toDataURL(), bbox
-                        );
-                        stackedImageryLayer = this.map.scene.imageryLayers.addImageryProvider(imgProv);
-                        stackedImageryLayer.splitDirection = Cesium.ImagerySplitDirection.RIGHT;
-                        stackedImageryLayer.minificationFilter = Cesium.TextureMinificationFilter.NEAREST;
-                        stackedImageryLayer.magnificationFilter = Cesium.TextureMagnificationFilter.NEAREST;
+                    // Check if we have a multilayered tif
+                    // There are two types of multilayered tif: volumes and "columns" (e.g. lidar)
+                    // We need to differentiate between them as they are displayed differently 
+                    if (rasdata.length > 1){
 
-                        // save reference for current coverage and collection
-                        var coveragesCollection = product.get('coveragesCollection');
-                        if(stacked){
-                            coveragesCollection.stackedImageryLayer = {
-                                imageryLayer: stackedImageryLayer,
-                                activeCoverage: cov_id
-                            };
-                            coveragesCollection[cov_id] = {
-                                timestamp: starttime
-                            };
-                        } else {
-                            coveragesCollection[cov_id] = {
-                                imageryLayer: stackedImageryLayer,
-                                timestamp: starttime
-                            };
+                        var heights;
+                        if(meta && meta.hasOwnProperty('VERTICAL_LEVELS')){
+                            //heights = meta.VERTICAL_LEVELS.slice(1, -1).match(/\S+/g).map(Number);
+                            heights = meta.VERTICAL_LEVELS.split(',').map(Number);
                         }
-                        product.set('coveragesCollection', coveragesCollection);
+
+                        if (img.getWidth()==1 && img.getHeight()==1) {
+                            // This is a 1D "column"
+                            this.onDataColumnReceived(meta, rasdata, heights);
+                        }else{
+                            // This is a volume
+                            this.onVolumeDataReceived(
+                                meta, cov_id, rasdata, img, prim, heights
+                            );
+                        }
+
+                    }else{
+                        // This is a single coverage so we need to either create 
+                        // imagery layer or update current one if already existing
+                        this.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
+                        this.p_plot.setDomain(range);
+                        this.p_plot.setNoDataValue(Number.MIN_VALUE);
+                        this.p_plot.setClamp(clamp[0],clamp[1]);
+                        this.p_plot.setColorScale(colorscale);
+                        this.p_plot.renderDataset(cov_id);
+
+                        // If imagery layer provided update texture if not 
+                        // create new imagery layer
+                        if(stackedImageryLayer){
+                            stackedImageryLayer._imageryCache["[0,0,0]"].texture.copyFrom(this.p_plot.canvas);
+                            // Still we want to track the information of current coverages
+                            // inside of the product coverage collections so we 
+                            // add it there too
+                            var coveragesCollection = product.get('coveragesCollection');
+                            coveragesCollection[cov_id] = {
+                                timestamp: starttime
+                            };
+                            product.set('coveragesCollection', coveragesCollection);
+                        }else{
+                            // TODO consider in which index we should ingest layer
+                            var imgProv = this.createSingleTileImageryProvider(
+                                this.p_plot.canvas.toDataURL(), bbox
+                            );
+                            stackedImageryLayer = this.map.scene.imageryLayers.addImageryProvider(imgProv);
+                            stackedImageryLayer.splitDirection = Cesium.ImagerySplitDirection.RIGHT;
+                            stackedImageryLayer.minificationFilter = Cesium.TextureMinificationFilter.NEAREST;
+                            stackedImageryLayer.magnificationFilter = Cesium.TextureMagnificationFilter.NEAREST;
+
+                            // save reference for current coverage and collection
+                            var coveragesCollection = product.get('coveragesCollection');
+                            if(stacked){
+                                coveragesCollection.stackedImageryLayer = {
+                                    imageryLayer: stackedImageryLayer,
+                                    activeCoverage: cov_id
+                                };
+                                coveragesCollection[cov_id] = {
+                                    timestamp: starttime
+                                };
+                            } else {
+                                coveragesCollection[cov_id] = {
+                                    imageryLayer: stackedImageryLayer,
+                                    timestamp: starttime
+                                };
+                            }
+                            product.set('coveragesCollection', coveragesCollection);
+                        }
                     }
                 }
-            }
 
-            this.currentDownload++;
-            if(this.currentDownload == this.downloadTotal){
-                $('#loadingcontrols').empty();
-                $('#loadingcontrols').hide();
-            }
+                this.currentDownload++;
+                if(this.currentDownload == this.downloadTotal){
+                    $('#loadingcontrols').empty();
+                    $('#loadingcontrols').hide();
+                }
 
-            $('#progressindicator').text(this.currentDownload +' / '+ this.downloadTotal);
-            $('#progressindicator').css('width', Math.round(((this.currentDownload-1)/this.downloadTotal)*100)+'%');
+                $('#progressindicator').text(this.currentDownload +' / '+ this.downloadTotal);
+                $('#progressindicator').css('width', Math.round(((this.currentDownload-1)/this.downloadTotal)*100)+'%');
+            })();
+
 
         },
 
         onAddCoverageLoadDone: function(cov_id, cur_coll, product, starttime, data){
 
-            var gt = GeoTIFF.parse(data);
+            var gt = GeoTIFF.fromBlob(data);
             var img = gt.getImage(0);
             var rasdata = img.readRasters();
 
@@ -2607,6 +2610,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
             };
             var currCovColl = product.get('coveragesCollection');
 
+            /*
             if(resp.hasOwnProperty('atom:feed') && resp['atom:feed'].hasOwnProperty('atom:entry')){
                 var entries = resp['atom:feed']['atom:entry'];
                 if(!Array.isArray(entries)){
@@ -2617,6 +2621,52 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                         this.createCoverageRequest(b, entries[ee], coverages, product);
                     }
                 }
+            }
+            */
+
+            /*
+
+            https://ogc-edc.dev.hub.eox.at/94bc5784-9f89-4e50-b52f-1ad8b7cfdf49?SERVICE=WCS&version=2.0.0&
+            request=GetCoverage&coverageId=S5PL2__2020-01-12&subset=Y(44.98311590390921,45.85345512389537)&
+            subset=X(7.243215512972323,9.17213675742542)&rangesubset=NO2&format=image/tiff&
+            subsettingcrs=http://www.opengis.net/def/crs/EPSG/0/4326&outputcrs=http://www.opengis.net/def/crs/EPSG/0/4326
+
+
+https://ogc-edc.dev.hub.eox.at/94bc5784-9f89-4e50-b52f-1ad8b7cfdf49?SERVICE=WCS&version=2.0.0&request=GetCoverage&coverageId=S5PL2__2020-01-12&subset=Y(44.98311590390921,45.85345512389537)&subset=X(7.243215512972323,9.17213675742542)&rangesubset=NO2
+
+
+            */
+
+            var collections = resp.getElementsByTagName('wcs:CoverageDescription');
+            for (var col = 0; col  < collections.length; col++) {
+                var ds = collections[col];
+                var covId = ds.getElementsByTagName('wcs:CoverageId')[0].textContent;
+                var start = new Date(ds.getElementsByTagName('gml:beginPosition')[0].textContent);
+                var end = new Date(ds.getElementsByTagName('gml:endPosition')[0].textContent);
+                var lowCorn = ds.getElementsByTagName('gml:lowerCorner')[0].textContent.split(' ').map(Number);
+                var upperCorn = ds.getElementsByTagName('gml:upperCorner')[0].textContent.split(' ').map(Number);
+                var bbox = [lowCorn[1], lowCorn[0], upperCorn[1], upperCorn[0]];
+
+                var request = '?SERVICE=WCS&version=2.0.0&request=GetCoverage'+
+                    '&coverageId='+covId;
+
+                if (b!= null){
+                    request = request +'&subset=Y('+b[0]+','+b[2]+')'+
+                    '&subset=X('+b[1]+','+b[3]+')';
+                }
+
+                request += '&rangesubset=B01';
+
+                coverages.data.push({
+                    identifier: covId,
+                    wcsEndpoint: request,
+                    bbox: [lowCorn[1], lowCorn[0], upperCorn[1], upperCorn[0]],
+                    starttime: start,
+                    endtime: end
+                });
+
+                //this.createCoverageRequest(bbox, entries[ee], coverages, product);
+
             }
 
             function identicalBbox(array) {
@@ -2766,6 +2816,13 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                         // Check if selection active
                         if(this.bboxsel){
                             if(doBoundingBoxesIntersect(this.bboxsel, bbox)){
+                                deferreds.push(
+                                    this.loadCoverage(
+                                        request, bbox, cov_id, currCovColl,
+                                        product, starttime, stacked, null
+                                    )
+                                );
+                            } else {
                                 deferreds.push(
                                     this.loadCoverage(
                                         request, bbox, cov_id, currCovColl,
@@ -2947,6 +3004,14 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                     provider = PRODUCT_URL;
                 }
                 var request = 
+                  PRODUCT_URL+'?SERVICE=WCS&version=2.0.0&request=DescribeEOCoverageSet&eoId='+collection+
+                  '&subset=phenomenonTime("'+
+                  getISODateTimeString(this.begin_time)+'","'+
+                  getISODateTimeString(this.end_time)+
+                '")';
+
+                /*
+                var request = 
                     provider+'pycsw/pycsw/csw.py?mode=opensearch'+
                     '&service=CSW&version=2.0.2&request=GetRecords&elementsetname=brief'+
                     '&typenames=csw:Record&resulttype=results'+
@@ -2954,19 +3019,23 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                     '&q='+collection+
                     '&maxrecords=100'+
                     '&outputFormat=application/json';
+                */
 
                 var identifier = collection;
+                
                 var b = null;
+                
                 if(this.bboxsel !== null){
                     b = this.bboxsel;
-                    request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
+                    //request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
                 } else {
                     // Always apply global bbox to make sure no weird 
                     // coverages are retuned that go over the pole 
                     // and things like that
                     b = [-90, -180, 90, 180];
                 }
-                request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
+
+                //request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
 
                 $.get(request)
                     .success(this.processCoverageList.bind(this, product, b, identifier));
