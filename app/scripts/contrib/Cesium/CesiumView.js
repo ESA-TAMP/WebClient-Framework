@@ -2278,8 +2278,9 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
         retrieveGroundMeasurements: function(product){
 
             var that = this;
+            //https://amida.adamplatform.eu/en/api/v2/ground/<identifier>/<timeStart>/<timeend>/
             var request = (
-                'http://top-platform.eu/portal/'+
+                'https://amida.adamplatform.eu/en/api/v2/ground/'+
                 product.get('download').id+'/'+
                 getISODateTimeString(this.begin_time)+'/'+
                 getISODateTimeString(this.end_time)
@@ -2296,7 +2297,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                     for (var i = 0; i < jsondata.length; i++) {
                         if(that.stations.hasOwnProperty(jsondata[i].name)){
                             that.stations[jsondata[i].name].values.push(
-                                jsondata[i].value
+                                Number(jsondata[i].value)
                             );
                             that.stations[jsondata[i].name].observation_time_start.push(
                                 new Date(jsondata[i].observation_time_start)
@@ -2307,7 +2308,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                         } else {
                             that.stations[jsondata[i].name] = {
                                 id: jsondata[i].name,
-                                values: [jsondata[i].value],
+                                values: [Number(jsondata[i].value)],
                                 latitude: jsondata[i].latitude,
                                 height: jsondata[i].height,
                                 longitude: jsondata[i].longitude,
@@ -2936,7 +2937,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                 var url = product.get("views")[0].urls[0];
                 var collection = product.get("views")[0].id;
 
-                if(product.get("ground_measurements")){
+                if(product.get("groundMeasurements")){
                     this.retrieveGroundMeasurements(product);
                     // Stop here don't need to execute the rest
                     return;

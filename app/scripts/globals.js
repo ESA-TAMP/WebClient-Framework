@@ -15,9 +15,9 @@ define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, Objec
         fetchCollection: function() {
             var self = this;
             self.fetch();
-            /*this.timeout = setTimeout(function() {
+            this.timeout = setTimeout(function() {
                 self.fetchCollection();
-            }, refreshtime );*/
+            }, refreshtime );
         },
         parse: function(response) {
             var self = this;
@@ -72,7 +72,11 @@ define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, Objec
 
                     // Other fields with default values
                     member.set('timeSlider', true);
-                    member.set('timeSliderProtocol', 'WPS');
+                    if (item.hasOwnProperty('groundMeasurement') && item.groundMeasurement) {
+                        member.set('timeSliderProtocol', 'KVP');
+                    } else {
+                        member.set('timeSliderProtocol', 'WPS');
+                    }
                     member.set('color', autoColor.getColor());
                     member.set('opacity', 0.99);
                     member.set('nullValues', item.nullValues);
@@ -111,9 +115,9 @@ define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, Objec
         fetchCollection: function() {
             var self = this;
             self.fetch();
-            /*this.timeout = setTimeout(function() {
+            this.timeout = setTimeout(function() {
                 self.fetchCollection();
-            }, refreshtime );*/
+            }, refreshtime );
         },
         parse: function(response) {
             var self = this;
