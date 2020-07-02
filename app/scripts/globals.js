@@ -2,7 +2,7 @@
 // globals
 define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, ObjectStore) {
 
-    var refreshtime = 50000000000; // 5 seconds
+    var refreshtime = 10000; // 10 seconds
     var autoColor = {
         colors : d3.scale.category10(),
         index : 0,
@@ -21,7 +21,6 @@ define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, Objec
         },
         parse: function(response) {
             var self = this;
-
             // First check if any items were removed from the collection
             _.each(this.models, function(model){
                 if (typeof response.find(function(item){
@@ -101,9 +100,17 @@ define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, Objec
         },
         filterElements: function(keyword){
             filtered = this.filter(function (p) {
+                var name = p.get('name');
+                var description = p.get('description');
+                if(name === null){
+                    name = '';
+                }
+                if(description === null){
+                    description = '';
+                }
                 return (
-                    p.get('name').toLowerCase().indexOf(keyword.toLowerCase()) !== -1 ||
-                    p.get('description').toLowerCase().indexOf(keyword.toLowerCase()) !== -1
+                    name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1 ||
+                    description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
                 );
             });
             return new Products(filtered);
