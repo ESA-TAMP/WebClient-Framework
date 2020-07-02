@@ -69,24 +69,28 @@
         $downloadList.children().remove();
 
 
-        var coverageSets = [];
+        var providerSets = {};
         var layerActive = false;
         _.map(this.model.get('products'), function(product, key) {
-          coverageSets.push(product.get('download').id);
-          if(product.get('visible')){
-            layerActive = true;
+          var provider = product.get('provider');
+          if(typeof provider !== 'undefined' && product.get('visible')){
+            if (!providerSets.hasOwnProperty(provider)){
+              providerSets[provider] = [];
+            }
+            providerSets[provider].push(product.get('download').id);
           }
         });
 
-        if(coverageSets.length>0){
+        // Separate collections requests based on the provider
+        for (var provKey in providerSets) {
 
           var request = 
-            PRODUCT_URL+'pycsw/pycsw/csw.py?mode=opensearch'+
+            provKey+'pycsw/pycsw/csw.py?mode=opensearch'+
             '&service=CSW&version=2.0.2&request=GetRecords&elementsetname=brief'+
             '&typenames=csw:Record&resulttype=results'+
             '&time='+getISODateTimeString(this.model.get("ToI").start)+'/'+
             getISODateTimeString(this.model.get("ToI").end)+
-            '&q='+coverageSets.join(';')+
+            '&q='+providerSets[provKey].join(';')+
             '&maxrecords=100'+
             '&outputFormat=application/json';
 
@@ -97,59 +101,58 @@
             request += '&bbox='+b[1]+','+b[2]+','+b[3]+','+b[0];
           }
 
+          // Empty current coverages
+          this.coverages.reset([]);
+
           var that = this;
 
-          $.get(request)
-
-            .success(function(resp) {
-
-              var coverages = [];
-
-              if(resp.hasOwnProperty('atom:feed') && resp['atom:feed'].hasOwnProperty('atom:entry')){
-                var entries = resp['atom:feed']['atom:entry'];
-                if(!Array.isArray(entries)){
-                  entries = [entries];
-                }
-
-                if(typeof entries !== 'undefined'){
-
-                  for( var ee=0; ee<entries.length; ee++ ){
-                    var bboxCont = entries[ee]['http://www.georss.org/georss:where']['gml:Envelope'];
-                    var lowCorn = bboxCont['gml:lowerCorner'].split(' ').map(parseFloat);
-                    var upperCorn = bboxCont['gml:upperCorner'].split(' ').map(parseFloat);
-                    //var id = entries[ee]['atom:id'];
-                    var id = entries[ee]['atom:title'];
-                    var summ = entries[ee]['atom:summary'];
-                    var wcsEndpoint = entries[ee]['atom:source'];
-
-                    var spl = summ.replace(/ *\<[^>]*\> */g, " ").split(/[\s]+/);
-                    var start = spl[7];
-                    var end = spl[9];
-
-                    var id = spl[2].replace('.tif', '');
-
-                    if(b!==null){
-                      wcsEndpoint = wcsEndpoint +
-                                '&subset=Lat('+b[0]+','+b[2]+')'+
-                                '&subset=Long('+b[1]+','+b[3]+')';
-                    }
-
-                    var coverage = {
-                      'coverageId': id,
-                      'url': PRODUCT_URL+wcsEndpoint,
-                      'timePeriod': start+'/'+end,
-                    };
-                    if(b!==null){
-                      coverage.bbox = b.map(function(a){return a.toFixed(4);}).join(',');
-                    }
-                    coverages.push(coverage)
-                  }
-
-                  that.coverages.reset(coverages);
-                }
+          function handleResponse(resp, provKey) {
+            var coverages = [];
+            if(resp.hasOwnProperty('atom:feed') && resp['atom:feed'].hasOwnProperty('atom:entry')){
+              var entries = resp['atom:feed']['atom:entry'];
+              if(!Array.isArray(entries)){
+                entries = [entries];
               }
-            });
 
+              if(typeof entries !== 'undefined'){
+
+                for( var ee=0; ee<entries.length; ee++ ){
+                  var bboxCont = entries[ee]['http://www.georss.org/georss:where']['gml:Envelope'];
+                  var lowCorn = bboxCont['gml:lowerCorner'].split(' ').map(parseFloat);
+                  var upperCorn = bboxCont['gml:upperCorner'].split(' ').map(parseFloat);
+                  var id = entries[ee]['atom:title'];
+                  var summ = entries[ee]['atom:summary'];
+                  var wcsEndpoint = entries[ee]['atom:source'];
+                  var spl = summ.replace(/ *\<[^>]*\> */g, " ").split(/[\s]+/);
+                  var start = spl[7];
+                  var end = spl[9];
+                  var id = spl[2].replace('.tif', '');
+
+                  if(b!==null){
+                    wcsEndpoint = wcsEndpoint +
+                              '&subset=Lat('+b[0]+','+b[2]+')'+
+                              '&subset=Long('+b[1]+','+b[3]+')';
+                  }
+                  var coverage = {
+                    'coverageId': id,
+                    'url': provKey+wcsEndpoint,
+                    'timePeriod': start+'/'+end,
+                  };
+                  if(b!==null){
+                    coverage.bbox = b.map(function(a){return a.toFixed(4);}).join(',');
+                  }
+                  coverages.push(coverage)
+                }
+                var combinedCovs = that.coverages.models.concat(coverages);
+                that.coverages.reset(combinedCovs);
+              }
+            }
+          }
+          $.get(request, (function(provKey) {
+              return function(response) {
+                  handleResponse(response, provKey);
+              };
+          })(provKey));
         }
 
       },
