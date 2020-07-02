@@ -245,8 +245,14 @@
           Communicator.mediator.trigger('time:domain:change', evt.originalEvent.detail);
       },
 
-      onDateCenter: function(range){;
-        this.slider.center(range[0], range[1]);
+      onDateCenter: function(range){
+        if (Object.prototype.toString.call(range[0]) === '[object Date]'
+           && Object.prototype.toString.call(range[1]) === '[object Date]'){
+          if(range[0].getTime() === range[1].getTime()){
+            range[1] = new Date(range[1].getTime()+(1000*60*60*24));
+          }
+          this.slider.center(range[0], range[1]);
+        }
       },
 
       onBBoxSelectionChanged: function(bbox){

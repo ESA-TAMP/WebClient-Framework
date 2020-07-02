@@ -241,23 +241,27 @@
 				this.createScaleFactorTextbox(this.model.get('scaleFactor'));
 
 				if(!(typeof this.model.get("timeRange") === 'undefined')){
+					var times = this.model.get("timeRange");
 
-					this.$("#centertime").empty();
+					if(times[0] !== null && times[1] !== null){
+						if(times[0].getTime()!==0 && times[1].getTime()!==0){
+							this.$("#centertime").empty();
+							this.$("#centertime").append(
+							'<button style="width:100%;" type="button" class="btn btn-default">Show Time Covered by Data Collection</button>'
+							);
+							var timerange = this.model.get("timeRange");
 
-					this.$("#centertime").append(
-					'<button style="width:100%;" type="button" class="btn btn-default">Show Time Covered by Data Collection</button>'
-					);
-					var timerange = this.model.get("timeRange");
-
-					this.$("#centertime").click(function(){
-						Communicator.mediator.trigger("date:center", timerange);
-					});
+							this.$("#centertime").click(function(){
+								Communicator.mediator.trigger("date:center", timerange);
+							});
+						}
+					}
 
 				}
 
 				if(!(typeof this.model.get("id") === 'undefined')){
 					var collId = this.model.get("id");
-					if (!collId.startsWith('AMIDA')){
+					if (!collId.startsWith('AMIDA') && !collId.startsWith('AOD_')){
 						this.$("#deletecollection").empty();
 
 						this.$("#deletecollection").append(
