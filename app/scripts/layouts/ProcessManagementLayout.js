@@ -64,7 +64,9 @@
                     resolution: '0.1'
                 };
                 
-                var activecollections = globals.products.where({visible: true});
+                var activecollections = globals.products.filter(function(item){
+                    return item.get('visible') && !item.get('groundMeasurements');
+                });
                 
                 $('#processcontainer').empty();
                 switch(processId){
