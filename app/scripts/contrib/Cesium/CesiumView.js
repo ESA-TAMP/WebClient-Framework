@@ -813,7 +813,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                 for (var i = 0; i < this.stations[id].values.length; i++) {
                     stationData.push({
                         value: this.stations[id].values[i],
-                        timestamp: this.stations[id].observation_time_start[i]
+                        timestamp: this.stations[id].time_start[i]
                     });
                 }
                 if(stationData.length>0){
@@ -2280,7 +2280,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
             var that = this;
             //https://amida.adamplatform.eu/en/api/v2/ground/<identifier>/<timeStart>/<timeend>/
             var request = (
-                'https://amida.adamplatform.eu/en/api/v2/ground/'+
+                'https://amida.adamplatform.eu/en/api/v2/ground/filter/'+
                 product.get('download').id+'/'+
                 getISODateTimeString(this.begin_time)+'/'+
                 getISODateTimeString(this.end_time)
@@ -2299,11 +2299,17 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                             that.stations[jsondata[i].name].values.push(
                                 Number(jsondata[i].value)
                             );
-                            that.stations[jsondata[i].name].observation_time_start.push(
-                                new Date(jsondata[i].observation_time_start)
+                            that.stations[jsondata[i].name].time_start.push(
+                                new Date(jsondata[i].time_start)
                             );
-                            that.stations[jsondata[i].name].observation_time_end.push(
-                                new Date(jsondata[i].observation_time_end)
+                            that.stations[jsondata[i].name].time_end.push(
+                                new Date(jsondata[i].time_end)
+                            );
+                            that.stations[jsondata[i].name].altitude.push(
+                                Number(jsondata[i].altitude)
+                            );
+                            that.stations[jsondata[i].name].areatype.push(
+                                jsondata[i].areatype
                             );
                         } else {
                             that.stations[jsondata[i].name] = {
@@ -2312,12 +2318,14 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                                 latitude: jsondata[i].latitude,
                                 height: jsondata[i].height,
                                 longitude: jsondata[i].longitude,
-                                observation_time_start: [
-                                    new Date(jsondata[i].observation_time_start)
+                                time_start: [
+                                    new Date(jsondata[i].time_start)
                                 ],
-                                observation_time_end: [
-                                    new Date(jsondata[i].observation_time_end)
+                                time_end: [
+                                    new Date(jsondata[i].time_end)
                                 ],
+                                altitude: [Number(jsondata[i].altitude)],
+                                areatype: [jsondata[i].areatype],
                             }
                         }
                     }
