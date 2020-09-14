@@ -2660,8 +2660,8 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                             stillActive = true;
                         }
                     }
+                    var prevCov = prevColl[cc].identifier;
                     if(!stillActive){
-                        var prevCov = prevColl[cc].identifier;
                         // Check if imagery provider available and if this
                         // is not a stacked collection we can remove it
                         if(currCovColl.hasOwnProperty(prevCov)){
@@ -2695,6 +2695,32 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                                 }
                             }
                         }
+                    } else {
+                        // if still active but as a stacked collection
+                        // make sure to remove single coverage layer
+                        if(stacked){
+                            var imageryLayer = null;
+                            if(currCovColl.hasOwnProperty(prevCov)
+                                && currCovColl[prevCov].hasOwnProperty('imageryLayer')){
+                                // Only happens when one coverage was loaded first
+                                // and afterwards more coverages were loaded from
+                                // a stacked dataset
+                                imageryLayer = currCovColl[prevCov].imageryLayer;
+                            }
+                            if(this.p_plot.datasetCollection.hasOwnProperty(prevCov)){
+                                this.p_plot.removeDataset(prevCov);
+                            }
+                            delete currCovColl[prevCov];
+
+                            if(imageryLayer){
+                                // Reinsert imagery layer as special "coverage"
+                                currCovColl.stackedImageryLayer = {
+                                    imageryLayer: imageryLayer,
+                                    activeCoverage: prevCov
+                                }
+                            }
+                        }
+
                     }
                 }
             }
@@ -2713,6 +2739,17 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                         // check if available if yes remove coverage
                         this.stackedDataset[identifier].splice(sd,1);
                     }
+                }
+                // If the stacked dataset is empty we need to remove the layer on the globe
+                if(this.stackedDataset[identifier].length === 0){
+                    if(currCovColl.hasOwnProperty('stackedImageryLayer')){
+                        this.map.scene.imageryLayers.remove(
+                            currCovColl.stackedImageryLayer.imageryLayer
+                        );
+                       
+                    }
+                    delete this.stackedDataset[identifier];
+                    delete currCovColl.stackedImageryLayer;
                 }
             }
 
@@ -2863,7 +2900,8 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                 } else {
                     // if the coverage is already loaded check if inside of
                     // stack, if not add it for correct animation
-                    if(stacked && this.stackedDataset[collId].indexOf(cov_id) === -1){
+                    if(stacked && this.stackedDataset.hasOwnProperty(collId)
+                        && this.stackedDataset[collId].indexOf(cov_id) === -1){
                         this.stackedDataset[collId].push(cov_id);
                     }
                 }
