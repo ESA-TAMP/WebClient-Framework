@@ -507,44 +507,34 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
 
             }else if (maxLength > 1){
 
-                // We "flatten" the data based on available timestamps
                 var timebucket = {};
 
                 var resultData = {
-                    timestamp: []
+                    timestamp: [],
+                    value: [],
+                    collection: [],
+                    height: [],
                 };
 
+                var collectionIds = [];
+                // If any of the collections has height data we add height data to all
+                resultData.height = [];
+
+
                 for(var coll in renderdata){
-                    resultData[coll] = [];
-                    //coll = coll.replace('_4326_0035', '');
+                    collectionIds.push(coll);
+                    coll = coll.replace('_4326_0035', '');
+
                     for(var it=0; it<renderdata[coll].length; it++){
                         if(renderdata[coll][it].hasOwnProperty('timestamp')){
-                            var ts = renderdata[coll][it].timestamp.getTime();
-                            if(!timebucket.hasOwnProperty(ts)){
-                                timebucket[ts] = {};
+                            resultData.timestamp.push(renderdata[coll][it].timestamp);
+                            resultData.value.push(renderdata[coll][it].value);
+                            resultData.collection.push(coll);
+                            if(renderdata[coll][it].hasOwnProperty('height')){
+                                resultData.height.push(renderdata[coll][it].height);
                             }
-                            timebucket[ts][coll] = renderdata[coll][it].value;
                         }
                     }
-                }
-
-                // Order timestamps in object
-                var orderedtimebucket = {};
-                Object.keys(timebucket).sort().forEach(function(key) {
-                  orderedtimebucket[key] = timebucket[key];
-                });
-
-                // Create renderdata with nodatavalues where necessary
-                var collections = Object.keys(renderdata);
-                for(var ts in orderedtimebucket){
-                    resultData.timestamp.push(new Date(Number(ts)));
-                    for (var key in renderdata){
-                        if(orderedtimebucket[ts].hasOwnProperty(key)){
-                            resultData[key].push(orderedtimebucket[ts][key]);
-                        } else {
-                            resultData[key].push(NaN);
-                        }
-                    } 
                 }
 
                 $("#pickingresults").show();
@@ -570,25 +560,20 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                 if(this.graph){
                     var rS = {
                         xAxis: 'timestamp',
-                        yAxis: [collections],
-                        colorAxis: [colorAxis],
+                        yAxis: [['value']],
+                        colorAxis: [[null]],
                         y2Axis: [[]],
                         colorAxis2:[[]],
+                        dataIdentifier: {
+                            parameter: 'collection',
+                            identifiers: collectionIds
+                        },
                     };
-                    if(collections.length === 2){
-                        rS = {
-                            xAxis: 'timestamp',
-                            yAxis: [[collections[0]]],
-                            colorAxis: [[null]],
-                            y2Axis: [[collections[1]]],
-                            colorAxis2:[[null]],
-                        };
-                    }
                     // Check if collections have changed
                     var collectionschanged = false;
-                    if(this.prevColl && this.prevColl.length === collections.length){
+                    if(this.prevColl && this.prevColl.length === collectionIds.length){
                         for (var i = 0; i < this.prevColl.length; i++) {
-                            if(this.prevColl[i] !== collections[i]){
+                            if(this.prevColl[i] !== collectionIds[i]){
                                 collectionschanged = true;
                             }
                         }
@@ -602,7 +587,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                         this.graph.renderSettings = rS;
                     }
                     this.graph.loadData(resultData);
-                    this.prevColl = collections;
+                    this.prevColl = collectionIds;
                 }
 
 
@@ -685,6 +670,27 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                 }
             }
 
+            function compare( a, b ) {
+              if ( new Date(a.timestamp).getTime() < new Date(b.timestamp).getTime() ){
+                return -1;
+              }
+              if ( new Date(a.timestamp).getTime() > new Date(b.timestamp).getTime() ){
+                return 1;
+              }
+
+              // If date is equal we sort by height if available
+              if(a.hasOwnProperty('height') && b.hasOwnProperty('height')){
+                if(a.height<b.height){
+                    return -1;
+                }
+                if(a.height>b.height){
+                    return 1;
+                }
+              }
+              return 0;
+            }
+
+
             // If picking tool or POI has been activated lets look at the
             // clicked position
             if (this.pickingActive || Cesium.defined(pickedObject)) {
@@ -729,7 +735,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                         }
                     }
                     if(collData.length>0){
-                        resultData[product.get('download').id] = collData;
+                        resultData[product.get('download').id] = collData.sort(compare);
                     }
                 }, this);
 
@@ -778,10 +784,20 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                         var x = Math.floor(Math.abs(p.x - west)/res_x);
                         var y = Math.floor(Math.abs(p.y - north)/res_y);
                         var currVal = ds.data[(y*w)+x];
-                        value.push({
+                        var currObj = {
                             value: currVal,
                             timestamp: currCovs[ci].timestamp
-                        });
+                        }
+
+                        // If Coverage id ends with a number and h we extract
+                        // it as height information
+                        var splitId = ci.split('_');
+                        var lastSection = splitId[splitId.length-1];
+                        if(/^[0-9]*h\..*$/.test(lastSection)){
+                            var heightValue = Number(lastSection.split('h')[0]);
+                            currObj.height = heightValue;
+                        }
+                        value.push(currObj);
                     }
                 }
             } else {
@@ -830,6 +846,15 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
             if (!this.map) {
                 this.createMap();
             }
+
+            // create height controls
+            $(this.el).append('<div id="heightcontrols" style="pointer-events: none;"></div>');
+            $('#heightcontrols').append('<div id="heightcontrolBG" class="btn-group" role="group" aria-label="..." style="pointer-events: all;"></div>')
+            $('#heightcontrolBG').append('<button type="button" class="btn btn-default" id="heightUpButton"><i class="fa fa-step-backward"></i></button>');
+            $('#heightcontrolBG').append('<button type="button" class="btn btn-default" id="heightPlayButton"><i class="fa fa-play"></i></button>');
+            $('#heightcontrolBG').append('<button type="button" class="btn btn-default" id="heightDownButton"><i class="fa fa-step-forward"></i></button>');
+            
+            $(this.el).append('<div id="heightvalue"></div>');
             
             if(this.navigationhelp){
                 this.navigationhelp.destroy();
@@ -2089,6 +2114,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                     // create new imagery layer
                     if(stackedImageryLayer){
                         stackedImageryLayer._imageryCache["[0,0,0]"].texture.copyFrom(this.p_plot.canvas);
+                        stackedImageryLayer.alpha = product.get('opacity');
                         // Still we want to track the information of current coverages
                         // inside of the product coverage collections so we 
                         // add it there too
@@ -2106,6 +2132,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                         stackedImageryLayer.splitDirection = Cesium.ImagerySplitDirection.RIGHT;
                         stackedImageryLayer.minificationFilter = Cesium.TextureMinificationFilter.NEAREST;
                         stackedImageryLayer.magnificationFilter = Cesium.TextureMagnificationFilter.NEAREST;
+                        stackedImageryLayer.alpha = product.get('opacity');
 
                         // save reference for current coverage and collection
                         var coveragesCollection = product.get('coveragesCollection');
@@ -2377,6 +2404,23 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
             var hasEndTime = false;
             var wcsEndpoint = entry['atom:source'];
 
+            // Try to find coverage identifier
+            var decomposedSumm = entry["atom:summary"].split(/[\<\>]/);
+            var identifierIndex = decomposedSumm.indexOf('Identifier');
+            if(identifierIndex!==-1){
+                id = decomposedSumm[identifierIndex+6];
+            }
+
+            var height = null;
+            // If Coverage id ends with a number and h we extract
+            // it as height information
+            var splitId = id.split('_');
+            var lastSection = splitId[splitId.length-1];
+            if(/^[0-9]*h\..*$/.test(lastSection)){
+                height = Number(lastSection.split('h')[0]);
+            }
+
+
             if(b!=null){
             wcsEndpoint = wcsEndpoint +
                 '&subset=Lat('+b[0]+','+b[2]+')'+
@@ -2418,12 +2462,16 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
             // TODO: This should not be part of the dataset received so 
             // we should remove this and the data should be fixed
             if(id.indexOf('QA_VALUE') === -1){
-                coverages.data.push({
+                var covObj = {
                     identifier: id,
                     wcsEndpoint: wcsEndpoint,
                     bbox: [lowCorn[1], lowCorn[0], upperCorn[1], upperCorn[0]],
                     starttime: start
-                });
+                };
+                if(height !== null){
+                    covObj.height = height;
+                }
+                coverages.data.push(covObj);
             }
         },
 
@@ -2457,14 +2505,82 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                         covReference = imageryLayer;
                         imageryLayer = imageryLayer.imageryLayer;
                     }
+
+                    var groupedTimes = {};
+                    // Lets see if we have height data
+                    if(to_play.length>0 && to_play[0].hasOwnProperty('height')){
+                        for (var i = 0; i < to_play.length; i++) {
+                            var timestring = getISODateTimeString(to_play[i].starttime);
+                            // We create buckets with unique times
+                            if(groupedTimes.hasOwnProperty(timestring)){
+                                groupedTimes[timestring].push(to_play[i]);
+                            } else {
+                                groupedTimes[timestring] = [to_play[i]];
+                            }
+                        }
+                        $('#heightcontrols').show();
+                        $('#heightvalue').show();
+                    } else {
+                        for (var i = 0; i < to_play.length; i++) {
+                            var timestring = getISODateTimeString(to_play[i].starttime);
+                            // We create buckets with unique times
+                            if(groupedTimes.hasOwnProperty(timestring)){
+                                groupedTimes[timestring].push(to_play[i]);
+                            } else {
+                                groupedTimes[timestring] = [coverto_play.data[i]];
+                            }
+                        }
+                    }
+                    var timeHeightArray = [];
+                    // convert object to array and sort by time and then sort groups by height
+                    function compareHeight( a, b ) {
+                      // If date is equal we sort by height if available
+                      if(a.hasOwnProperty('height') && b.hasOwnProperty('height')){
+                        if(a.height>b.height){
+                            return 1;
+                        }
+                        if(a.height<b.height){
+                            return -1;
+                        }
+                      }
+                      return 0;
+                    }
+                    function compareTime( a, b ) {
+                      a = a[0];
+                      b = b[0];
+                      if ( new Date(a.starttime).getTime() < new Date(b.starttime).getTime() ){
+                        return -1;
+                      }
+                      if ( new Date(a.starttime).getTime() > new Date(b.starttime).getTime() ){
+                        return 1;
+                      }
+                      return 0;
+                    }
+                    for(var tkey in groupedTimes){
+                        timeHeightArray.push(groupedTimes[tkey].sort(compareHeight));
+                    }
+                    timeHeightArray.sort(compareTime);
+                    to_play = timeHeightArray;
+
                     var play_length = to_play.length;
                     var play_index = play_length-1;
                     var fps = 15;
+                    var heightIndex = 0;
 
-                    this.dataToRender[collId] = coverages.data;
+                    this.dataToRender[collId] = timeHeightArray;
 
                     $('#playercontrols').show();
-                    
+                    $('#timestamp').show();
+
+                    if(timeHeightArray.length < 2){
+                        $('#playercontrols').hide();
+                    }
+
+                    $('#timestamp').text(
+                        getISODateTimeString(to_play[play_index][heightIndex].starttime)
+                    );
+                    $('#heightvalue').text(to_play[play_index][heightIndex].height);
+
                     // Remove handlers
                     $("#play-button").off();
 
@@ -2486,7 +2602,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                                         play_index = (play_index+1) % play_length;
                                         // Go through all available stacks to be animated
                                         for (var coll in self.dataToRender){
-                                            var toRender = self.dataToRender[coll][play_index].identifier;
+                                            var toRender = self.dataToRender[coll][play_index][heightIndex].identifier;
                                             self.p_plot.renderDataset(toRender);
 
                                             if(imageryLayer){
@@ -2496,10 +2612,10 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                                                 }
                                             }
                                         }
-                                        Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
+                                        Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index][heightIndex].starttime));
                                         $('#timestamp').show();
                                         $('#timestamp').text(
-                                            getISODateTimeString(to_play[play_index].starttime)
+                                            getISODateTimeString(to_play[play_index][heightIndex].starttime)
                                         );
                                     }
 
@@ -2539,15 +2655,15 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                                         play_index = (play_index+1) % play_length;
                                         // Go trhough all available stacks to be animated
                                         for (var coll in self.dataToRender){
-                                            self.p_plot.renderDataset(self.dataToRender[coll][play_index].identifier);
+                                            self.p_plot.renderDataset(self.dataToRender[coll][play_index][heightIndex].identifier);
                                             if(imageryLayer){
                                                 imageryLayer._imageryCache["[0,0,0]"].texture.copyFrom(self.p_plot.canvas);
                                             }
                                         }
-                                        Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
+                                        Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index][heightIndex].starttime));
                                         $('#timestamp').show();
                                         $('#timestamp').text(
-                                            getISODateTimeString(to_play[play_index].starttime)
+                                            getISODateTimeString(to_play[play_index][heightIndex].starttime)
                                         );
                                     }
 
@@ -2574,14 +2690,14 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                         play_index = play_index % play_length;
                         // Go trhough all available stacks to be animated
                         for (var coll in self.dataToRender){
-                            self.p_plot.renderDataset(self.dataToRender[coll][play_index].identifier);
+                            self.p_plot.renderDataset(self.dataToRender[coll][play_index][heightIndex].identifier);
                             if(imageryLayer){
                                 imageryLayer._imageryCache["[0,0,0]"].texture.copyFrom(self.p_plot.canvas);
                             }
                         }
-                        Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
+                        Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index][heightIndex].starttime));
                         $('#timestamp').text(
-                            getISODateTimeString(to_play[play_index].starttime)
+                            getISODateTimeString(to_play[play_index][heightIndex].starttime)
                         );
                     });
 
@@ -2592,21 +2708,237 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                         play_index = (play_index+1) % play_length;
                         // Go trhough all available stacks to be animated
                         for (var coll in self.dataToRender){
-                            self.p_plot.renderDataset(self.dataToRender[coll][play_index].identifier);
+                            self.p_plot.renderDataset(self.dataToRender[coll][play_index][heightIndex].identifier);
                             if(imageryLayer){
                                 imageryLayer._imageryCache["[0,0,0]"].texture.copyFrom(self.p_plot.canvas);
                             }
                         }
-                        Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index].starttime));
+                        Communicator.mediator.trigger("date:tick:select", new Date(to_play[play_index][heightIndex].starttime));
                         $('#timestamp').text(
-                            getISODateTimeString(to_play[play_index].starttime)
+                            getISODateTimeString(to_play[play_index][heightIndex].starttime)
                         );
                     });
+
+                    // Setup height up button
+                    $("#heightDownButton").off();
+
+                    $("#heightDownButton").on('click', function () {
+                        // Go trhough all available stacks to be animated
+                        for (var coll in self.dataToRender){
+                            var currHeightElems = self.dataToRender[coll][play_index].length;
+                            heightIndex = (heightIndex-1);
+                            if(heightIndex<0)
+                                heightIndex = currHeightElems-1;
+                            heightIndex = heightIndex % currHeightElems;
+                            self.p_plot.renderDataset(self.dataToRender[coll][play_index][heightIndex].identifier);
+                            if(imageryLayer){
+                                imageryLayer._imageryCache["[0,0,0]"].texture.copyFrom(self.p_plot.canvas);
+                            }
+                        }
+                        $('#heightvalue').text(to_play[play_index][heightIndex].height);
+                    });
+
+                    // Setup height down button
+                    $("#heightUpButton").off();
+
+                    $("#heightUpButton").on('click', function () {
+                        for (var coll in self.dataToRender){
+                            var currHeightElems = self.dataToRender[coll][play_index].length;
+                            heightIndex = (heightIndex+1) % currHeightElems;
+                            // Go trhough all available stacks to be animated
+                            self.p_plot.renderDataset(self.dataToRender[coll][play_index][heightIndex].identifier);
+                            if(imageryLayer){
+                                imageryLayer._imageryCache["[0,0,0]"].texture.copyFrom(self.p_plot.canvas);
+                            }
+                        }
+                        $('#heightvalue').text(to_play[play_index][heightIndex].height);
+                    });
+
+                    $("#heightPlayButton").off();
+                    $("#heightPlayButton").on('click', function () {
+                        fps = 15;
+                        if( $("#fast-play-button").find('i').hasClass("fa-pause") ){
+                            $("#fast-play-button").html('<i class="fa fa-forward"></i>');
+                            self.playback = false;
+                        }
+                        if( $("#play-button").find('i').hasClass("fa-pause") ){
+                            $("#play-button").html('<i class="fa fa-play"></i>');
+                            self.playback = false;
+                        }
+
+                        $("#heightPlayButton").html('<i class="fa fa-pause"></i>');
+                        // Create a draw loop using requestAnimationFrame. The
+                        // tick callback function is called for every animation frame.
+                        function tick() {
+                            setTimeout(function() {
+                                if(self.playback){
+                                    Cesium.requestAnimationFrame(tick);
+                                    var collKeys = Object.keys(self.dataToRender);
+                                    var currHeightElems = self.dataToRender[collKeys[0]][play_index].length;
+                                    heightIndex = (heightIndex+1) % currHeightElems;
+                                    // Go through all available stacks to be animated
+                                    for (var coll in self.dataToRender){
+                                        var toRender = self.dataToRender[coll][play_index][heightIndex].identifier;
+                                        self.p_plot.renderDataset(toRender);
+
+                                        if(imageryLayer){
+                                            imageryLayer._imageryCache["[0,0,0]"].texture.copyFrom(self.p_plot.canvas);
+                                            if(covReference){
+                                                covReference.activeCoverage = toRender;
+                                            }
+                                        }
+                                    }
+                                    $('#heightvalue').text(to_play[play_index][heightIndex].height);
+                                }
+
+                            }, 1000 / fps);
+
+                        }
+
+                        if (!self.playback){
+                            self.playback = true;
+                            tick();
+                        }else{
+                            self.playback = false;
+                            $("#heightPlayButton").html('<i class="fa fa-play"></i>');
+                        }
+
+                    });
+
                 }
             }
 
+            // Pick scene again but wait to make sure the coverage objects are 
+            // loaded on the map
+            setTimeout(this.pickScene.bind(this), 500);
+
+
             // Make sure layers are reordered based on their position in the list
             this.onSortProducts();
+        },
+
+        pickScene: function(){
+
+            var resultData = {};
+
+            function compare( a, b ) {
+              if ( new Date(a.timestamp).getTime() < new Date(b.timestamp).getTime() ){
+                return -1;
+              }
+              if ( new Date(a.timestamp).getTime() > new Date(b.timestamp).getTime() ){
+                return 1;
+              }
+
+              // If date is equal we sort by height if available
+              if(a.hasOwnProperty('height') && b.hasOwnProperty('height')){
+                if(a.height<b.height){
+                    return -1;
+                }
+                if(a.height>b.height){
+                    return 1;
+                }
+              }
+              return 0;
+            }
+
+            // Check if a ground station is selected
+            if(this.selectedEntityId !== null){
+                var pickedObject = this.map.entities.getById(selectedEntityId);
+                if (Cesium.defined(pickedObject)) {
+                    if(pickedObject.id){
+                        var stationObj = this.pickEntity(pickedObject);
+                        if(stationObj){
+                            resultData[stationObj.id] = stationObj.data;
+                            var poipos = Cesium.Ellipsoid.WGS84.cartesianToCartographic(
+                                pickedObject.primitive.position
+                            );
+                            pos_x = Cesium.Math.toDegrees(poipos.longitude);
+                            pos_y = Cesium.Math.toDegrees(poipos.latitude);
+
+                            // Get data for the other products at this position
+                            globals.products.each(function(product) {
+                                var currCovs = product.get('coveragesCollection');
+                                var collData = [];
+                                if(currCovs){
+                                    for(var cv in currCovs){
+                                        if(currCovs[cv].hasOwnProperty('imageryLayer')){
+                                            if(currCovs[cv].imageryLayer._imageryCache.hasOwnProperty('[0,0,0]')){
+                                                var dataRectangle = currCovs[cv].imageryLayer._imageryCache['[0,0,0]'].rectangle;
+                                                var pickedLayer = Cesium.Rectangle.contains(
+                                                    dataRectangle,
+                                                    poipos
+                                                );
+                                                if(pickedLayer){
+                                                    var value = this.pickImageryLayer(
+                                                        cv, dataRectangle,
+                                                        poipos, product
+                                                    );
+                                                    if(Array.isArray(value)){
+                                                        collData = value;
+                                                    } else if(value !== Number.MIN_VALUE){
+                                                        collData.push({
+                                                            value: value,
+                                                            timestamp: currCovs[cv].timestamp
+                                                        });
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                if(collData.length>0){
+                                    resultData[product.get('download').id] = collData.sort(compare);
+                                }
+                            }, this);
+                        }
+                    }
+                }
+            }
+            
+            // Check if picking active, if yes update picking data
+            if(this.pickingActive && this.map.entities.getById("needle").show){
+                var needle = this.map.entities.getById('needle');
+                var cartographic = Cesium.Cartographic.fromCartesian(needle.position.getValue());
+                pos_x = Cesium.Math.toDegrees(cartographic.longitude);
+                pos_y = Cesium.Math.toDegrees(cartographic.latitude);
+
+                globals.products.each(function(product) {
+                    var currCovs = product.get('coveragesCollection');
+                    var collData = [];
+                    if(currCovs){
+                        for(var cv in currCovs){
+                            if(currCovs[cv].hasOwnProperty('imageryLayer')){
+                                if(currCovs[cv].imageryLayer._imageryCache.hasOwnProperty('[0,0,0]')){
+                                    var dataRectangle = currCovs[cv].imageryLayer._imageryCache['[0,0,0]'].rectangle;
+                                    var pickedLayer = Cesium.Rectangle.contains(
+                                        dataRectangle,
+                                        cartographic
+                                    );
+                                    if(pickedLayer){
+                                        var value = this.pickImageryLayer(
+                                            cv, dataRectangle,
+                                            cartographic, product
+                                        );
+                                        if(Array.isArray(value)){
+                                            collData = value;
+                                        } else if(value !== Number.MIN_VALUE){
+                                            collData.push({
+                                                value: value,
+                                                timestamp: currCovs[cv].timestamp
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if(collData.length>0){
+                        resultData[product.get('download').id] = collData.sort(compare);
+                    }
+                }, this);
+
+                this.showPickingResult(resultData, pos_x, pos_y);
+            }
         },
 
         processCoverageList: function(product, b, identifier, resp){
@@ -2956,6 +3288,8 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
             Communicator.mediator.trigger("date:tick:select", null);
             $('#playercontrols').hide();
             $('#timestamp').hide();
+            $('#heightcontrols').hide();
+            $('#heightvalue').hide();
 
             if(!this.renderingActive){
                 return;

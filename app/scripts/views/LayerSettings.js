@@ -261,7 +261,7 @@
 
 				if(!(typeof this.model.get("id") === 'undefined')){
 					var collId = this.model.get("id");
-					if (!collId.startsWith('AMIDA') && !collId.startsWith('AOD_')){
+					if (!collId.startsWith('AMIDA') && !collId.startsWith('AOD_') && !collId.startsWith('amida')){
 						this.$("#deletecollection").empty();
 
 						this.$("#deletecollection").append(
@@ -429,27 +429,6 @@
 						this.createScale();
 				}
 
-				// Check coefficient ranges
-				if ($("#coefficients_range_min").length && $("#coefficients_range_max").length){
-					var coef_range_min = parseFloat($("#coefficients_range_min").val());
-					error = error || this.checkValue(coef_range_min,$("#coefficients_range_min"));
-
-					var coef_range_max = parseFloat($("#coefficients_range_max").val());
-					error = error || this.checkValue(coef_range_max,$("#coefficients_range_max"));
-
-					if(!error)
-						this.model.set("coefficients_range", [coef_range_min, coef_range_max]);
-				}
-
-				// Check for height attribute
-				if ($("#heightvalue").length){
-					var height = parseFloat($("#heightvalue").val());
-					error = error || this.checkValue(height,$("#heightvalue"));
-
-					if (!error)
-						this.model.set("height", height);
-				}
-
 				// Check for scalefactor parameter
 				var scaleFactorChange = false;
 				if ($("#scaleFactorValue").length){
@@ -460,8 +439,10 @@
 					error = error || this.checkValue(scaleFactor,$("#scaleFactorValue"));
 
 					if (!error){
-						this.model.set("scaleFactor", scaleFactor);
-						scaleFactorChange = true;
+						if(this.model.get('scaleFactor') !== scaleFactor){
+							this.model.set("scaleFactor", scaleFactor);
+							scaleFactorChange = true;
+						}
 					}
 				}
 
