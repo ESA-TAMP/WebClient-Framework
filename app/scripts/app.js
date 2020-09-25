@@ -212,6 +212,9 @@
 				// by the marionette collection view
 				if (config.navBarConfig) {
 
+                    // TODO: We remove the tutorial here for now
+                    config.navBarConfig.items.splice(4,1);
+
 					var addNavBarItems = defaultFor(self.NAVBARITEMS, []);
 					config.navBarConfig.items = config.navBarConfig.items.concat(addNavBarItems);
 					var navBarItemCollection = new m.NavBarCollection;

@@ -104,10 +104,13 @@
 			},
 
 			StoryBannerOpen: function(event){
-
+				var template = event;
+				if (typeof event !== 'string'){
+					template = event.model.get('template');
+				}
 				// Instance StoryBanner view
                 App.storyBanner = new App.views.StoryBannerView({
-                	template: App.templates[event]
+                	template: App.templates[template]
                 });
                 
 				if (_.isUndefined(App.storyView.isClosed) || App.storyView.isClosed) {

@@ -186,6 +186,11 @@
             "eventToRaise": "ui:open:toolselection",
             "template": "ToolSelection"
         }, {
+            "name": "Tutorial",
+            "icon": "fa-book",
+            "eventToRaise": "ui:open:storybanner",
+            "template": "UC1_tutorial"
+        }, {
             "name": "About",
             "icon": "fa-info-circle",
             "eventToRaise": "dialog:open:about"
@@ -279,6 +284,9 @@
     }, {
         "id": "UseCase_MagneticModels",
         "template": "hbs!tmpl/UseCase_MagneticModels"
+    }, {
+        "id": "UC1_tutorial",
+        "template": "hbs!tmpl/UC1_tutorial"
     }, {
         "id": "DataManagement",
         "template": "hbs!tmpl/DataManagement"

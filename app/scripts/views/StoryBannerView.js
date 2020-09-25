@@ -275,10 +275,10 @@
             var coords = this.sections[index].getAttribute('data-bbox').split(",");
             // Coordinates structure is created as expected by Cesium View
             var bbox = {
-                n: coords[3],
-                e: coords[2],
-                s: coords[1],
-                w: coords[0]
+                n: Number(coords[3]),
+                e: Number(coords[2]),
+                s: Number(coords[1]),
+                w: Number(coords[0])
               }
             Communicator.mediator.trigger("selection:changed", bbox);
           }
