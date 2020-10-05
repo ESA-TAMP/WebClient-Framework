@@ -21,7 +21,7 @@
     "bootstrap": "~3.0.1",
     "font-awesome": "~4.5.0",
     "d3.Graphs": "ESA-VirES/AnalyticsViewer#~0.3.9",
-    "cesium": "https://github.com/AnalyticalGraphicsInc/cesium/releases/download/1.39/Cesium-1.39.zip",
+    "cesium": "https://github.com/AnalyticalGraphicsInc/cesium/releases/download/1.66/Cesium-1.66.zip",
     "papaparse": "~4.1.0",
     "geotiffjs": "https://github.com/geotiffjs/geotiff.js/releases/download/v0.3.6/geotiff.min.js",
     "plotty": "santilland/plotty#^0.1.2",

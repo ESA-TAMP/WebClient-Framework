@@ -69,7 +69,7 @@ define(['backbone.marionette',
     'papaparse',
     'hbs!tmpl/wps_get_time_data',
     'hbs!tmpl/wcs_get_coverage',
-    'cesium/Cesium',
+    'cesium',
     'drawhelper',
     'FileSaver',
     'geotiff',
@@ -77,7 +77,7 @@ define(['backbone.marionette',
     'graphly'
 ],
 function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
-         Tmpl_get_time_data, Tmpl_wcs_get_coverage) {
+         Tmpl_get_time_data, Tmpl_wcs_get_coverage, Cesium) {
 
     var CesiumView = Marionette.View.extend({
 
@@ -309,6 +309,9 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
             this.map.scene.skyAtmosphere.show = mm.get('skyAtmosphere');
             this.map.scene.backgroundColor = new Cesium.Color.fromCssColorString(mm.get('backgroundColor'));
 
+            this.map.scene.globe.dynamicAtmosphereLighting = false;
+            this.map.scene.globe.showGroundAtmosphere = false;
+            
             // TODO: Removes fog for now as it is not very good at this point
             if(this.map.scene.hasOwnProperty('fog')){
               this.map.scene.fog.enabled = false;  
@@ -1472,7 +1475,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                 .done(
                     this.onDataReceived.bind(
                         this, bbox, cov_id, cur_coll, product,
-                        starttime, stacked, stackedImageryLayer,
+                        starttime, stacked, stackedImageryLayer, request,
                         undefined, undefined, undefined
                     )
                 )
@@ -1561,6 +1564,157 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                 }
             }
             return convArray;
+        },
+
+        createCalipsoCurtain: function(appearance, gcps, cov_id, cur_coll, alpha, height){
+            var positions = [];
+            for (var i = 0; i < gcps.length; i++) {
+                 positions.push(gcps[i].X);
+                 positions.push(gcps[i].Y);
+             }
+            var heights = [];
+            for (var i = (positions.length/2) - 1; i >= 0; i--) {
+                heights.push(height);
+            };
+            var wall = new Cesium.WallGeometry({
+                positions : Cesium.Cartesian3.fromDegreesArray(positions),
+                maximumHeights : heights,
+            });
+            var wallGeometry = Cesium.WallGeometry.createGeometry(wall);
+            var instance = new Cesium.GeometryInstance({
+              geometry : wallGeometry
+            });
+
+            appearance.material.uniforms.color.alpha = 0.99;
+
+            var prim = new Cesium.Primitive({
+              geometryInstances : [instance],
+              appearance : appearance,
+              releaseGeometryInstances: false,
+              asynchronous: false
+            });
+            prim["cov_id"] = cov_id;
+            this.map.scene.primitives.add(prim);
+
+            /*if(this.auxOutlineLines){
+                this.map.entities.remove(this.auxOutlineLines);
+            }
+            this.auxOutlineLines = this.map.entities.add({
+                wall : {
+                    positions : Cesium.Cartesian3.fromDegreesArray(positions),
+                    maximumHeights : heights,
+                    outline : true,
+                    outlineColor : Cesium.Color.RED,
+                    outlineWidth : 2,
+                    material : Cesium.Color.fromRandom({alpha : 0.7})
+                }
+            });
+            */
+
+        },
+
+        onCalipsoDataReceived: function(meta, cov_id, rasdata, img, product, request, cur_coll){
+            var curtainRequest = request.replace('GetCoverage', 'GetInfo');
+            var that = this;
+
+            var parameters = product.get("parameters");
+            var keys = _.keys(parameters);
+            var band = keys[0];
+            // TODO: TAMP only uses one band, but this could create problems in other data models
+            /*_.each(keys, function(key){
+                if(parameters[key].selected)
+                    band = key;
+            });*/
+            var colorscale = parameters[band].colorscale;
+            var clamp_min = defaultFor(parameters[band].clamp_min, false);
+            var clamp_max = defaultFor(parameters[band].clamp_max, false);
+            var clamp = [clamp_min, clamp_max];
+            var outlines = product.get("outlines");
+            var range = parameters[band].range;
+            var alpha = product.get("opacity");
+            var nullValue = defaultFor(parameters[band].nullValue, false);
+
+            $.ajax({
+                type:'GET',
+                dataType: 'JSON',
+                url: curtainRequest
+            }).done(function( jsondata ) {
+                if(jsondata.hasOwnProperty('prods') && jsondata.prods.length>0){
+                    // We need to transpose calipso data
+                    var transposedData = [];
+                    var height = img.getHeight();
+                    var width = img.getWidth();
+                    for (var x = 0; x < width; x++) {
+                        for (var line = 0; line < height; line++) {
+                            transposedData.push(rasdata[0][(line*width)+x]);
+                        }
+                    }
+                    that.p_plot.addDataset(cov_id, transposedData, height, width);
+                    //that.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
+                    that.p_plot.setDomain(range);
+                    that.p_plot.setNoDataValue(Number.MIN_VALUE);
+                    that.p_plot.setClamp(clamp[0],clamp[1]);
+                    that.p_plot.setColorScale(colorscale);
+                    that.p_plot.renderDataset(cov_id);
+
+                    var imageTexture = that.p_plot.canvas.toDataURL();
+                    var newmat = new Cesium.Material({
+                        fabric : {
+                            type : 'Image',
+                            uniforms : {
+                                image : imageTexture
+                            }
+                        },
+                        minificationFilter: Cesium.TextureMinificationFilter.NEAREST,
+                        magnificationFilter: Cesium.TextureMagnificationFilter.NEAREST
+                    });
+
+
+                    var imageAppeareance = new Cesium.MaterialAppearance({
+                        translucent : true,
+                        flat: true,
+                        material : newmat
+                    });
+
+                    that.createCalipsoCurtain(
+                        imageAppeareance, jsondata.prods[0].gcps, cov_id,
+                        cur_coll, alpha, 1000000
+                    );
+
+                }
+            });
+
+            /*var coords = meta.COORDINATES.split(',');
+            var positions = [];
+            for (var i = coords.length - 1; i >= 0; i--) {
+                positions = positions.concat($.trim(coords[i]).split(' ').map(Number));
+            };
+            var height = meta.HEIGHT_LEVELS.split(' ');
+            height = Number(height[height.length-1])*ELEVATION_EXAGERATION/10;
+
+            this.p_plot.addDataset(cov_id, rasdata[0], img.getWidth(), img.getHeight());
+            this.p_plot.setDomain(range);
+            this.p_plot.setNoDataValue(Number.MIN_VALUE);
+            this.p_plot.setClamp(clamp[0],clamp[1]);
+            this.p_plot.setColorScale(colorscale);
+            this.p_plot.renderDataset(cov_id);
+            if (prim){
+                prim["cov_id"] = cov_id;
+                prim.appearance.material._textures.image.copyFrom(this.p_plot.canvas);
+            }else{
+                var newmat = new Cesium.Material.fromType('Image', {
+                    image : self.p_plot.canvas.toDataURL(),
+                    color: new Cesium.Color(1, 1, 1, alpha)
+                });
+
+                var imageAppeareance = new Cesium.MaterialAppearance({
+                    translucent : true,
+                    flat: true,
+                    material : newmat
+                });
+
+                this.createCurtain(imageAppeareance, positions, cov_id, cur_coll, alpha, height);
+            }*/
         },
 
         onVerticalCurtainDataReceived: function(meta, cov_id, rasdata, img, prim){
@@ -2028,7 +2182,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
 
         onDataReceived: function(
             bbox, cov_id, cur_coll, product, starttime, stacked, 
-            stackedImageryLayer, gt, rasdata, img, data ) {
+            stackedImageryLayer, request, gt, rasdata, img, data ) {
 
             var parameters = product.get("parameters");
             var keys = _.keys(parameters);
@@ -2069,12 +2223,17 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
             rasdata = this.applyDataTransform(meta, nullValue, rasdata, product);
 
             // Check if the GeoTIFF is a vertical curtain
-            if(meta && meta.hasOwnProperty('COORDINATES') && 
+            /*if(meta && meta.hasOwnProperty('COORDINATES') && 
                 meta.hasOwnProperty('HEIGHT_LEVELS') &&
-                meta.hasOwnProperty('HEIGHT_LEVELS_NUMBER')){
+                meta.hasOwnProperty('HEIGHT_LEVELS_NUMBER')){*/
+            var collId = product.get('download').id;
+            if(collId.startsWith('CAL_LID_L2_')){
 
-                this.onVerticalCurtainDataReceived(
+                /*this.onVerticalCurtainDataReceived(
                     meta, cov_id, rasdata, img, prim
+                );*/
+                this.onCalipsoDataReceived(
+                    meta, cov_id, rasdata, img, product, request, range, cur_coll
                 );
 
             }else{

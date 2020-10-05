@@ -37,7 +37,60 @@ define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, Objec
                     "measurement_unit": "m-1",
                     "creation_date": null,
                     "groundMeasurement": false
-                }]`
+                },
+    {
+        "identifier": "CAL_LID_L2_Extinction_QC_Flag_532",
+        "provider": "https://vtapp4aq.zamg.ac.at/",
+        "name": "UC4 CAL LID L2 Extinction QC Flag 532",
+        "description": "CAL LID L2 Extinction QC Flag 532",
+        "nullValues": [
+            "32768"
+        ],
+        "range": [
+            "0",
+            "100"
+        ],
+        "start": "2018-02-28T00:00:00Z",
+        "end": "2018-04-30T23:59:59Z",
+        "measurement_unit": "-",
+        "creation_date": null,
+        "groundMeasurement": false
+    },{
+        "identifier": "CAL_LID_L2_Extinction_Coefficient_532",
+        "provider": "https://vtapp4aq.zamg.ac.at/",
+        "name": "UC4 CAL LID L2 Extinction Coefficient 532",
+        "description": "CAL LID L2 Extinction Coefficient 532",
+        "nullValues": [
+            "-9999"
+        ],
+        "range": [
+            "0",
+            "10"
+        ],
+        "start": "2018-02-28T00:00:00Z",
+        "end": "2018-04-30T23:59:59Z",
+        "measurement_unit": "m x km",
+        "creation_date": null,
+        "groundMeasurement": false
+    },
+    {
+        "identifier": "CAL_LID_L2_Total_Backscatter_Coefficient_532",
+        "provider": "https://vtapp4aq.zamg.ac.at/",
+        "name": "UC4 CAL LID L2 Total Backscatter Coefficient 532",
+        "description": "CAL LID L2 Total Backscatter Coefficient 532",
+        "nullValues": [
+            "-9999"
+        ],
+        "range": [
+            "0",
+            "1"
+        ],
+        "start": "2018-02-28T00:00:00Z",
+        "end": "2018-04-30T23:59:59Z",
+        "measurement_unit": "km/steradian",
+        "creation_date": null,
+        "groundMeasurement": false
+    }]`
             ));
         },
         parse: function(response) {
@@ -104,7 +157,7 @@ define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, Objec
                     member.set('view', {isBaseLayer: false});
                     member.set('favourite', true);
                     member.set('coveragesCollection',{});
-                    member.set('scaleFactor',0.05);
+                    member.set('scaleFactor',1.0);
 
                     self.add(member);
                 } else {

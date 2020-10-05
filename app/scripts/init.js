@@ -54,11 +54,11 @@
                 exports: 'dat'
             },
             drawhelper: {
-                deps: ['cesium/Cesium'],
+                deps: ['cesium'],
                 exports: 'DrawHelper'
             },
             cesium: {
-                deps: ['papaparse']
+                exports: 'Cesium'
             },
             graphly: {
                 deps: ['d3', 'plotty']
@@ -70,7 +70,7 @@
 
         paths: {
             graphly: '../bower_components/graphly/dist/graphly.min',
-            cesium: "../bower_components/cesium/Build/Cesium",
+            cesium: "../bower_components/cesium/Build/Cesium/Cesium",
             drawhelper: "../scripts/vendor/cesium_DrawHelper",
             contrib: 'contrib',
             core: 'core',
