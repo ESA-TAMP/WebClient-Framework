@@ -169,8 +169,6 @@
 
                 var favourites = JSON.parse(localStorage.getItem('favourite'));
 
-                globals.products.fetchCollection();
-
 				//Overlays are loaded and added to the global collection
 				_.each(config.mapConfig.overlays, function(overlay) {
 
@@ -342,6 +340,12 @@
                 this.processManagementLayout = new ProcessManagementLayout();
 
 
+                //globals.products.fetchCollection();
+                globals.products.fetch().done(function(){
+                    Communicator.mediator.trigger("ui:open:layercontrol");
+                    globals.products.fetchCollection();
+                });
+
                 // Define collection of selection tools
                 var selectionToolsCollection = new m.ToolCollection();
                 _.each(config.selectionTools, function(selTool) {
@@ -435,8 +439,6 @@
 
                 //this.processesView = new v.ProcessesView();
 
-                // Open layers panel as it is basically always used when opening client
-                Communicator.mediator.trigger("ui:open:layercontrol");
 
 
 			},
@@ -621,6 +623,13 @@
                 // Remove loading screen when this point is reached in the script
                 $('#loadscreen').fadeOut('slow');
                 $('.prodLoadContainer').show();
+
+                // Open layers panel as it is basically always used when opening client
+                //Communicator.mediator.trigger("ui:open:layercontrol");
+                /*this.leftSideBar.show(this.layout);
+                this.layout.baseLayers.show(this.baseLayerView);
+                this.layout.products.show(this.favouritesView);
+                this.layout.overlays.show(this.overlaysView);*/
 
 			}
 

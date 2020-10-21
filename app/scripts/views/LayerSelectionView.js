@@ -44,19 +44,19 @@
 
 			itemaChanged: function(item){
 				console.log('Item changed');
-				console.log(item);
+				//console.log(item);
 				this.render();
 			},
 
 			itemadded: function(item){
 				console.log('Item added');
-				console.log(item);
+				//console.log(item);
 				this.render();
 			},
 
 			itemRemoved: function(item){
 				console.log('Item removed');
-				console.log(item);
+				//console.log(item);
 				this.render();
 			},
 
