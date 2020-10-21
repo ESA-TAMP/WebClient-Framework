@@ -47,6 +47,39 @@
 		    		that.products.currentView.render();
 		    		//console.log($(this).val());
 		    	});
+
+		    	this.$('#selectAllProducts').off();
+				this.$('#unselectAllProducts').off();
+
+				this.$('#selectAllProducts').on('click', function(){
+					globals.products.each(function(prod){
+						prod.set('favourite', true);
+					});
+					that.products.currentView.render();
+					globals.favouritesView.collection = globals.products.favourites();
+					var favs = [];
+			    	for (var i = 0; i < globals.favouritesView.collection.models.length; i++) {
+			    		favs.push(globals.favouritesView.collection.models[i].get('download').id);
+			    	}
+	                localStorage.setItem('favourite', JSON.stringify(favs));
+	                globals.favouritesView.render();
+				});
+				this.$('#unselectAllProducts').on('click', function(){
+					globals.products.each(function(prod){
+						prod.set('favourite', false);
+				    	prod.set('display', false);
+				    	var options = { id: prod.get("download").id, name: prod.get('name'), isBaseLayer: false, visible: false };
+				    	Communicator.mediator.trigger('map:layer:change', options);
+					});
+					that.products.currentView.render();
+					globals.favouritesView.collection = globals.products.favourites();
+					var favs = [];
+			    	for (var i = 0; i < globals.favouritesView.collection.models.length; i++) {
+			    		favs.push(globals.favouritesView.collection.models[i].get('download').id);
+			    	}
+	                localStorage.setItem('favourite', JSON.stringify(favs));
+	                globals.favouritesView.render();
+				});
 		    },
 
 			onClose: function() {

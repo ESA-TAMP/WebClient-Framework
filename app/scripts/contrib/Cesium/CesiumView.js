@@ -1199,6 +1199,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                     this.primitiveToRender = {};
                     this.dataToRender = {};
                 }
+                this.downloadTotal = 0;
 
                 globals.products.each(function(product) {
                     if(product.get("download").id==options.id){
@@ -3399,7 +3400,8 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
 
             };
 
-            this.downloadTotal = deferreds.length;
+            //this.downloadTotal = deferreds.length;
+            this.downloadTotal+=deferreds.length;
 
             var self = this;
 
@@ -3807,6 +3809,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
         },
 
         onScaleFactorChanged: function(layer){
+            this.downloadTotal = 0;
 
             globals.products.each(function(product) {
 
@@ -4198,6 +4201,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
             var that = this;
             this.primitiveToRender = {};
             this.dataToRender = {};
+            this.downloadTotal = 0;
             globals.products.each(function(product) {
                 // Cleanup previous coverage data as we need to fetch
                 // all new with new bbox
@@ -4315,6 +4319,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
             this.end_time = time.end;
             this.primitiveToRender = {};
             this.dataToRender = {};
+            this.downloadTotal = 0;
                                     
             globals.products.each(function(product) {
                 if(product.get("timeSlider")){

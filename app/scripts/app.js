@@ -155,7 +155,7 @@
                 var range = [];
 
 
-                if (localStorage.getItem('favourite') === null) {
+                /*if (localStorage.getItem('favourite') === null) {
 
                     localStorage.setItem('favourite', JSON.stringify([
                         'MYD04_Image_Optical_Depth_Land_And_Ocean',
@@ -165,7 +165,7 @@
                         'WRFCHEM_PM25surf',
                         'WRFCHEM_PM10surf'
                     ]));
-                }
+                }*/
 
                 var favourites = JSON.parse(localStorage.getItem('favourite'));
 
