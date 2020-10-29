@@ -8,11 +8,12 @@
 		'communicator',
 		'globals',
 		'hbs!tmpl/LayerSettings',
+		'expr-eval',
 		'underscore',
 		'plotty'
 	],
 
-	function( Backbone, Communicator, globals, LayerSettingsTmpl ) {
+	function( Backbone, Communicator, globals, LayerSettingsTmpl, exprEval ) {
 
 		var LayerSettings = Backbone.Marionette.Layout.extend({
 
@@ -26,6 +27,7 @@
 					colorScale: 'jet',
 					domain: [0,1]
 				});
+				this.parser = new exprEval.Parser();
 			},
 			onShow: function(view){
 
@@ -239,6 +241,7 @@
 
 				this.createHeightTextbox(this.model.get("height"));
 				this.createScaleFactorTextbox(this.model.get('scaleFactor'));
+				this.createModifierExpressionTextbox(this.model.get("modExpression"));
 
 				if(!(typeof this.model.get("timeRange") === 'undefined')){
 					var times = this.model.get("timeRange");
@@ -348,6 +351,7 @@
 
 				this.createHeightTextbox(this.model.get("height"));
 				this.createScaleFactorTextbox(this.model.get('scaleFactor'));
+				this.createModifierExpressionTextbox(this.model.get("modExpression"));
 
 				this.model.set("parameters", options);
 				//that.updateRange(options);
@@ -445,6 +449,28 @@
 						}
 					}
 				}
+
+				var modExpression = $("#dataModifierExpression").val();
+				if(modExpression){
+					var that = this;
+					var expr = this.parser.parse(modExpression);
+					/*var expr = this.parser.parse(currSetts[par].modifier);
+					var exprFn = expr.toJSFunction('x');
+					altExtent = altExtent.map(exprFn);*/
+					try {
+						expr.evaluate({ x: 1 })
+						$("#dataModifierExpression").removeClass("text_error");
+						this.model.set("modExpression", modExpression);
+						Communicator.mediator.trigger("layer:modExpression:changed", this.model.get("download").id);
+					} catch (errorEvent) {
+						error = true;
+						$("#dataModifierExpression").addClass("text_error");
+					}
+				} else {
+					this.model.set("modExpression", '');
+					Communicator.mediator.trigger("layer:modExpression:changed", this.model.get("download").id);
+				}
+
 
 				if(!error){
 					// Remove button
@@ -630,6 +656,25 @@
 					// Register necessary key events
 					this.registerKeyEvents(this.$("#heightvalue"));
 				}
+	      	},
+
+	      	createModifierExpressionTextbox: function(expr){
+	      		var that = this;
+	      		this.$("#datamodifier").empty();
+	      		//if(typeof expr!=='undefined' && expr!==null){
+				this.$("#datamodifier").append(
+					'<form style="vertical-align: middle;">'+
+					'<label for="dataModifierExpression" style="width: 70px;">Data Modifier : </label>'+
+					'<input id="dataModifierExpression" type="text" autocomplete="off" style="width:80%; margin-left:8px"/>'+
+					'</form>'
+				);
+				this.$("#datamodifier").append(
+					'<p style="font-size:0.85em; margin-left: 90px;">Write expression using <b>x</b> as variable. e.g. (x+20)*1000</p>'
+				);
+				this.$("#dataModifierExpression").val(expr);
+				// Register necessary key events
+				this.registerKeyEvents(this.$("#dataModifierExpression"));
+				//}
 	      	},
 
 	      	createScaleFactorTextbox: function(scaleFactor){

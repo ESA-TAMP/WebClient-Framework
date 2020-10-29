@@ -367,6 +367,7 @@ module.exports = function (grunt) {
                         'bower_components/datetimepicker/build/jquery.datetimepicker.full.min.js',
                         'bower_components/jquery-mousewheel/jquery.mousewheel.min.js',
                         'bower_components/php-date-formatter/js/php-date-formatter.min.js',
+                        'bower_components/expr-eval/index.js',
                         'scripts/vendor/**',
                     ]
                 },{

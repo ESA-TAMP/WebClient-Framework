@@ -120,6 +120,7 @@
             datetimepicker: '../bower_components/datetimepicker/build/jquery.datetimepicker.full.min',
             'jquery-mousewheel': '../bower_components/jquery-mousewheel/jquery.mousewheel.min',
             'php-date-formatter': '../bower_components/php-date-formatter/js/php-date-formatter.min',
+            'expr-eval': '../bower_components/expr-eval/index'
 
 
         },

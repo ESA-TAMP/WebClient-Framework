@@ -30,7 +30,8 @@
     "canvas-toBlob.js": "eligrey/canvas-toBlob.js",
     "Blob.js": "eligrey/Blob.js",
     "graphly": "eox-a/graphly#36c8caa0865ac7c1ef5ac83388324c4b213789e1",
-    "datetimepicker": "xdan/datetimepicker#^2.5.20"
+    "datetimepicker": "xdan/datetimepicker#^2.5.20",
+    "expr-eval": "https://cdnjs.cloudflare.com/ajax/libs/expr-eval/2.0.2/bundle.min.js"
   },
   "devDependencies": {
     "Keypress": "~2.0.0"

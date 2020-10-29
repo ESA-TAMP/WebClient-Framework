@@ -340,11 +340,11 @@
                 this.processManagementLayout = new ProcessManagementLayout();
 
 
-                //globals.products.fetchCollection();
-                globals.products.fetch().done(function(){
+                globals.products.fetchCollection();
+                /*globals.products.fetch().done(function(){
                     Communicator.mediator.trigger("ui:open:layercontrol");
                     globals.products.fetchCollection();
-                });
+                });*/
 
                 // Define collection of selection tools
                 var selectionToolsCollection = new m.ToolCollection();

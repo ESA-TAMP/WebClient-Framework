@@ -70,6 +70,7 @@ define(['backbone.marionette',
     'hbs!tmpl/wps_get_time_data',
     'hbs!tmpl/wcs_get_coverage',
     'cesium',
+    'expr-eval',
     'drawhelper',
     'FileSaver',
     'geotiff',
@@ -77,7 +78,7 @@ define(['backbone.marionette',
     'graphly'
 ],
 function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
-         Tmpl_get_time_data, Tmpl_wcs_get_coverage, Cesium) {
+         Tmpl_get_time_data, Tmpl_wcs_get_coverage, Cesium, exprEval) {
 
     var CesiumView = Marionette.View.extend({
 
@@ -153,6 +154,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
 
             this.selection_x = '';
             this.selection_y = '';
+            this.parser = new exprEval.Parser();
 
             Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(-5.0, -40.0, 40.0, 90.0);
             
@@ -1515,6 +1517,10 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                 convArray.push(Array.from(rasdata[i]));
             }
 
+            // Add default null values to list
+            nullValue.push(-9999);
+            nullValue.push(3.4028234663852886e+38);
+
             if(nullValue){
                 for (var rd = 0; rd < convArray.length; rd++) {
                     for (var ar = 0; ar < convArray[rd].length; ar++) {
@@ -1564,6 +1570,19 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                     }
                 }
             }
+
+            // Apply modifier if necessary 
+            var modExp = product.get('modExpression');
+            if(typeof modExp !== 'undefined' && modExp !== null && modExp !== ''){
+                var expr = this.parser.parse(product.get('modExpression'));
+                var exprFn = expr.toJSFunction('x');
+                //altExtent = altExtent.map(exprFn);
+                for (var i = 0; i < rasdata.length; i++) {
+                    convArray[i] = convArray[i].map(exprFn);
+                }
+            }
+
+
             return convArray;
         },
 
@@ -2687,7 +2706,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                             if(groupedTimes.hasOwnProperty(timestring)){
                                 groupedTimes[timestring].push(to_play[i]);
                             } else {
-                                groupedTimes[timestring] = [coverto_play.data[i]];
+                                groupedTimes[timestring] = [to_play[i]];
                             }
                         }
                     }
@@ -3870,6 +3889,8 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
             var margin = 20;
             var width = 300;
             var scalewidth =  width - margin *2;
+            var renderHeight = 65;
+            var renderWidth = width;
 
             globals.products.each(function(p) {
                 if(p.get('download').id === pId){
@@ -3895,10 +3916,10 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                         this.map.scene.primitives.remove(obj[key].prim);
                         this.map.scene.primitives.remove(obj[key].csPrim);
                         obj[key].prim = this.map.scene.primitives.add(
-                            this.createViewportQuad(scaleImg, 0, i*55 +5, width, 55)
+                            this.createViewportQuad(scaleImg, 0, i*renderHeight +5, width, renderHeight)
                         );
                         obj[key].csPrim = this.map.scene.primitives.add(
-                            this.createViewportQuad(csImg, 20, i*55 +42, scalewidth, 10)
+                            this.createViewportQuad(csImg, 20, i*renderHeight +53, scalewidth, 10)
                         );
                         obj[key].index = i;
                   
@@ -3935,6 +3956,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                 var style = product.get('parameters')[sel].colorscale;
                 var logscale = defaultFor(product.get('parameters')[sel].logarithmic, false);
                 var axisScale;
+                var modExpression = product.get('modExpression');
 
 
                 this.plot.setColorScale(style);
@@ -3943,7 +3965,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                 $('#svgcolorscalecontainer').remove();
                 var svgContainer = d3.select('body').append('svg')
                     .attr('width', 300)
-                    .attr('height', 60)
+                    .attr('height', 65)
                     .attr('id', 'svgcolorscalecontainer');
 
                 if(logscale){
@@ -3999,6 +4021,13 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                     .attr('font-weight', 'bold')
                     .text(info);
 
+                if(typeof modExpression!=='undefined' && modExpression !== null && modExpression!==''){
+                    g.append('text')
+                        .style('text-anchor', 'middle')
+                        .attr('transform', 'translate(' + [scalewidth/2, 40]+')')
+                        .text('(modifier: '+modExpression+')');
+                }
+
                 svgContainer.selectAll('text')
                     .attr('stroke', 'none')
                     .attr('fill', 'black')
@@ -4023,20 +4052,19 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                     .attr('xmlns', 'http://www.w3.org/2000/svg')
                     .node().innerHTML;
 
-                var renderHeight = 55;
-                var renderWidth = width;
+
 
                 var index = Object.keys(this.colorscales).length;
 
                 var prim = this.map.scene.primitives.add(
                     this.createViewportQuad(
                         this.renderSVG(svgHtml, renderWidth, renderHeight),
-                        0, index*55+5, renderWidth, renderHeight
+                        0, index*renderHeight+5, renderWidth, renderHeight
                     )
                 );
                 var csPrim = this.map.scene.primitives.add(
                     this.createViewportQuad(
-                        colorscaleimage, 20, index*55 +42, scalewidth, 10
+                        colorscaleimage, 20, index*renderHeight +53, scalewidth, 10
                     )
                 );
 
