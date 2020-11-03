@@ -530,11 +530,16 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                     collectionIds.push(coll);
                     coll = coll.replace('_4326_0035', '');
 
+                    var shortenedName = coll;
+                    if(coll.length>28){
+                        shortenedName = coll.substring(0, 28)+'...';
+                    }
+
                     for(var it=0; it<renderdata[coll].length; it++){
                         if(renderdata[coll][it].hasOwnProperty('timestamp')){
                             resultData.timestamp.push(renderdata[coll][it].timestamp);
                             resultData.value.push(renderdata[coll][it].value);
-                            resultData.collection.push(coll);
+                            resultData.collection.push(shortenedName);
                             if(renderdata[coll][it].hasOwnProperty('height')){
                                 resultData.height.push(renderdata[coll][it].height);
                             }
@@ -2518,7 +2523,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                                 stVal = exprFn(stVal);
                             }
                             that.stations[jsondata[i].name].values.push(stVal);
-                            
+
                             that.stations[jsondata[i].name].time_start.push(
                                 new Date(jsondata[i].time_start)
                             );

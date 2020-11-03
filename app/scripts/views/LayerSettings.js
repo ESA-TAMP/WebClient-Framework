@@ -462,12 +462,13 @@
 						expr.evaluate({ x: 1 })
 						$("#dataModifierExpression").removeClass("text_error");
 						this.model.set("modExpression", modExpression);
-						Communicator.mediator.trigger("layer:modExpression:changed", this.model.get("download").id);
+						//Communicator.mediator.trigger("layer:modExpression:changed", this.model.get("download").id);
 						modExpressions[this.model.get("download").id] = modExpression;
 						localStorage.setItem(
 							'modifierExpressions',
 							JSON.stringify(modExpressions)
 						);
+						Communicator.mediator.trigger("layer:scalefactor:changed", this.model.get("download").id);
 					} catch (errorEvent) {
 						error = true;
 						$("#dataModifierExpression").addClass("text_error");
@@ -476,7 +477,7 @@
 					var prevExpr = this.model.get("modExpression");
 					if(typeof prevExpr !== 'undefined' && prevExpr !== null && prevExpr !== ''){
 						this.model.set("modExpression", '');
-						Communicator.mediator.trigger("layer:modExpression:changed", this.model.get("download").id);
+						//Communicator.mediator.trigger("layer:modExpression:changed", this.model.get("download").id);
 						if(modExpressions.hasOwnProperty(this.model.get("download").id)){
 							delete modExpressions[this.model.get("download").id];
 						}
@@ -484,6 +485,7 @@
 							'modifierExpressions',
 							JSON.stringify(modExpressions)
 						);
+						Communicator.mediator.trigger("layer:scalefactor:changed", this.model.get("download").id);
 					}
 				}
 
