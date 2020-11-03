@@ -454,21 +454,37 @@
 				if(modExpression){
 					var that = this;
 					var expr = this.parser.parse(modExpression);
-					/*var expr = this.parser.parse(currSetts[par].modifier);
-					var exprFn = expr.toJSFunction('x');
-					altExtent = altExtent.map(exprFn);*/
+					var modExpressions = JSON.parse(localStorage.getItem('modifierExpressions'));
+					if (modExpressions === null) {
+						modExpressions = {};
+					}
 					try {
 						expr.evaluate({ x: 1 })
 						$("#dataModifierExpression").removeClass("text_error");
 						this.model.set("modExpression", modExpression);
 						Communicator.mediator.trigger("layer:modExpression:changed", this.model.get("download").id);
+						modExpressions[this.model.get("download").id] = modExpression;
+						localStorage.setItem(
+							'modifierExpressions',
+							JSON.stringify(modExpressions)
+						);
 					} catch (errorEvent) {
 						error = true;
 						$("#dataModifierExpression").addClass("text_error");
 					}
 				} else {
-					this.model.set("modExpression", '');
-					Communicator.mediator.trigger("layer:modExpression:changed", this.model.get("download").id);
+					var prevExpr = this.model.get("modExpression");
+					if(typeof prevExpr !== 'undefined' && prevExpr !== null && prevExpr !== ''){
+						this.model.set("modExpression", '');
+						Communicator.mediator.trigger("layer:modExpression:changed", this.model.get("download").id);
+						if(modExpressions.hasOwnProperty(this.model.get("download").id)){
+							delete modExpressions[this.model.get("download").id];
+						}
+						localStorage.setItem(
+							'modifierExpressions',
+							JSON.stringify(modExpressions)
+						);
+					}
 				}
 
 

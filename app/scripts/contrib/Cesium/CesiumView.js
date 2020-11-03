@@ -2500,11 +2500,25 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                 .done(function( jsondata ) {
 
                     that.stations = {};
+                    var exprFn = null;
+                    // Apply modifier if necessary 
+                    var modExp = product.get('modExpression');
+                    if(typeof modExp !== 'undefined' && modExp !== null && modExp !== ''){
+                        var expr = this.parser.parse(product.get('modExpression'));
+                        exprFn = expr.toJSFunction('x');
+                        for (var i = 0; i < rasdata.length; i++) {
+                            convArray[i] = convArray[i].map(exprFn);
+                        }
+                    }
+
                     for (var i = 0; i < jsondata.length; i++) {
                         if(that.stations.hasOwnProperty(jsondata[i].name)){
-                            that.stations[jsondata[i].name].values.push(
-                                Number(jsondata[i].value)
-                            );
+                            var stVal = Number(jsondata[i].value);
+                            if(exprFn !== null){
+                                stVal = exprFn(stVal);
+                            }
+                            that.stations[jsondata[i].name].values.push(stVal);
+                            
                             that.stations[jsondata[i].name].time_start.push(
                                 new Date(jsondata[i].time_start)
                             );
