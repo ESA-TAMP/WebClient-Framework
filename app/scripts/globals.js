@@ -158,7 +158,7 @@ define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, Objec
                     member.set('view', {isBaseLayer: false});
                     // member.set('favourite', true);
                     member.set('coveragesCollection',{});
-                    member.set('scaleFactor',1.0);
+                    member.set('scaleFactor',0.6);
 
                     self.add(member);
                 } else {
@@ -225,10 +225,10 @@ define(['backbone', 'objectStore', 'underscore', 'd3'], function(Backbone, Objec
         url: clientInterfaceHost+'/api/dave/jobs/',
         fetchCollection: function() {
             var self = this;
-            /*self.fetch();
+            self.fetch();
             this.timeout = setTimeout(function() {
                 self.fetchCollection();
-            }, refreshtime );*/
+            }, refreshtime );
         },
         parse: function(response) {
             var self = this;

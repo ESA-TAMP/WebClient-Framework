@@ -21,6 +21,10 @@
 			},
 
 			onClick: function(evt){
+                // Remove lat lon inputs
+                $('#applylatlonpin').off();
+                $('#latloninput').remove();
+                
 				if(this.model.get('enabled')){
 					if(this.model.get('type') == 'selection'){
 						if(this.model.get('active')){
@@ -43,6 +47,39 @@
 					}
 	                this.render();
 	            }
+                // Special handling for point selection
+                if(this.model.get('id') == 'pointSelection'){
+                    if(this.model.get('active')){
+                        // Show lat lon inputs
+                        $(this.el).parent().append('<div id="latloninput" class="panel panel-default"></div>');
+                        $('#latloninput').append('<div id="latcontainer" style="float:left; width:100%;"></div>')
+                        $('#latcontainer').append(
+                            '<label for="pinLat" style="display:block;">Latitude: </label>'
+                        );
+                        $('#latcontainer').append(
+                            '<input id="pinLat" type="text" style="width:100%;display:block;"/>'
+                        );
+
+                        $('#latloninput').append('<div id="loncontainer" style="float:left; width:100%;"></div>')
+                        $('#loncontainer').append(
+                            '<label for="pinLat" style="display:block;">Longitude: </label>'
+                        );
+                        $('#loncontainer').append(
+                            '<input id="pinLon" type="text" style="width:100%;display:block;"/>'
+                        );
+                        //$('#latloninput').append('<div id="applylatlonpinContainer" ></div>')
+                        $('#latloninput').append(
+                            '<button type="button" class="btn btn-default" id="applylatlonpin" style="float:left;width:100%;margin-top:10px;">Apply</div>'
+                        );
+                        $('#applylatlonpin').on('click', function(){
+                            var lat = Number($('#pinLat').val());
+                            var lon = Number($('#pinLon').val());
+                            if(!Number.isNaN(lat) && !Number.isNaN(lon)){
+                                Communicator.mediator.trigger("selection:pin:changed", {x: lon, y: lat});
+                            }
+                        });
+                    }
+                }
             },
             onSelectionActivated: function(arg) {
             	if(arg.active){

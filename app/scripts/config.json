@@ -164,8 +164,9 @@
 
     "navBarConfig": {
         "title": "AMiDA",
-        "url": "",
-        "items": [{
+        "url": "https://amida.adamplatform.eu/",
+        "items": [
+        {
             "name": "Favourite Layers",
             "icon": "fa-globe",
             "eventToRaise": "ui:open:layercontrol",
@@ -194,6 +195,14 @@
             "name": "About",
             "icon": "fa-info-circle",
             "eventToRaise": "dialog:open:about"
+        }, {
+            "name": "Jupyter",
+            "icon": "",
+            "url": "https://amida-jup.adamplatform.eu/"
+        }, {
+            "name": "Logout",
+            "icon": "",
+            "url": "https://amida.adamplatform.eu/accounts/logout/"
         }]
     },
 

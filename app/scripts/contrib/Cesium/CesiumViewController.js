@@ -52,6 +52,7 @@ define([
 			this.cesiumView.listenTo(Communicator.mediator, "productCollection:updateOpacity", _.bind(this.cesiumView.onUpdateOpacity, this.cesiumView));
 			this.cesiumView.listenTo(Communicator.mediator, "selection:activated", _.bind(this.cesiumView.onSelectionActivated, this.cesiumView));
 			this.cesiumView.listenTo(Communicator.mediator, "selection:changed", _.bind(this.cesiumView.onSelectionChanged, this.cesiumView));
+			this.cesiumView.listenTo(Communicator.mediator, "selection:pin:changed", _.bind(this.cesiumView.onPinPositionSet, this.cesiumView));
 
 			this.cesiumView.listenTo(Communicator.mediator, "map:show:result", _.bind(this.cesiumView.onMapShowResult, this.cesiumView));
 

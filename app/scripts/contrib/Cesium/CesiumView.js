@@ -527,13 +527,13 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
 
 
                 for(var coll in renderdata){
-                    collectionIds.push(coll);
                     coll = coll.replace('_4326_0035', '');
 
                     var shortenedName = coll;
                     if(coll.length>28){
                         shortenedName = coll.substring(0, 28)+'...';
                     }
+                    collectionIds.push(shortenedName);
 
                     for(var it=0; it<renderdata[coll].length; it++){
                         if(renderdata[coll][it].hasOwnProperty('timestamp')){
@@ -760,6 +760,92 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                     ]);
                     this.map.entities.getById("needle").show = true;
                 }
+                $('#pinLon').val(pos_x.toPrecision(8));
+                $('#pinLat').val(pos_y.toPrecision(8));
+
+                this.showPickingResult(resultData, pos_x, pos_y);
+            }
+        },
+
+        onPinPositionSet: function(position){
+
+            var resultData = {};
+            var pos_x = 0;
+            var pos_y = 0;
+
+            function compare( a, b ) {
+              if ( new Date(a.timestamp).getTime() < new Date(b.timestamp).getTime() ){
+                return -1;
+              }
+              if ( new Date(a.timestamp).getTime() > new Date(b.timestamp).getTime() ){
+                return 1;
+              }
+
+              // If date is equal we sort by height if available
+              if(a.hasOwnProperty('height') && b.hasOwnProperty('height')){
+                if(a.height<b.height){
+                    return -1;
+                }
+                if(a.height>b.height){
+                    return 1;
+                }
+              }
+              return 0;
+            }
+
+            // If picking tool or POI has been activated lets look at the
+            // clicked position
+            if (this.pickingActive) {
+
+                pos_x = position.x;
+                pos_y = position.y;
+
+                var cartographic = Cesium.Cartographic.fromDegrees(pos_x, pos_y);
+
+                // Iterate all imagery providers to see if picking point is inside
+                globals.products.each(function(product) {
+                    var currCovs = product.get('coveragesCollection');
+                    var collData = [];
+                    if(currCovs){
+                        for(var cv in currCovs){
+                            if(currCovs[cv].hasOwnProperty('imageryLayer')){
+                                if(currCovs[cv].imageryLayer._imageryCache.hasOwnProperty('[0,0,0]')){
+                                    var dataRectangle = currCovs[cv].imageryLayer._imageryCache['[0,0,0]'].rectangle;
+                                    var pickedLayer = Cesium.Rectangle.contains(
+                                        dataRectangle, cartographic
+                                    );
+                                    if(pickedLayer){
+                                        var value = this.pickImageryLayer(
+                                            cv, dataRectangle,
+                                            cartographic, product
+                                        );
+                                        if(Array.isArray(value)){
+                                            collData = value;
+                                        } else if(value !== Number.MIN_VALUE){
+                                            collData.push({
+                                                value: value,
+                                                timestamp: currCovs[cv].timestamp
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if(collData.length>0){
+                        resultData[product.get('download').id] = collData.sort(compare);
+                    }
+                }, this);
+
+                // Move and show needle if no POI is selected
+                this.map.entities.getById("needle").show = false;
+                var needle = this.map.entities.getById('needle');
+                needle.position.setValue(Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 600000));
+                needle.polyline._positions.setValue([
+                    Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 0),
+                    Cesium.Cartesian3.fromDegrees(pos_x, pos_y, 600000)
+                ]);
+                this.map.entities.getById("needle").show = true;
 
                 this.showPickingResult(resultData, pos_x, pos_y);
             }
@@ -902,7 +988,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                     yAxis: ['tmp'],
                     colorAxis: [ null ],
                 },
-                displayParameterLabel: false,
+                displayParameterLabel: true,
                 debounceActive: false
             });
 
@@ -2509,19 +2595,16 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                     // Apply modifier if necessary 
                     var modExp = product.get('modExpression');
                     if(typeof modExp !== 'undefined' && modExp !== null && modExp !== ''){
-                        var expr = this.parser.parse(product.get('modExpression'));
+                        var expr = that.parser.parse(product.get('modExpression'));
                         exprFn = expr.toJSFunction('x');
-                        for (var i = 0; i < rasdata.length; i++) {
-                            convArray[i] = convArray[i].map(exprFn);
-                        }
                     }
 
                     for (var i = 0; i < jsondata.length; i++) {
+                        var stVal = Number(jsondata[i].value);
+                        if(exprFn !== null){
+                            stVal = exprFn(stVal);
+                        }
                         if(that.stations.hasOwnProperty(jsondata[i].name)){
-                            var stVal = Number(jsondata[i].value);
-                            if(exprFn !== null){
-                                stVal = exprFn(stVal);
-                            }
                             that.stations[jsondata[i].name].values.push(stVal);
 
                             that.stations[jsondata[i].name].time_start.push(
@@ -2539,7 +2622,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                         } else {
                             that.stations[jsondata[i].name] = {
                                 id: jsondata[i].name,
-                                values: [Number(jsondata[i].value)],
+                                values: [stVal],
                                 latitude: jsondata[i].latitude,
                                 height: jsondata[i].height,
                                 longitude: jsondata[i].longitude,
@@ -3052,6 +3135,8 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                             );
                             pos_x = Cesium.Math.toDegrees(poipos.longitude);
                             pos_y = Cesium.Math.toDegrees(poipos.latitude);
+                            $('#pinLon').val(pos_x);
+                            $('#pinLat').val(pos_y);
 
                             // Get data for the other products at this position
                             globals.products.each(function(product) {
@@ -3099,6 +3184,8 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                 var cartographic = Cesium.Cartographic.fromCartesian(needle.position.getValue());
                 pos_x = Cesium.Math.toDegrees(cartographic.longitude);
                 pos_y = Cesium.Math.toDegrees(cartographic.latitude);
+                $('#pinLon').val(pos_x);
+                $('#pinLat').val(pos_y);
 
                 globals.products.each(function(product) {
                     var currCovs = product.get('coveragesCollection');
