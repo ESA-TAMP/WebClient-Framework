@@ -644,15 +644,13 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                     '<button type="button" id="savePickingResultsCSV" class="btn btn-default" style="position: absolute; right:0px; margin-right:5px; top:5px;">CSV Export</button>'
                 );
                 
-                $("#pickingresults").on('click', function() {
-                    console.log(resultData);
+                $("#savePickingResultsCSV").on('click', function() {
                     that.downloadCSV(resultData);
                 });
             }
         },
 
         downloadCSV: function(data) {
-
 
             var keysToIterate = ['timestamp', 'collection', 'value'];
             if(data.hasOwnProperty('height') && data.height.length>0){
