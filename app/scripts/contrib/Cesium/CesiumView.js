@@ -473,6 +473,8 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
             $('#prcontainer').remove();
             $('#enlarge').remove();
             $('#analyticsSavebutton').remove();
+            $('#savePickingResultsCSV').off();
+            $('#savePickingResultsCSV').remove();
 
 
             $("#pickingresults").append(
@@ -510,7 +512,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                     }
                 }
 
-            }else if (maxLength > 1){
+            } else if (maxLength > 1){
 
                 var timebucket = {};
 
@@ -637,7 +639,48 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                         }
                     }
                 });
+
+                $("#pickingresults").append(
+                    '<button type="button" id="savePickingResultsCSV" class="btn btn-default" style="position: absolute; right:0px; margin-right:5px; top:5px;">CSV Export</button>'
+                );
+                
+                $("#pickingresults").on('click', function() {
+                    console.log(resultData);
+                    that.downloadCSV(resultData);
+                });
             }
+        },
+
+        downloadCSV: function(data) {
+
+
+            var keysToIterate = ['timestamp', 'collection', 'value'];
+            if(data.hasOwnProperty('height') && data.height.length>0){
+                keysToIterate.push('height');
+            }
+
+            var csv = keysToIterate.join(',')+'\n';
+
+            for (var i = 0; i < data.timestamp.length; i++) {
+                var row = '';
+                for (var ki = 0; ki < keysToIterate.length; ki++) {
+                    if(keysToIterate[ki] === 'timestamp'){
+                        row+=getISODateTimeString(data[keysToIterate[ki]][i])+','; 
+                    } else {
+                        row+=data[keysToIterate[ki]][i]+',';
+                    }
+                }
+
+                row = row.slice(0, -1);
+                row+='\n';
+                csv+=row;
+            }
+
+            var hiddenElement = document.createElement('a');
+            hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+            hiddenElement.target = '_blank';
+            hiddenElement.download = 'dave_data.csv';
+            hiddenElement.click();
         },
 
         onViewerClicked: function(click){
@@ -981,7 +1024,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
 
             this.graph = new graphly.graphly({
                 el: '#pickingresultcontainer',
-                margin: {top: 10, left: 80, bottom: 70, right: 40},
+                margin: {top: 20, left: 80, bottom: 70, right: 40},
                 dataSettings: {},
                 renderSettings: {
                     xAxis: 'tmp',
