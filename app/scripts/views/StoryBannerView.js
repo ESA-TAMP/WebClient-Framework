@@ -135,6 +135,11 @@
             }, this);
           }
 
+          if(this.sections[index].hasAttribute('data-poi')) {
+            var poiId = this.sections[index].getAttribute('data-poi');
+            Communicator.mediator.trigger('pin:select', 'Heraklion');
+          }
+
           // Analytics selection
           if(this.sections[index].hasAttribute('data-yAxis')) {
               var yAxis = this.sections[index].getAttribute('data-yAxis').split(',');
@@ -150,6 +155,17 @@
 
               Communicator.mediator.trigger("date:selection:change", opt);
               
+          }
+
+          // Timeslider domain
+          if( this.sections[index].hasAttribute('data-timedomain')){
+              var dates = this.sections[index].getAttribute('data-timedomain').split('/');
+              var opt = {};
+              opt.start = new Date(dates[0]);
+              opt.end = new Date(dates[1]);
+              Communicator.mediator.trigger('time:domain:change', opt);
+              var range = [new Date(dates[0]), new Date(dates[1])];
+              Communicator.mediator.trigger('date:center', range);
           }
 
           // Configure Layers
@@ -246,7 +262,16 @@
               });*/
           }
 
-
+          // Set/Unset favourite layers
+          if(this.sections[index].hasAttribute('data-favourites')) {
+              var favouriteLayers = this.sections[index].getAttribute('data-favourites').split(';');
+              _.each(favouriteLayers, function(layer){
+                var product = _.find(globals.products.models, function(p){return p.get("download").id === layer;});
+                if(product) {
+                  product.set('favourite', true);
+                }
+              }, this);
+          }
 
           // Setup which visualization widget is displayed in which region
           if(this.sections[index].hasAttribute('data-tl')){

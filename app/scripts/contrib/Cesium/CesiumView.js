@@ -1180,10 +1180,14 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
         centerMap: function(data) {
             //this.map.setCenter(new OpenLayers.LonLat(data.x, data.y), data.l);
 
-            this.model.set({
+            this.map.scene.camera.flyTo({
+                destination : Cesium.Cartesian3.fromDegrees(data.x, data.y, data.l)
+            });
+
+            /*this.model.set({
                 'center': [data.x, data.y],
                 'zoom': data.l
-            });
+            });*/
         },
 
         onSortProducts: function(productLayers) {
@@ -3137,6 +3141,11 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
 
             // Make sure layers are reordered based on their position in the list
             this.onSortProducts();
+        },
+
+        onSelectPoI: function(poiID) {
+            this.selectedEntityId = poiID;
+            this.pickScene();
         },
 
         pickScene: function(){

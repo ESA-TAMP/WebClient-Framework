@@ -603,7 +603,7 @@ button[active=active] {
 }
 
 .prodLoadContainer {
-  right: 20px!important;
+  right: 70px!important;
   color: #fff !important;
   font-family: "Montserrat", sans-serif;
   font-weight: 400;
@@ -629,4 +629,10 @@ button[active=active] {
   position: absolute;
   font-size: 0.8em;
   float: left;
+}
+
+
+.container {
+    /*padding-left: 0;*/
+    margin-left: 20px!important;
 }

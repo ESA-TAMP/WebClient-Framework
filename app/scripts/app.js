@@ -210,8 +210,18 @@
 				// by the marionette collection view
 				if (config.navBarConfig) {
 
-                    // TODO: We remove the tutorial here for now
-                    config.navBarConfig.items.splice(4,1);
+                    // TODO: We remove the tutorial here for now only leave it for
+                    // UC 4
+                    if (typeof USERVARIABLE !== 'undefined' && USERVARIABLE === 'UC4') {
+                        switch(USERVARIABLE) {
+                            case 'UC4':
+                                config.navBarConfig.items[4].template = 'UC4_tutorial';
+                            break;
+                        }
+                    } else {
+                        config.navBarConfig.items.splice(4,1);
+                    }
+
 
 					var addNavBarItems = defaultFor(self.NAVBARITEMS, []);
 					config.navBarConfig.items = config.navBarConfig.items.concat(addNavBarItems);
