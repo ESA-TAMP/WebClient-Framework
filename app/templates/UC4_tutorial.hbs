@@ -13,54 +13,59 @@
 <section data-events="ui:open:dataManagement" data-favourites="PM10;AMIDA_UC4_d01_ew_ml_da_PM10surf_4326_0150897">
     <span class="close"><i class="fa fa-times-circle"/></span>
     <h3>Data management</h3>
-    <p>In order to visualise a product we first have to look for the ones we are interested in in the "Data Management" panel.</p>
-    <p>There is a search box at the top that allows to filter based on product name or description as you type in a keyword.<p>
-    <p>We have just opened it, you can see it on the left right of the screen.</p>
-    <p>We also have set a star to both product we will be looking at during this tutorial. This means they are selected as favourites and in your next visit they will already be available in the "Favourites" panel. Lets look at that panel next.</p>
+    <p>In order to visualise a product we first have to look for the ones we are interested in the "Data Management" panel.</p>
+    <p>There is a search box at the top that allows filtering based on product name or description as you type in a keyword.<p>
+    <p>We have just opened it, you can see it on the right of the screen.</p>
+    <p>We also have set a star to both products we will be looking at during this tutorial. This means they are selected as favourites and in your next visit they will already be available in the "Favourites" panel. Lets look at that panel next.</p>
 </section>
 <section data-events="ui:open:layercontrol;ui:open:dataManagement">
     <span class="close"><i class="fa fa-times-circle"/></span>
     <h3>Layer Selection</h3>
     <p>Now we have opened the "Favourite Layers" panel and you can see (at least) two Layers, PM10 and UC4_d01_ew_ml_da_PM10surf.</p>
-    <p>We will activate both layers in the next step which will show the data availability in the timeline at the bottm.</p>
-    <p>Before we look at the data itself a short excursion into time and area selection.</p>
+    <p>We will activate both layers in the next step which will show the data availability in the timeline at the bottom.</p>
+    <p>Before we look at the data itself, a short excursion into time and area selection.</p>
     </br>
 </section>
-<section data-bbox="17.86,28.77,35.86,39.5" data-zoom="5000000.0" data-longitude="27" data-latitude="33" data-timedomain="2018-03-20T00:00:00Z/2018-03-23T23:59:00Z" data-time="2018-03-20T00:00:01Z/2018-03-20T00:00:02Z" data-layers="PM10;AMIDA_UC4_d01_ew_ml_da_PM10surf_4326_0150897">
+<section data-bbox="17.86,28.77,35.86,39.5" data-zoom="5000000.0" data-longitude="27" data-latitude="33" data-layers="PM10;AMIDA_UC4_d01_ew_ml_da_PM10surf_4326_0150897">
     <span class="close"><i class="fa fa-times-circle"/></span>
-    <h3>Time and Area Selection</h3>
-    <p>We are interested in an event happening around the 21st of March 2018, so we have moved the fully interactive time line at the bottom of the site to that time domain. You can interact with the timeline by using the mousewheel when the cursor is over it to zoom in and out the timespan. You can also click and drag the bottom area of the timeline to pan in time left and right. If you already know which days you want to investigate you can also use the day selection widget at the right corner of the timeline.</p>
-    <p>The timeline also shows points for when data is available, this is also dependent on the area selection.</p>
-    <p>If you are already know which area you would like to investigate it is good practice to select that area by opening the "Tools" panel, selecting the bbox (square) tool, click on the map to start drawing a rectangle and click on a point again to stop drawing. We have created an exemplary selection already for you.
+    <h3>Area Selection</h3>
+    <p>We are interested in an event happening north of Egypt in the Mediterranean Sea. It is good practice to first select the area of interest by opening the "Tools" panel, selecting the bbox (square) tool, click on the map to start drawing a rectangle and click on a point again to stop drawing. Creating a boundign box first reduces the amount of data that needs to be loaded only fetching the area you are interested in. We have created an exemplary selection already for you.</p>
     <p>Now that we see the availability we can click and drag on the top part of the timeline to create a time selection of interest, this well then start retrieving the data to be displayed.</p>
+</section>
+<section data-timedomain="2018-03-20T00:00:00Z/2018-03-23T23:59:00Z" data-time="2018-03-20T00:00:01Z/2018-03-20T00:00:02Z">
+    <span class="close"><i class="fa fa-times-circle"/></span>
+    <h3>Time Selection</h3>
+    <p>We also know the event happened around the 21st of March 2018, so we have moved the fully interactive time line at the bottom to that time domain. You can interact with the timeline by using the mousewheel when the cursor is over it, to zoom in and out the timespan. You can also click and drag the bottom area of the timeline to pan in time left and right. If you already know which days you want to investigate, you can also use the day selection widget at the right corner of the timeline.</p>
+    <p>The timeline also shows points when data is available, this is also dependent on the area selection.</p>
+    <p>Now that we see the availability, we can click and drag on the top part of the timeline to create a time selection of interest, this will then start retrieving the data to be displayed. This will be done automatically in the next step.</p>
 </section>
 <section data-time="2018-03-21T11:50:01Z/2018-03-23T11:30:02Z" data-settings="AMIDA_UC4_d01_ew_ml_da_PM10surf_4326_0150897">
     <span class="close"><i class="fa fa-times-circle"/></span>
     <h3>Data Visualization</h3>
-    <p>Now the download progress is displayed, as we have data for the same area through time, once the download is finished you will see buttons appear to control data animation.</p>
+    <p>Now the download progress is displayed. Once the download is finished, you will see buttons appear to control the model data animation.</p>
     <p>Go ahead and press the play button to see the animation! You can see a dust cloud being swept in north-east direction!</p>
     <p>You can also change the data visualization settings for each layer by clicking the <i class="fa fa-sliders"/>-symbol of a layer.</p>
     <p>The layer settings panel has already been opened, you can play with colorscale style and value range with the sliders while the animation is playing, try it out!</p>
 </section>
 <section data-settings="AMIDA_UC4_d01_ew_ml_da_PM10surf_4326_0150897">
     <p>You can also see red points of interest on the globe. These are loaded with the PM10 layer.</p>
-    <p>Each point represents a ground station where measured values are available. By clicking on any of them a scatter plot will appear showing the values along the time you have selected in the timeline.</p>
+    <p>Each point represents a ground station where measured values are available. By clicking on any of them, a scatter plot will appear showing the values along the time you have selected in the timeline.</p>
     <p>When another layer is active at the same time, and data is available for the same region and time as the ground stations the respective points will also be shown in the plot.</p>
     <p>We will select one of the stations in the next section.</p>
 </section>
 <section data-poi="Heraklion">
     <span class="close"><i class="fa fa-times-circle"/></span>
-    <h3>Scatter Plot</h3>
-    <p>Now that a point of interest was selected we can see the scatterplot. There are two different sets of points, one for the station data and one for the model data. Having them plotted together allows easy comparison between them throughout the time. We clearly see the peak when the dust event passes over the station.</p>
-    <p>The scatter plot tool has many configuration options, by clicking on the labels of the datasets a configuration panel appears where it is possible to change the plot style, among other things point type, size, color, to be connected by a line.</p>
+    <h3>Time Series</h3>
+    <p>Now that a point of interest was selected, we can see the time series. There are two different sets of points, one for the station data and one for the model data. Having them plotted together allows easy comparison between them throughout the time. We clearly see the peak when the dust event passes over the station.</p>
+    <p>The scatter plot tool has many configuration options. By clicking on the labels of the datasets a configuration panel appears where it is possible to change the plot style, such as point type, size, color, to be connected by a line.</p>
     <p>It is possible to increase the size of the window by clicking the two arrows on the top left corner.<p>
-    <p>Once changes to style are as expected it is possible to save the plot as an image to further use it for publications or as reference.</p>
+    <p>Once changes to style are as expected, it is possible to save the plot as an image to further use it for publications or as reference.</p>
     <p>If the represented data is of more interest, it is also possible to download it as comma separated values (CSV) file, which should allow easy integration into other software applications.</p>
 </section>
 <section>
     <span class="close"><i class="fa fa-times-circle"/></span>
     <h3>Interact and explore!</h3>
     <p>We hope this tutorial has provided a good overview on many of the features possible with this interface.</p>
-    <p>Now that you are more familiar with it we recommend go and browse and analyze all of the available data!</p>
+    <p>Now that you are more familiar with it, we recommend go and browse and analyze all of the available data!</p>
 </section>
 <div style="height: 35em;"><!-- FIXME --></div>

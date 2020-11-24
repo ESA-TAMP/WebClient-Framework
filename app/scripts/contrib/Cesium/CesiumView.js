@@ -2622,11 +2622,18 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
             var that = this;
             //https://amida.adamplatform.eu/en/api/v2/ground/<identifier>/<timeStart>/<timeend>/
             var request = (
-                'https://amida.adamplatform.eu/en/api/v2/ground/filter/'+
+                'https://amida.adamplatform.eu/en/api/v2/ground/'+
                 product.get('download').id+'/'+
                 getISODateTimeString(this.begin_time)+'/'+
                 getISODateTimeString(this.end_time)
             );
+
+            // If bbox selected add it to filter
+            //https://amida.adamplatform.eu/en/api/v2/ground/<identifier>/<timeStart>/<timeend>/(minlat,minlon,maxlat,maxlon)
+            if(this.bboxsel !== null){
+                b = this.bboxsel;
+                request += '/('+b[0]+','+b[1]+','+b[2]+','+b[3]+')';
+            }
 
             $.ajax({
                 type:'GET',
@@ -3144,6 +3151,11 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
         },
 
         onSelectPoI: function(poiID) {
+            /*if(this.primitiveMapping.hasOwnProperty(poiID)){
+                var prim = this.primitiveMapping[poiID];
+                var cS = this.stations[poiID];
+                this.pickEntity({primitive:prim, id:poiID}, cS.latitude, cS.longitude);
+            }*/
             this.selectedEntityId = poiID;
             this.pickScene();
         },
@@ -3173,8 +3185,13 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
             }
 
             // Check if a ground station is selected
-            if(this.selectedEntityId !== null){
-                var pickedObject = this.map.entities.getById(selectedEntityId);
+            var poiID = this.selectedEntityId;
+            if(this.selectedEntityId !== null && this.primitiveMapping.hasOwnProperty(poiID)){
+
+                var prim = this.primitiveMapping[poiID];
+                var cS = this.stations[poiID];
+                var pickedObject = {primitive:prim, id:poiID};
+                
                 if (Cesium.defined(pickedObject)) {
                     if(pickedObject.id){
                         var stationObj = this.pickEntity(pickedObject);
@@ -3226,6 +3243,7 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                         }
                     }
                 }
+                this.showPickingResult(resultData, pos_x, pos_y);
             }
             
             // Check if picking active, if yes update picking data
