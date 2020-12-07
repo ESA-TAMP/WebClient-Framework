@@ -90,6 +90,24 @@
 
         if( !this.sections[index].wasActive ){
 
+          // Deactivate layers
+          if(this.sections[index].hasAttribute('data-layersOff')) {
+              var activeLayers = this.sections[index].getAttribute('data-layersOff').split(';');
+              _.each(activeLayers, function(layer){
+                Communicator.mediator.trigger("layer:deactivate", layer);
+              }, this);
+          }
+
+          // Activate layers
+          if(this.sections[index].hasAttribute('data-layers')) {
+              var activeLayers = this.sections[index].getAttribute('data-layers').split(';');
+              
+              _.each(activeLayers, function(layer){
+                Communicator.mediator.trigger("layer:activate", layer);
+              }, this);
+          }
+
+
           if(this.sections[index].hasAttribute('data-reset')) {
               Communicator.mediator.trigger("app:reset");
           }
@@ -243,23 +261,6 @@
           // Open settings
           if(this.sections[index].hasAttribute('data-settings')) {
             Communicator.mediator.trigger("layer:open:settings", this.sections[index].getAttribute('data-settings'));
-          }
-
-          // Activate / Deactivate layers
-          if(this.sections[index].hasAttribute('data-layers')) {
-              var activeLayers = this.sections[index].getAttribute('data-layers').split(';');
-              
-              _.each(activeLayers, function(layer){
-                Communicator.mediator.trigger("layer:activate", layer);
-              }, this);
-              /*_(map.layers).each(function(layer) {
-                  if(!layer.isBaseLayer){
-                      shouldBeVisible = _.contains(activeLayers, layer.layer);
-                      if(layer.visibility != shouldBeVisible) {
-                          layer.setVisibility(shouldBeVisible);
-                      }
-                  }
-              });*/
           }
 
           // Set/Unset favourite layers

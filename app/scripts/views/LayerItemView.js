@@ -38,6 +38,7 @@
 			onShow: function(view){
 
 				this.listenTo(Communicator.mediator, "layer:activate", this.layerActivate);
+				this.listenTo(Communicator.mediator, "layer:deactivate", this.layerDeactivate);
 
 				$( ".sortable" ).sortable({
 					revert: true,
@@ -270,10 +271,21 @@
 
 		    layerActivate: function(layer){
 		    	if(this.model.get('views') && this.model.get('views')[0].id == layer){
-		    		//this.model.set("visible", true);
 		    		var checkbox = $( "input[type$='checkbox']", this.$el);
-		    		//checkbox.attr('checked', true);
 		    		checkbox.prop( "checked", true );
+		    	} else if (this.model.get('view') && this.model.get('view').id == layer) {
+		    		var checkbox = $( "input[type$='checkbox']", this.$el);
+		    		checkbox.prop( "checked", true );
+		    	}
+		    },
+
+		    layerDeactivate: function(layer){
+		    	if(this.model.get('views') && this.model.get('views')[0].id == layer){
+		    		var checkbox = $( "input[type$='checkbox']", this.$el);
+		    		checkbox.prop( "checked", false );
+		    	} else if (this.model.get('view') && this.model.get('view').id == layer) {
+		    		var checkbox = $( "input[type$='checkbox']", this.$el);
+		    		checkbox.prop( "checked", false );
 		    	}
 		    },
 
