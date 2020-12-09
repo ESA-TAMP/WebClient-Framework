@@ -155,7 +155,7 @@
 
           if(this.sections[index].hasAttribute('data-poi')) {
             var poiId = this.sections[index].getAttribute('data-poi');
-            Communicator.mediator.trigger('pin:select', 'Heraklion');
+            Communicator.mediator.trigger('pin:select', poiId);
           }
 
           // Analytics selection

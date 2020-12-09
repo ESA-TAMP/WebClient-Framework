@@ -13,10 +13,10 @@
 <section data-events="ui:open:dataManagement" data-favourites="UV_Index_1D;AMIDA_UC2_UVI_Austria_ground_albedo_4326_0009524;AMIDA_UC2_UVI_Austria_ultraviolet_index_4326_0009524">
     <span class="close"><i class="fa fa-times-circle"/></span>
     <h3>Data management</h3>
-    <p>In order to visualise a product we first have to look for the ones we are interested in the "Data Management" panel.</p>
+    <p>In order to visualise a product, we first have to look for the ones of interest  in the "Data Management" panel.</p>
     <p>There is a search box at the top that allows filtering based on product name or description as you type in a keyword.<p>
     <p>We have just opened it, you can see it on the right of the screen.</p>
-    <p>We also have set a star to both products we will be looking at during this tutorial. This means they are selected as favourites and in your next visit they will already be available in the "Favourites" panel. Lets look at that panel next.</p>
+    <p>We also have set a star to both products we will be looking at during this tutorial. This means, they are selected as favourites and in your next visit they will already be available in the "Favourites" panel. Lets look at that panel next.</p>
 </section>
 <section data-events="ui:open:layercontrol;ui:open:dataManagement" data-time="2017-06-01T00:00:01Z/2017-06-01T00:00:02Z">
     <span class="close"><i class="fa fa-times-circle"/></span>
@@ -29,15 +29,15 @@
 <section data-bbox="9.49151,46.36027,17.2069,49.0073" data-zoom="1500000.0" data-longitude="13.5" data-latitude="47.5" data-layers="overlay_base;AMIDA_UC2_UVI_Austria_ground_albedo_4326_0009524;AMIDA_UC2_UVI_Austria_ultraviolet_index_4326_0009524">
     <span class="close"><i class="fa fa-times-circle"/></span>
     <h3>Area Selection</h3>
-    <p>We are interested in data over Austria, so we activated the "Borders and Labels" overlay layer to help locate us on the map. It is good practice to first select the area of interest by opening the "Tools" panel, selecting the bbox (square) tool, click on the map to start drawing a rectangle and click on a point again to stop drawing. Creating a boundign box first reduces the amount of data that needs to be loaded only fetching the area you are interested in. We already have created a selection around Austria for you.</p>
-    <p>Now that we see the availability we can click and drag on the top part of the timeline to create a time selection of interest, this well then start retrieving the data to be displayed.</p>
+    <p>We are interested in data over Austria, so we activated the "Borders and Labels" overlay layer to help locate us on the map. It is good practice to first select the area of interest by opening the "Tools" panel, selecting the bbox (square) tool. Then click on the map to start drawing a rectangle and click on a point again to stop drawing. Creating a bounding box first reduces the amount of data that needs to be loaded, only fetching the area you are interested in. We already have created a selection around Austria for you.</p>
+    <p>Now that we see the availability we can click and drag on the top part of the timeline to create a time selection of interest, this will then start retrieving the data to be displayed.</p>
 </section>
 <section data-timedomain="2017-06-08T02:00:00Z/2017-06-08T20:00:00Z">
     <span class="close"><i class="fa fa-times-circle"/></span>
     <h3>Time Selection</h3>
     <p>We also know the event happened around the 8th of June 2017, so we have moved the fully interactive time line at the bottom to that time domain. You can interact with the timeline by using the mousewheel when the cursor is over it, to zoom in and out the timespan. You can also click and drag the bottom area of the timeline to pan in time left and right. If you already know which days you want to investigate, you can also use the day selection widget at the right corner of the timeline.</p>
-    <p>The timeline also shows points when data is available, this is also dependent on the area selection.</p>
-    <p>Now that we see the availability, we can click and drag on the top part of the timeline to create a time selection of interest, this will then start retrieving the data to be displayed. This will be done automatically in the next step.</p>
+    <p>The timeline also shows points when data is available. This is also dependent on the area selection.</p>
+    <p>Now that we see the availability, we can click and drag on the top part of the timeline to create a time selection of interest. This will then start retrieving the data to be displayed. This will be done automatically in the next step.</p>
 </section>
 <section data-time="2017-06-08T11:50:00Z/2017-06-08T12:10:00Z" data-settings="AMIDA_UC2_UVI_Austria_ground_albedo_4326_0009524">
     <span class="close"><i class="fa fa-times-circle"/></span>
@@ -51,21 +51,21 @@
 <section data-layersOff="AMIDA_UC2_UVI_Austria_ground_albedo_4326_0009524" data-layers="UV_Index_1D" data-time="2017-06-08T04:00:00Z/2017-06-08T22:10:00Z" data-settings="AMIDA_UC2_UVI_Austria_ultraviolet_index_4326_0009524">
     <p>We now deactivated the albedo layer and instead activated the UV Index layer to have access to station data.</p>
     <p>As we are interested in the time evolution we have also set a larger time selection on the timeline. You should see the loading indicator again.</p>
-    <p>Once finished all available locations where station data is available are shown as red PoI (points of interest).<p>
+    <p>Once finished, all available locations where station data is available are shown as red PoI (points of interest).<p>
     <p>At the same time, as we have a time evolution of the ultraviolet index animation controls will appear.<p>
     <p>Give it a go and click on the play button to see an animation!</p>
     <p>You can still change the layer settings as described before, also while the animation is playing!</p>
-    <p>In order to see the time evolution at one of the stations we can click on it, we will select one of the stations automatically in the next section.</p>
+    <p>In order to see the time evolution at one of the stationsm we can click on it. We will select one of the stations automatically in the next section.</p>
 </section>
-<section data-poi="Son">
+<section data-poi="Son" data-settings="AMIDA_UC2_UVI_Austria_ultraviolet_index_4326_0009524">
     <span class="close"><i class="fa fa-times-circle"/></span>
     <h3>Time Series</h3>
-    <p>Now that a point of interest was selected, we can see the time series. There are two different sets of points, one for the station data and one for the satellite data. Having them plotted together allows easy comparison between them throughout the time.</p>
+    <p>Now that a point of interest was selected, we can see the time series. There are two different sets of points, one for the station data and one for the satellite data. Having them plotted together, allows for easy comparison between them throughout the time.</p>
     <p>Not all ground based measurements of the Austrian UV measurement network are affected by clouds. At the high alpine station Sonnblick (3109m above sea level), currently selected, no effect of clouds can be seen. The diurnal variation is smooth and symmetric around noon.</p>
 </section>
 <section data-poi="Ibk">
      <p>Now we have selected the station at Innsbruck. Here however the measured values are reduced by clouds thus the diurnal variation deviates from the clear sky case.</p>
-     <p>The scatter plot tool has many configuration options. By clicking on the labels of the datasets a configuration panel appears where it is possible to change the plot style, such as point type, size, color, to be connected by a line.</p>
+     <p>The scatter plot tool has many configuration options. By clicking on the labels of the datasets, a configuration panel appears where it is possible to change the plot style, such as point type, size, color, to be connected by a line.</p>
     <p>It is possible to increase the size of the window by clicking the two arrows on the top left corner.<p>
     <p>Once changes to style are as expected, it is possible to save the plot as an image to further use it for publications or as reference.</p>
     <p>If the represented data is of more interest, it is also possible to download it as comma separated values (CSV) file, which should allow easy integration into other software applications.</p>
