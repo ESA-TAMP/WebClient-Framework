@@ -300,8 +300,14 @@
         "id": "UC2_tutorial",
         "template": "hbs!tmpl/UC2_tutorial"
     }, {
+        "id": "UC3_tutorial",
+        "template": "hbs!tmpl/UC3_tutorial"
+    }, {
         "id": "UC4_tutorial",
         "template": "hbs!tmpl/UC4_tutorial"
+    }, {
+        "id": "UC5_tutorial",
+        "template": "hbs!tmpl/UC5_tutorial"
     }, {
         "id": "DataManagement",
         "template": "hbs!tmpl/DataManagement"

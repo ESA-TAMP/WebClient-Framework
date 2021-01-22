@@ -210,27 +210,28 @@
 				// by the marionette collection view
 				if (config.navBarConfig) {
 
-                    // TODO: We remove the tutorial here for now only leave it for
-                    // UC 4
-                    if (typeof USERVARIABLE !== 'undefined') {
-                        var tutorialAvailable = false;
-                        switch(USERVARIABLE) {
-                            case 'UC2':
-                                config.navBarConfig.items[4].template = 'UC2_tutorial';
-                                tutorialAvailable = true;
-                            break;
-                            case 'UC4':
-                                config.navBarConfig.items[4].template = 'UC4_tutorial';
-                                tutorialAvailable = true;
-                            break;
-                        }
-                        if (!tutorialAvailable) {
-                            config.navBarConfig.items.splice(4,1);
-                        }
-                    } else {
-                        config.navBarConfig.items.splice(4,1);
-                    }
-
+          if (typeof USERVARIABLE !== 'undefined') {
+              var tutorialAvailable = false;
+              switch(USERVARIABLE) {
+                  case 'UC1':
+                      config.navBarConfig.items[4].template = 'UC1_tutorial';
+                      tutorialAvailable = true;
+                  break;
+                  case 'UC2':
+                      config.navBarConfig.items[4].template = 'UC2_tutorial';
+                      tutorialAvailable = true;
+                  break;
+                  case 'UC4':
+                      config.navBarConfig.items[4].template = 'UC4_tutorial';
+                      tutorialAvailable = true;
+                  break;
+              }
+              if (!tutorialAvailable) {
+                  config.navBarConfig.items.splice(4,1);
+              }
+          } else {
+              config.navBarConfig.items.splice(4,1);
+          }
 
 					var addNavBarItems = defaultFor(self.NAVBARITEMS, []);
 					config.navBarConfig.items = config.navBarConfig.items.concat(addNavBarItems);
