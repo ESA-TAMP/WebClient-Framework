@@ -55,6 +55,7 @@ define([
 			this.cesiumView.listenTo(Communicator.mediator, "selection:changed", _.bind(this.cesiumView.onSelectionChanged, this.cesiumView));
 			this.cesiumView.listenTo(Communicator.mediator, "selection:pin:changed", _.bind(this.cesiumView.onPinPositionSet, this.cesiumView));
 			this.cesiumView.listenTo(Communicator.mediator, "pin:select", _.bind(this.cesiumView.onSelectPoI, this.cesiumView));
+      this.cesiumView.listenTo(Communicator.mediator, "pick:position", _.bind(this.cesiumView.onSelectPickingPosition, this.cesiumView));
 			
 
 			this.cesiumView.listenTo(Communicator.mediator, "map:show:result", _.bind(this.cesiumView.onMapShowResult, this.cesiumView));

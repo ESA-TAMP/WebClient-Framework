@@ -3160,6 +3160,22 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
             this.pickScene();
         },
 
+        onSelectPickingPosition: function(pos) {
+
+          this.pickingActive = true;
+          // Move and show needle
+          this.map.entities.getById("needle").show = false;
+          var needle = this.map.entities.getById('needle');
+          needle.position.setValue(Cesium.Cartesian3.fromDegrees(pos[0], pos[1], 600000));
+          needle.polyline._positions.setValue([
+              Cesium.Cartesian3.fromDegrees(pos[0], pos[1], 0),
+              Cesium.Cartesian3.fromDegrees(pos[0], pos[1], 600000)
+          ]);
+          this.map.entities.getById("needle").show = true;
+          this.pickScene();
+
+        },
+
         pickScene: function(){
 
             var resultData = {};

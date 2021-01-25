@@ -221,8 +221,16 @@
                       config.navBarConfig.items[4].template = 'UC2_tutorial';
                       tutorialAvailable = true;
                   break;
+                  case 'UC3':
+                      config.navBarConfig.items[4].template = 'UC3_tutorial';
+                      tutorialAvailable = true;
+                  break;
                   case 'UC4':
                       config.navBarConfig.items[4].template = 'UC4_tutorial';
+                      tutorialAvailable = true;
+                  break;
+                  case 'UC5':
+                      config.navBarConfig.items[4].template = 'UC5_tutorial';
                       tutorialAvailable = true;
                   break;
               }

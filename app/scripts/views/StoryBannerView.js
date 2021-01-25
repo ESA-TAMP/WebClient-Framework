@@ -158,6 +158,13 @@
             Communicator.mediator.trigger('pin:select', poiId);
           }
 
+
+          if(this.sections[index].hasAttribute('data-picking')) {
+            var pos = this.sections[index].getAttribute('data-picking').split(",").map(Number);
+            console.log(pos);
+            Communicator.mediator.trigger('pick:position', pos);
+          }
+
           // Analytics selection
           if(this.sections[index].hasAttribute('data-yAxis')) {
               var yAxis = this.sections[index].getAttribute('data-yAxis').split(',');
