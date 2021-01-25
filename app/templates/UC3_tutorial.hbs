@@ -4,24 +4,24 @@
     <small class='scroll'>Scroll ▼</small>
     <h3>Use case 3</h3>
     <h4>SATELLITE TO GROUND INSTRUMENT COMPARISON OF NO2 TOTAL COLUMNS</h4>
-    <p>This Tutorial demonstrates an example workflow for the currently selected use case.</p>
-    <p>It is an interactive Tutorial so you just need to scroll down to see the functionality of the application.</p>
+    <p>This tutorial demonstrates an example workflow for the currently selected use case.</p>
+    <p>It is an interactive tutorial, so you just need to scroll down to see the functionality of the application.</p>
     <p>The tutorial can be closed at any point in time.</p>
     <small class='scroll'>Scroll ▼</small>
 </section>
 <section data-events="ui:open:dataManagement" data-favourites="S5P_OFFL_L2_NO2_PRODUCT_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN;NO2.COLUMN_ABSORPTION.SOLAR">
     <span class="close"><i class="fa fa-times-circle"/></span>
     <h3>Data management</h3>
-    <p>In order to visualise a product we first have to look for the ones we are interested in the "Data Management" panel.</p>
+    <p>In order to visualise a product, we first have to look for the ones of interest in the "Data Management" panel.</p>
     <p>There is a search box at the top that allows filtering based on product name or description as you type in a keyword.<p>
     <p>We have just opened it, you can see it on the right of the screen.</p>
-    <p>We also have set a star to both products we will be looking at during this tutorial. This means they are selected as favourites and in your next visit they will already be available in the "Favourites" panel. Lets look at that panel next.</p>
+    <p>We also have set a star to the products we will be looking at during this tutorial. This means, they are selected as favourites and in your next visit they will already be available in the "Favourites" panel. Lets look at that panel next.</p>
 </section>
 <section data-events="ui:open:layercontrol;ui:open:dataManagement" data-time="2022-01-19T00:00:00Z/2022-02-24T23:59:00Z">
     <span class="close"><i class="fa fa-times-circle"/></span>
     <h3>Layer Selection</h3>
-    <p>Now we have opened the "Favourite Layers" panel and you can see (at least) two Layers, MERIS and POLDER layers.</p>
-    <p>We will activate both layers in the next step which will show the data availability in the timeline at the bottom.</p>
+    <p>Now we have opened the "Favourite Layers" panel and you can see (at least) two Layers, S5P OFFL L2 NO2 (TC) and NO2 COLUMN_ABSORPTION.</p>
+    <p>We will activate both layers in the next step, which will show the data availability in the timeline at the bottom.</p>
     <p>Before we look at the data itself, a short excursion into time and area selection.</p>
     </br>
 </section>
@@ -29,14 +29,14 @@
 <section data-bbox="11.093872809409522,47.087459875206775,11.74873457574557,47.41825897223696" data-zoom="300000.0" data-longitude="11.46" data-latitude="47.23" data-layers="overlay_base;S5P_OFFL_L2_NO2_PRODUCT_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN;NO2.COLUMN_ABSORPTION.SOLAR">
     <span class="close"><i class="fa fa-times-circle"/></span>
     <h3>Area Selection</h3>
-    <p>We are interested in an event happening in Innsbruck (Austria). It is good practice to first select the area of interest by opening the "Tools" panel, selecting the bbox (square) tool, click on the map to start drawing a rectangle and click on a point again to stop drawing. Creating a boundign box first reduces the amount of data that needs to be loaded only fetching the area you are interested in. We have created an exemplary selection already for you.</p>
+    <p>We are interested in an event happening in Innsbruck (Austria). It is good practice to first select the area of interest by opening the "Tools" panel, selecting the bbox (square) tool, clicking on the map to start drawing a rectangle and clicking on a point again to stop drawing. Creating a boundign box reduces the amount of data that needs to be loaded, only fetching the area you are interested in. We have created an exemplary selection already for you.</p>
 </section>
 <section data-timedomain="2020-01-06T00:00:00Z/2020-03-15T23:59:00Z">
     <span class="close"><i class="fa fa-times-circle"/></span>
     <h3>Time Selection</h3>
     <p>We also know the event happened around February 2020, so we have moved the fully interactive time line at the bottom to that time domain. You can interact with the timeline by using the mousewheel when the cursor is over it, to zoom in and out the timespan. You can also click and drag the bottom area of the timeline to pan in time left and right. If you already know which days you want to investigate, you can also use the day selection widget at the right corner of the timeline.</p>
-    <p>The timeline also shows points when data is available, this is also dependent on the area selection.</p>
-    <p>Now that we see the availability, we can also identify common date ranges and we can click and drag on the top part of the timeline to create a time selection of interest, this will then start retrieving the data to be displayed. This will be done automatically in the next step.</p>
+    <p>The timeline also shows points when data is available, which is also dependent on the area selection.</p>
+    <p>Now that we see the availability we can click and drag on the top part of the timeline to create a time selection of interest. This will then start retrieving the data to be displayed, which will be done automatically in the next step.</p>
 </section>
 <section data-time="2020-01-19T00:00:00Z/2020-02-24T23:59:00Z" data-settings="S5P_OFFL_L2_NO2_PRODUCT_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN">
     <span class="close"><i class="fa fa-times-circle"/></span>
@@ -49,14 +49,14 @@
 <section data-settings="S5P_OFFL_L2_NO2_PRODUCT_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN">
     <p>You can also see a red point of interest on the globe. These are loaded with the NO2 COLUMN_ABSORPTION SOLAR layer we previously activated.</p>
     <p>Each point represents a ground station where measured values are available. By clicking on any of them, a scatter plot will appear showing the values along the time you have selected in the timeline.</p>
-    <p>When another layer is active at the same time, and data is available for the same region and time as the ground stations the respective points will also be shown in the plot.</p>
+    <p>When another layer is active at the same time, and data is available for the same region and time as the ground stations, the respective points will also be shown in the plot.</p>
     <p>We will select one of the stations in the next section.</p>
 </section>
 <section data-poi="luftblick110">
     <span class="close"><i class="fa fa-times-circle"/></span>
     <h3>Time Series</h3>
     <p>Now that a point of interest was selected, we can see the time series. There are two different sets of points, one for the station data and one for the model data. Having them plotted together allows easy comparison between them throughout the time. </p>
-    <p>The scatter plot tool has many configuration options. By clicking on the labels of the datasets a configuration panel appears where it is possible to change the plot style, such as point type, size, color, to be connected by a line.</p>
+    <p>The scatter plot tool has many configuration options. By clicking on the labels of the datasets, a configuration panel appears where it is possible to change the plot style, such as point type, size, color, to be connected by a line.</p>
     <p>It is possible to increase the size of the window by clicking the two arrows on the top left corner.<p>
     <p>Once changes to style are as expected, it is possible to save the plot as an image to further use it for publications or as reference.</p>
     <p>If the represented data is of more interest, it is also possible to download it as comma separated values (CSV) file, which should allow easy integration into other software applications.</p>
