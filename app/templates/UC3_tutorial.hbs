@@ -9,7 +9,7 @@
     <p>The tutorial can be closed at any point in time.</p>
     <small class='scroll'>Scroll ▼</small>
 </section>
-<section data-events="ui:open:dataManagement" data-favourites="S5P_OFFL_L2_NO2_PRODUCT_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN;NO2.COLUMN_ABSORPTION.SOLAR">
+<section data-events="ui:open:dataManagement" data-favourites="S5P_OFFL_L2_NO2_PRODUCT_SUPPORT_DATA_DETAILED_RESULTS_NITROGENDIOXIDE_TOTAL_COLUMN;NO2.COLUMN_ABSORPTION.SOLAR">
     <span class="close"><i class="fa fa-times-circle"/></span>
     <h3>Data management</h3>
     <p>In order to visualise a product, we first have to look for the ones of interest in the "Data Management" panel.</p>
@@ -26,7 +26,7 @@
     </br>
 </section>
 
-<section data-bbox="11.093872809409522,47.087459875206775,11.74873457574557,47.41825897223696" data-zoom="300000.0" data-longitude="11.46" data-latitude="47.23" data-layers="overlay_base;S5P_OFFL_L2_NO2_PRODUCT_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN;NO2.COLUMN_ABSORPTION.SOLAR">
+<section data-bbox="11.093872809409522,47.087459875206775,11.74873457574557,47.41825897223696" data-zoom="300000.0" data-longitude="11.46" data-latitude="47.23" data-layers="overlay_base;S5P_OFFL_L2_NO2_PRODUCT_SUPPORT_DATA_DETAILED_RESULTS_NITROGENDIOXIDE_TOTAL_COLUMN;NO2.COLUMN_ABSORPTION.SOLAR">
     <span class="close"><i class="fa fa-times-circle"/></span>
     <h3>Area Selection</h3>
     <p>We are interested in an event happening in Innsbruck (Austria). It is good practice to first select the area of interest by opening the "Tools" panel, selecting the bbox (square) tool, clicking on the map to start drawing a rectangle and clicking on a point again to stop drawing. Creating a boundign box reduces the amount of data that needs to be loaded, only fetching the area you are interested in. We have created an exemplary selection already for you.</p>
@@ -38,15 +38,15 @@
     <p>The timeline also shows points when data is available, which is also dependent on the area selection.</p>
     <p>Now that we see the availability we can click and drag on the top part of the timeline to create a time selection of interest. This will then start retrieving the data to be displayed, which will be done automatically in the next step.</p>
 </section>
-<section data-time="2020-01-19T00:00:00Z/2020-02-24T23:59:00Z" data-settings="S5P_OFFL_L2_NO2_PRODUCT_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN">
+<section data-time="2020-01-19T00:00:00Z/2020-02-24T23:59:00Z" data-settings="S5P_OFFL_L2_NO2_PRODUCT_SUPPORT_DATA_DETAILED_RESULTS_NITROGENDIOXIDE_TOTAL_COLUMN">
     <span class="close"><i class="fa fa-times-circle"/></span>
     <h3>Data Visualization</h3>
     <p>Now the download progress is displayed. Once the download is finished, you will see buttons appear to control the model data animation.</p>
     <p>Go ahead and press the play button to see the animation!</p>
     <p>You can also change the data visualization settings for each layer by clicking the <i class="fa fa-sliders"/>-symbol of a layer.</p>
-    <p>The layer settings panel has already been opened, you can play with colorscale style and value range with the sliders while the animation is playing, try it out!</p>
+    <p>The layer settings panel has already been opened. In order to compare PANDORA station data with S5p NO2 total column measurements in the next step, we need to apply a unit conversion and multiply S5p NO2 with 2241.15. Please input x*2241.15 in the 'Data Modifier' field. In addition, we should change the maximum range to 0.5. Finally, we have to apply the changes with the 'Apply changes' button.</p>
 </section>
-<section data-settings="S5P_OFFL_L2_NO2_PRODUCT_NITROGENDIOXIDE_TROPOSPHERIC_COLUMN">
+<section data-settings="S5P_OFFL_L2_NO2_PRODUCT_SUPPORT_DATA_DETAILED_RESULTS_NITROGENDIOXIDE_TOTAL_COLUMN">
     <p>You can also see a red point of interest on the globe. These are loaded with the NO2 COLUMN_ABSORPTION SOLAR layer we previously activated.</p>
     <p>Each point represents a ground station where measured values are available. By clicking on any of them, a scatter plot will appear showing the values along the time you have selected in the timeline.</p>
     <p>When another layer is active at the same time, and data is available for the same region and time as the ground stations, the respective points will also be shown in the plot.</p>

@@ -707,20 +707,6 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                 $("#pickingresults").hide();
             }
             
-            if (Cesium.defined(pickedObject)) {
-                if(pickedObject.id){
-                    var stationObj = this.pickEntity(pickedObject);
-                    if(stationObj){
-                        resultData[stationObj.id] = stationObj.data;
-                        var poipos = Cesium.Ellipsoid.WGS84.cartesianToCartographic(
-                            pickedObject.primitive.position
-                        );
-                        pos_x = Cesium.Math.toDegrees(poipos.longitude);
-                        pos_y = Cesium.Math.toDegrees(poipos.latitude);
-                    }
-                }
-            }
-
             function compare( a, b ) {
               if ( new Date(a.timestamp).getTime() < new Date(b.timestamp).getTime() ){
                 return -1;
@@ -740,19 +726,36 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
               }
               return 0;
             }
-
-
+            var cartesianPos;
+            if (Cesium.defined(pickedObject)) {
+                if(pickedObject.id){
+                    var stationObj = this.pickEntity(pickedObject);
+                    if(stationObj){
+                        resultData[stationObj.id] = stationObj.data;
+                        var cartesianPos = Cesium.Ellipsoid.WGS84.cartesianToCartographic(
+                            pickedObject.primitive.position
+                        );
+                        pos_x = Cesium.Math.toDegrees(cartesianPos.longitude);
+                        pos_y = Cesium.Math.toDegrees(cartesianPos.latitude);
+                    }
+                }
+            }
             // If picking tool or POI has been activated lets look at the
             // clicked position
             if (this.pickingActive || Cesium.defined(pickedObject)) {
-                var x = click.position.x;
-                var y = click.position.y;
 
-                var cartesian = this.map.camera.pickEllipsoid(new Cesium.Cartesian2(x,y), this.map.scene.globe.ellipsoid);
-                var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+                if(!Cesium.defined(pickedObject)){
+                    var x = click.position.x;
+                    var y = click.position.y;
 
-                pos_x = Cesium.Math.toDegrees(cartographic.longitude);
-                pos_y = Cesium.Math.toDegrees(cartographic.latitude);
+                    var cartesian = this.map.camera.pickEllipsoid(
+                      new Cesium.Cartesian2(x,y), this.map.scene.globe.ellipsoid
+                    );
+                    cartesianPos = Cesium.Cartographic.fromCartesian(cartesian);
+
+                    pos_x = Cesium.Math.toDegrees(cartesianPos.longitude);
+                    pos_y = Cesium.Math.toDegrees(cartesianPos.latitude);
+                }
 
                 // Iterate all imagery providers to see if picking point is inside
                 globals.products.each(function(product) {
@@ -765,12 +768,12 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                                     var dataRectangle = currCovs[cv].imageryLayer._imageryCache['[0,0,0]'].rectangle;
                                     var pickedLayer = Cesium.Rectangle.contains(
                                         dataRectangle,
-                                        cartographic
+                                        cartesianPos
                                     );
                                     if(pickedLayer){
                                         var value = this.pickImageryLayer(
                                             cv, dataRectangle,
-                                            cartographic, product
+                                            cartesianPos, product
                                         );
                                         if(Array.isArray(value)){
                                             collData = value;
@@ -3260,10 +3263,9 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
                     }
                 }
                 this.showPickingResult(resultData, pos_x, pos_y);
-            }
-            
-            // Check if picking active, if yes update picking data
-            if(this.pickingActive && this.map.entities.getById("needle").show){
+
+            } else if(this.pickingActive && this.map.entities.getById("needle").show){
+                // Check if picking active, if yes update picking data
                 var needle = this.map.entities.getById('needle');
                 var cartographic = Cesium.Cartographic.fromCartesian(needle.position.getValue());
                 pos_x = Cesium.Math.toDegrees(cartographic.longitude);
@@ -3308,6 +3310,8 @@ function(Marionette, Communicator, App, MapModel, LayerModel, globals, Papa,
 
                 this.showPickingResult(resultData, pos_x, pos_y);
             }
+            
+            
         },
 
         processCoverageList: function(product, b, identifier, resp){
