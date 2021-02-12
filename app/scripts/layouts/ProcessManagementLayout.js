@@ -156,8 +156,8 @@
                         var startDate, endDate;
                         // Reformat specific fields
                         if(inputs.hasOwnProperty('timerange_start') && inputs.hasOwnProperty('timerange_end')){
-                            startDate = new Date(inputs.timerange_start);
-                            endDate = new Date(inputs.timerange_end);
+                            startDate = new Date(inputs.timerange_start.replace(' ','T')+'Z');
+                            endDate = new Date(inputs.timerange_end.replace(' ','T')+'Z');
                             var start = getISODateTimeString(startDate).slice(0,-1);
                             var end = getISODateTimeString(endDate).slice(0,-1);
                             inputs.timerange = start+','+end;
